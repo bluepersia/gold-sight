@@ -1,0 +1,24 @@
+{
+  "name": "gold-sight",
+  "version": "0.1.0",
+  "description": "Test your code on realistic content, precisely",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bluepersia/gold-sight.git"
+  },
+  "author": "Marco Enrique Zimmermann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bluepersia/gold-sight/issues"
+  },
+  "homepage": "https://github.com/bluepersia/gold-sight#readme",
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
