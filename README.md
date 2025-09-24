@@ -30,26 +30,26 @@ Initialize the master state:
 
 ```ts
 type State = GoldSightState & {
-master: Master;
-sheetIndex: number;
-absRulesIndex: number;
-absRuleIndex: number;
-absStyleRuleIndex: number;
-absMediaRuleIndex: number;
+  master: Master;
+  sheetIndex: number;
+  absRulesIndex: number;
+  absRuleIndex: number;
+  absStyleRuleIndex: number;
+  absMediaRuleIndex: number;
 };
 
 function newState(): State {
-return {
-master,
-sheetIndex: 0,
-absRulesIndex: 0,
-absRuleIndex: 0,
-absStyleRuleIndex: 0,
-absMediaRuleIndex: 0,
-};
+  return {
+    master,
+    sheetIndex: 0,
+    absRulesIndex: 0,
+    absRuleIndex: 0,
+    absStyleRuleIndex: 0,
+    absMediaRuleIndex: 0,
+  };
 }
 let state: State = newState();
-`
+```
 
 As you can see, you need a master object for each project.
 I also recommend absolute indexes and creating helper functions that return content based on absolute indexes. This is far easier to reason about than mixing sheetIndex + ruleIndex etc., and it works recursively/nested.
@@ -58,7 +58,7 @@ Ideally this master object should contain an index. For each test run, you can r
 Next, define the assertions.
 Here is an example following the previous:
 
-`
+```ts
 const cloneDocumentAssertions: AssertionChain<State, DocumentClone, Document> =
 {
 "should clone the document": (state, result) => {
