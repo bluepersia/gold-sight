@@ -2,7 +2,7 @@ import {
   AssertionBlueprint,
   AssertionChain,
   AssertionQueues,
-} from "./assertions.types";
+} from "./index.types";
 
 const assertionQueues: AssertionQueues = {};
 
@@ -134,16 +134,44 @@ class AssertionMaster<
       if (value.postOp) value.postOp(this.state, value.args, value.result);
     }
   }
-}
-function wrapTopFunction(fn: (...args: any[]) => any) {
-  const result = (...args: any[]) => {
-    return fn(...args);
-  };
-  this.runPostOps();
-  return result;
+
+  wrapTopFn<T extends (...args: any[]) => any>(
+    fn: T,
+    processors?: {
+      pre?: (state: TState, args: Parameters<T>) => void;
+      post?: (
+        state: TState,
+        args: Parameters<T>,
+        result: ReturnType<T>
+      ) => void;
+    }
+  ): (...args: Parameters<T>) => ReturnType<T> {
+    const wrappedFn = (...args: Parameters<T>): ReturnType<T> => {
+      this.state.funcIndex = 0;
+
+      // Optionally call pre processor
+      if (processors?.pre) processors.pre(this.state, args);
+
+      // Call the original function
+      const result = fn(...args);
+
+      // Run all queued postOps after the function executes
+      this.runPostOps();
+
+      // Optionally call post processor for top-level function
+      if (processors?.post) processors.post(this.state, args, result);
+
+      return result;
+    };
+
+    return wrappedFn;
+  }
 }
 
 function getQueue(globalKey: string) {
+  if (!assertionQueues[globalKey])
+    throw Error(`Assertion queue for ${globalKey} not found`);
+
   return assertionQueues[globalKey].assertionQueue;
 }
 

@@ -25,6 +25,11 @@ type AssertionQueues = {
   };
 };
 
+export declare function getQueue(globalKey: string): any;
+
+declare const AssertionMaster: any;
+export default AssertionMaster;
+
 export type {
   AssertionChain,
   AssertionWeak,
