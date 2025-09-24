@@ -7,7 +7,8 @@ import {
 const assertionQueues: AssertionQueues = {};
 
 class AssertionMaster<
-  TState extends { funcIndex: number; master: { index: number } }
+  TState extends { funcIndex: number; master?: { index: number } },
+  TMaster extends { index: number }
 > {
   protected state: TState;
   private assertionChains: {
@@ -39,7 +40,7 @@ class AssertionMaster<
 
     verifiedAssertions.clear();
     console.groupCollapsed(
-      `✅ ${this.globalKey} - ✨${this.state.master.index}`
+      `✅ ${this.globalKey} - ✨${this.state.master!.index}`
     );
     const queueIndexes = Array.from(assertionQueue.keys()).sort(
       (a, b) => a - b
@@ -67,6 +68,7 @@ class AssertionMaster<
     fn: T,
     name: string,
     processors?: {
+      argsConverter?: (args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
@@ -76,7 +78,10 @@ class AssertionMaster<
     }
   ): T {
     return ((...args: Parameters<T>): ReturnType<T> => {
-      if (processors?.pre) processors.pre(this.state, args);
+      const convertedArgs = processors?.argsConverter
+        ? processors.argsConverter(args)
+        : args;
+      if (processors?.pre) processors.pre(this.state, convertedArgs);
       const funcIndex = this.state.funcIndex++;
 
       const result = fn(...args);
@@ -85,7 +90,7 @@ class AssertionMaster<
         state: this.state,
         result,
         name,
-        args,
+        args: convertedArgs,
         postOp: () => {},
       } as AssertionBlueprint;
 
@@ -135,36 +140,40 @@ class AssertionMaster<
     }
   }
 
-  wrapTopFn<T extends (...args: any[]) => any>(
+  callTopFn<T extends (...args: any[]) => any>(
     fn: T,
-    processors?: {
+    master: TMaster,
+    options?: {
+      argsConverter?: (args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
         args: Parameters<T>,
         result: ReturnType<T>
       ) => void;
+      args?: Parameters<T>;
     }
-  ): (...args: Parameters<T>) => ReturnType<T> {
-    const wrappedFn = (...args: Parameters<T>): ReturnType<T> => {
-      this.state.funcIndex = 0;
+  ): ReturnType<T> {
+    this.state.funcIndex = 0;
+    this.state.master = master;
 
-      // Optionally call pre processor
-      if (processors?.pre) processors.pre(this.state, args);
+    // Optionally call pre processor
+    const convertedArgs = options?.argsConverter
+      ? options.argsConverter(options.args!)
+      : options?.args!;
+    if (options?.pre) options.pre(this.state, convertedArgs);
 
-      // Call the original function
-      const result = fn(...args);
+    // Call the original function
+    const result = fn(...(options?.args || []));
 
-      // Run all queued postOps after the function executes
-      this.runPostOps();
+    // Run all queued postOps after the function executes
 
-      // Optionally call post processor for top-level function
-      if (processors?.post) processors.post(this.state, args, result);
+    // Optionally call post processor for top-level function
+    if (options?.post) options.post(this.state, convertedArgs, result);
 
-      return result;
-    };
+    this.runPostOps();
 
-    return wrappedFn;
+    return result;
   }
 }
 

@@ -1,19 +1,23 @@
 import { expect } from "vitest";
-import AssertionMaster from "../../../../src";
-import { master } from "./master";
-import { AssertionChain, State } from "../../../../src/index.types";
-import { a, b, c, d, e, wrap } from "./logic";
+import AssertionMaster from "../../../src";
+import { master } from "./1/master";
+import {
+  AssertionChain,
+  State as GoldSightState,
+} from "../../../src/index.types";
+import { a, b, c, d, e, wrap } from "./1/logic";
+import { Master } from "./index.types";
 
-type Math1State = State & {
+type Math1State = GoldSightState & {
   absIndex: number;
   addAbsIndex: number;
   multAbsIndex: number;
   subAbsIndex: number;
   divAbsIndex: number;
-  master: typeof master;
+  master?: Master;
 };
 
-let state = newState();
+let state: Math1State = newState();
 function newState() {
   return {
     funcIndex: 0,
@@ -22,7 +26,6 @@ function newState() {
     multAbsIndex: 0,
     subAbsIndex: 0,
     divAbsIndex: 0,
-    master,
   };
 }
 
@@ -39,7 +42,6 @@ const bDefaultAssertions = {
 };
 const cDefaultAssertions = {
   c: (state, result) => {
-    console.log(state.absIndex, state.subAbsIndex);
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.subResults[state.subAbsIndex]);
   },
@@ -65,12 +67,12 @@ const assertionChains = {
   e: eDefaultAssertions,
 };
 
-class Math1Assertions extends AssertionMaster<Math1State> {
+class Math1Assertions extends AssertionMaster<Math1State, Master> {
   constructor() {
     super(state, assertionChains, "math1");
   }
 
-  a = this.wrapTopFn(a, {
+  a = this.wrapFn(a, "a", {
     pre: () => {
       state = newState();
     },

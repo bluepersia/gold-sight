@@ -30,7 +30,7 @@ Initialize the master state:
 
 ```ts
 type State = GoldSightState & {
-  master: Master;
+  master?: Master;
   sheetIndex: number;
   absRulesIndex: number;
   absRuleIndex: number;
@@ -40,7 +40,6 @@ type State = GoldSightState & {
 
 function newState(): State {
   return {
-    master,
     sheetIndex: 0,
     absRulesIndex: 0,
     absRuleIndex: 0,
@@ -60,124 +59,111 @@ Here is an example following the previous:
 
 ```ts
 const cloneDocumentAssertions: AssertionChain<State, DocumentClone, Document> =
-{
-"should clone the document": (state, result) => {
-toBeEqualDefined(result, state.master.docClone, makeVitestMsg(state));
-},
-};
+  {
+    "should clone the document": (state, result) => {
+      toBeEqualDefined(result, state.master!.docClone, makeVitestMsg(state));
+    },
+  };
 
 const cloneStyleSheetsAssertions: AssertionChain<
-State,
-StyleSheetClone[],
-StyleSheetList
-
+  State,
+  StyleSheetClone[],
+  StyleSheetList
 > = {
-> "should clone the stylesheets": (state, result) => {
-
+  "should clone the stylesheets": (state, result) => {
     toBeEqualDefined(
       result,
-      state.master.docClone.styleSheets,
+      state.master!.docClone.styleSheets,
       makeVitestMsg(state)
     );
-
-},
+  },
 };
 
 const cloneStyleSheetAssertions: AssertionChain<
-State,
-StyleSheetClone,
-CSSStyleSheet
-
+  State,
+  StyleSheetClone,
+  CSSStyleSheet
 > = {
-> "should clone the stylesheet": (state, result) => {
-
+  "should clone the stylesheet": (state, result) => {
     toBeEqualDefined(
       result,
-      state.master.docClone.styleSheets[state.sheetIndex],
+      state.master!.docClone.styleSheets[state.sheetIndex],
       makeVitestMsg(state, {
         sheetIndex: state.sheetIndex,
       })
     );
-
-},
+  },
 };
 
 const cloneRulesAssertions: AssertionChain<State, RuleClone[], CSSRuleList> = {
-"should clone the rules": (state, result) => {
-toBeEqualDefined(
-result,
-getRulesByAbsIndex(state.master.docClone, state.absRulesIndex),
-makeVitestMsg(state, {
-absRulesIndex: state.absRulesIndex,
-})
-);
-},
+  "should clone the rules": (state, result) => {
+    toBeEqualDefined(
+      result,
+      getRulesByAbsIndex(state.master!.docClone, state.absRulesIndex),
+      makeVitestMsg(state, {
+        absRulesIndex: state.absRulesIndex,
+      })
+    );
+  },
 };
 
 const cloneRuleAssertions: AssertionChain<State, RuleClone | null, CSSRule> = {
-"should clone the rule": (state, result, args) => {
-if (result === null) return;
-
-    toBeEqualDefined(
-      result,
-      getRuleByAbsIndex(state.master.docClone, state.absRuleIndex),
-      makeVitestMsg(state, {
-        absStyleRuleIndex: state.absRuleIndex,
-      })
-    );
-
-},
-};
-
-const cloneStyleRuleAssertions: AssertionChain<
-State,
-StyleRuleClone | null,
-CSSStyleRule
-
-> = {
-> "should clone the style rule": (state, result) => {
-
+  "should clone the rule": (state, result, args) => {
     if (result === null) return;
 
     toBeEqualDefined(
       result,
-      getStyleRuleByAbsIndex(state.master.docClone, state.absStyleRuleIndex),
+      getRuleByAbsIndex(state.master!.docClone, state.absRuleIndex),
+      makeVitestMsg(state, {
+        absStyleRuleIndex: state.absRuleIndex,
+      })
+    );
+  },
+};
+
+const cloneStyleRuleAssertions: AssertionChain<
+  State,
+  StyleRuleClone | null,
+  CSSStyleRule
+> = {
+  "should clone the style rule": (state, result) => {
+    if (result === null) return;
+
+    toBeEqualDefined(
+      result,
+      getStyleRuleByAbsIndex(state.master!.docClone, state.absStyleRuleIndex),
       makeVitestMsg(state, {
         sheetIndex: state.sheetIndex,
         absStyleRuleIndex: state.absStyleRuleIndex,
       })
     );
-
-},
+  },
 };
 
 const cloneMediaRuleAssertions: AssertionChain<
-State,
-MediaRuleClone | null,
-CSSMediaRule
-
+  State,
+  MediaRuleClone | null,
+  CSSMediaRule
 > = {
-> "should clone the media rule": (state, result) => {
-
+  "should clone the media rule": (state, result) => {
     if (result === null) return;
     console.log(state.absMediaRuleIndex);
     console.log(result);
     toBeEqualDefined(
       result,
-      getMediaRuleByAbsIndex(state.master.docClone, state.absMediaRuleIndex)
+      getMediaRuleByAbsIndex(state.master!.docClone, state.absMediaRuleIndex)
     );
-
-},
+  },
 };
 
 const defaultAssertions = {
-cloneDocument: cloneDocumentAssertions,
-cloneStyleSheets: cloneStyleSheetsAssertions,
-cloneStyleSheet: cloneStyleSheetAssertions,
-cloneRules: cloneRulesAssertions,
-cloneRule: cloneRuleAssertions,
-cloneStyleRule: cloneStyleRuleAssertions,
-cloneMediaRule: cloneMediaRuleAssertions,
+  cloneDocument: cloneDocumentAssertions,
+  cloneStyleSheets: cloneStyleSheetsAssertions,
+  cloneStyleSheet: cloneStyleSheetAssertions,
+  cloneRules: cloneRulesAssertions,
+  cloneRule: cloneRuleAssertions,
+  cloneStyleRule: cloneStyleRuleAssertions,
+  cloneMediaRule: cloneMediaRuleAssertions,
 };
 ```
 
@@ -190,12 +176,12 @@ Important essential details to consider:
 Finally for this phase - extend the assertion class and define your own:
 
 ```ts
-class EauDeParfumMasterAssertions extends AssertionMaster<State> {
+class WebsiteProject extends AssertionMaster<State> {
   constructor(state: State) {
     super(state, defaultAssertions, "cloneDocument");
   }
 
-  cloneDocument = this.wrapTopFn(cloneDocument, {
+  cloneDocument = this.wrapFn(cloneDocument, "cloneDocument", {
     pre: () => {
       state = newState();
     },
@@ -238,12 +224,12 @@ const masterAssertions = new EauDeParfumMasterAssertions(state);
 export default masterAssertions;
 ```
 
-`wrapTopFn` will set some important state (funcIndex to zero), and run all the post processors in the same sequences as function call sequence (not function execution sequence!).
-Use `wrapTopFn` for your main top-level function.
+`wrapFn` wraps a function in a helper function that registers assertion data.
 
-All the subfunctions use `wrapFn`.
+Lastly, you need to set up `wrapAll`, which actually wraps all the functions to run assertions on each.
+You can define `wrapAll` on the extension class.
 
-What is `wrap`? `wrap` must be defined in your production code. It is not ideal, but rather minimal of an issue. I recommend defining this at the bottom, like so:
+`wrap` must be defined in your production code. It wraps all of the original functions:
 
 ```ts
 /* -- TEST WRAPPING -- */
@@ -267,29 +253,14 @@ function wrap(
 }
 ```
 
-Lastly, you need to set up `wrapAll`, which actually wraps all the functions to run assertions on each.
-You can define `wrapAll` on the extension class.
-
-```ts
-  wrapAll() {
-    wrap(
-      this.cloneDocument,
-      this.cloneStyleSheets,
-      this.cloneStyleSheet,
-      this.cloneRules,
-      this.cloneRule,
-      this.cloneStyleRule,
-      this.cloneMediaRule
-    );
-  }
-```
+You can still export the originals if you need them.
 
 We have set up the assertions.
 
 Finally, to step 3 - running the assertions.
 For general cases, all you need to do is:
 
-1. Set up a start script that runs before the test suite. This script should call the `wrapAll` for this master project.
+1. Set up a start script that runs before the test suite. This script should call the `wrapAll` for this function chain.
 2. Call `assertQueue` on the extended class object. This runs the assertions, of course.
 
 For more advanced environments like `Playwright`, you can do something like this:
@@ -301,13 +272,19 @@ describe("cloneDocument", () => {
     async ({ master, index }) => {
       const queue: [number, AssertionBlueprint][] = await playwrightPages[
         index
-      ].page.evaluate(async () => {
-        (window as any).cloneDocument(document);
+      ].page.evaluate(
+        async ({ master, index }) => {
+          const masterAssertions = window.FluidScale.masterAssertions[index];
+          masterAssertions.callTopFn(masterAssertions.cloneDocument, master, {
+            args: [document],
+          });
 
-        const queue = (window as any).getQueue("cloneDocument");
+          const queue = (window as any).getQueue("cloneDocument");
 
-        return Array.from(queue.entries());
-      });
+          return Array.from(queue.entries());
+        },
+        { master, index }
+      );
 
       assertionCollection[index].setQueueFromArray(queue);
       assertionCollection[index].assertQueue();

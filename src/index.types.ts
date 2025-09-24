@@ -27,7 +27,7 @@ type AssertionQueues = {
 
 type State = {
   funcIndex: number;
-  master: unknown;
+  master?: unknown;
 };
 
 export declare function getQueue(globalKey: string): any;

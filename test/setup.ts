@@ -1,3 +1,3 @@
-import { wrapAll as wrapAllMath1 } from "./golden-master/math/1/assertions";
+import { wrapAll as wrapAllMath1 } from "./golden-master/math/assertions";
 
 wrapAllMath1();
