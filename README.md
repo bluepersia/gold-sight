@@ -52,6 +52,7 @@ let state: State = newState();
 `
 
 As you can see, you need a master object for each project.
+I also recommend absolute indexes and creating helper functions that return content based on absolute indexes. This is far easier to reason about than mixing sheetIndex + ruleIndex etc., and it works recursively/nested.
 Ideally this master object should contain an index. For each test run, you can refer to things by this index.
 
 Next, define the assertions.
