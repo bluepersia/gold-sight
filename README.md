@@ -176,7 +176,7 @@ Important essential details to consider:
 Finally for this phase - extend the assertion class and define your own:
 
 ```ts
-class WebsiteProject extends AssertionMaster<State> {
+class WebsiteCloneAssertions extends AssertionMaster<State> {
   constructor(state: State) {
     super(state, defaultAssertions, "cloneDocument");
   }
@@ -219,7 +219,7 @@ class WebsiteProject extends AssertionMaster<State> {
   }
 }
 
-const masterAssertions = new EauDeParfumMasterAssertions(state);
+const masterAssertions = new WebsiteCloneAssertions(state);
 
 export default masterAssertions;
 ```
