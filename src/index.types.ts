@@ -25,6 +25,11 @@ type AssertionQueues = {
   };
 };
 
+type State = {
+  funcIndex: number;
+  master: unknown;
+};
+
 export declare function getQueue(globalKey: string): any;
 
 declare const AssertionMaster: any;
@@ -36,4 +41,5 @@ export type {
   AssertionStrong,
   AssertionBlueprint,
   AssertionQueues,
+  State,
 };

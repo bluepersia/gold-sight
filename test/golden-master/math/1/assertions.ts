@@ -1,11 +1,10 @@
 import { expect } from "vitest";
 import AssertionMaster from "../../../../src";
 import { master } from "./master";
-import { AssertionChain } from "../../../../src/index.types";
+import { AssertionChain, State } from "../../../../src/index.types";
 import { a, b, c, d, e, wrap } from "./logic";
 
-type State = {
-  funcIndex: number;
+type Math1State = State & {
   absIndex: number;
   addAbsIndex: number;
   multAbsIndex: number;
@@ -66,7 +65,7 @@ const assertionChains = {
   e: eDefaultAssertions,
 };
 
-class Math1Assertions extends AssertionMaster<State> {
+class Math1Assertions extends AssertionMaster<Math1State> {
   constructor() {
     super(state, assertionChains, "math1");
   }
