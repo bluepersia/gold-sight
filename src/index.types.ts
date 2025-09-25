@@ -1,11 +1,16 @@
-type AssertionChain<TState, TResult, TArgs> = {
-  [key: string]: AssertionStrong<TState, TResult, TArgs>;
+type StateBase = {
+  funcIndex: number;
+  master?: any;
+};
+
+type AssertionChain<TState, TArgs, TResult> = {
+  [key: string]: AssertionStrong<TState, TArgs, TResult>;
 };
 
 type AssertionStrong<TState, TResult, TArgs> = (
   state: TState,
-  result: TResult,
-  args: TArgs
+  args: TArgs,
+  result: TResult
 ) => void;
 
 type AssertionWeak = AssertionStrong<any, any, any>;
@@ -25,14 +30,71 @@ type AssertionQueues = {
   };
 };
 
-type State = {
-  funcIndex: number;
-  master?: unknown;
-};
-
 export declare function getQueue(globalKey: string): any;
 
-declare const AssertionMaster: any;
+declare abstract class AssertionMaster<TState, TMaster> {
+  protected _state: (TState & StateBase) | undefined;
+  private assertionChains: {
+    [funcKey: string]: AssertionChain<TState, any, any>;
+  };
+
+  private _globalKey: string;
+  private _master?: TMaster;
+
+  constructor(
+    assertionChains: {
+      [funcKey: string]: AssertionChain<TState, any, any>;
+    },
+    globalKey: string
+  );
+
+  get globalKey(): string;
+
+  set master(master: TMaster);
+  get master(): TMaster | undefined;
+
+  get state(): (TState & StateBase) | undefined;
+
+  abstract newState(): TState;
+  resetState(): void;
+  assertQueue(masterIndex: number | undefined): void;
+
+  wrapFn<T extends (...args: any[]) => any>(
+    fn: T,
+    name: string,
+    processors?: {
+      argsConverter?: (args: Parameters<T>) => any;
+      pre?: (state: TState, args: Parameters<T>) => void;
+      post?: (
+        state: TState,
+        args: Parameters<T>,
+        result: ReturnType<T>
+      ) => void;
+    }
+  ): T;
+
+  wrapAll(): void;
+  reset(): void;
+  setQueue(queue: Map<number, AssertionBlueprint>): void;
+  setQueueFromArray(queue: [number, AssertionBlueprint][]): void;
+  runPostOps(): void;
+
+  wrapTopFn<T extends (...args: any[]) => any>(
+    fn: T,
+    name: string,
+    options?: {
+      argsConverter?: (args: Parameters<T>) => any;
+      pre?: (state: TState, args: Parameters<T>) => void;
+      post?: (
+        state: TState,
+        args: Parameters<T>,
+        result: ReturnType<T>
+      ) => void;
+      args?: Parameters<T>;
+    }
+  ): (...args: Parameters<T>) => ReturnType<T>;
+}
+
 export default AssertionMaster;
 
 export type {
@@ -41,5 +103,5 @@ export type {
   AssertionStrong,
   AssertionBlueprint,
   AssertionQueues,
-  State,
+  StateBase,
 };

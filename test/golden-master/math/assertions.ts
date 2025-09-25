@@ -1,14 +1,11 @@
 import { expect } from "vitest";
 import AssertionMaster from "../../../src";
 import { master } from "./1/master";
-import {
-  AssertionChain,
-  State as GoldSightState,
-} from "../../../src/index.types";
+import { AssertionChain } from "../../../src/index.types";
 import { a, b, c, d, e, wrap } from "./1/logic";
 import { Master } from "./index.types";
 
-type Math1State = GoldSightState & {
+type Math1State = {
   absIndex: number;
   addAbsIndex: number;
   multAbsIndex: number;
@@ -17,43 +14,31 @@ type Math1State = GoldSightState & {
   master?: Master;
 };
 
-let state: Math1State = newState();
-function newState() {
-  return {
-    funcIndex: 0,
-    absIndex: 0,
-    addAbsIndex: 0,
-    multAbsIndex: 0,
-    subAbsIndex: 0,
-    divAbsIndex: 0,
-  };
-}
-
 const aDefaultAssertions = {
-  a: (state, result) => {
+  a: (state, args, result) => {
     expect(result).toEqual(master.finalResults);
   },
 };
 const bDefaultAssertions = {
-  b: (state, result) => {
+  b: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
   },
 };
 const cDefaultAssertions = {
-  c: (state, result) => {
+  c: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.subResults[state.subAbsIndex]);
   },
 };
 const dDefaultAssertions = {
-  d: (state, result) => {
+  d: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
   },
 };
 const eDefaultAssertions = {
-  e: (state, result) => {
+  e: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.multResults[state.multAbsIndex]);
   },
@@ -67,16 +52,24 @@ const assertionChains = {
   e: eDefaultAssertions,
 };
 
+master.assertionChains = assertionChains;
+
 class Math1Assertions extends AssertionMaster<Math1State, Master> {
   constructor() {
-    super(state, assertionChains, "math1");
+    super(assertionChains, "math1");
   }
 
-  a = this.wrapFn(a, "a", {
-    pre: () => {
-      state = newState();
-    },
-  });
+  newState(): Math1State {
+    return {
+      absIndex: 0,
+      addAbsIndex: 0,
+      multAbsIndex: 0,
+      subAbsIndex: 0,
+      divAbsIndex: 0,
+    };
+  }
+
+  a = this.wrapTopFn(a, "a");
 
   b = this.wrapFn(b, "b", {
     post: (state) => {
@@ -109,6 +102,9 @@ class Math1Assertions extends AssertionMaster<Math1State, Master> {
 
 const assertionMaster = new Math1Assertions();
 
+master.subfunc = assertionMaster.b;
+master.assertionMaster = assertionMaster;
+
 function wrapAll() {
   wrap(
     assertionMaster.a,
@@ -119,4 +115,4 @@ function wrapAll() {
   );
 }
 
-export { assertionMaster, wrapAll };
+export { assertionMaster, wrapAll, assertionChains };

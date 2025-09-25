@@ -2,31 +2,28 @@ import {
   AssertionBlueprint,
   AssertionChain,
   AssertionQueues,
+  StateBase,
 } from "./index.types";
 
 const assertionQueues: AssertionQueues = {};
 
-class AssertionMaster<
-  TState extends { funcIndex: number; master?: { index: number } },
-  TMaster extends { index: number }
-> {
-  protected state: TState;
+abstract class AssertionMaster<TState, TMaster> {
+  protected _state: (TState & StateBase) | undefined;
   private assertionChains: {
     [funcKey: string]: AssertionChain<TState, any, any>;
   };
 
-  protected globalKey: string;
+  private _globalKey: string;
+  private _master?: TMaster;
 
   constructor(
-    state: TState,
     assertionChains: {
       [funcKey: string]: AssertionChain<TState, any, any>;
     },
     globalKey: string
   ) {
-    this.state = state;
     this.assertionChains = assertionChains;
-    this.globalKey = globalKey;
+    this._globalKey = globalKey;
 
     assertionQueues[globalKey] = {
       assertionQueue: new Map(),
@@ -34,13 +31,35 @@ class AssertionMaster<
     };
   }
 
-  assertQueue() {
+  get globalKey() {
+    return this._globalKey;
+  }
+
+  public set master(master: TMaster) {
+    this._master = master;
+  }
+
+  public get master(): TMaster | undefined {
+    return this._master;
+  }
+
+  get state() {
+    return this._state;
+  }
+
+  abstract newState(): TState;
+
+  resetState = () => {
+    this._state = { ...this.newState(), funcIndex: 0, master: this.master };
+  };
+
+  assertQueue = (masterIndex: number | undefined) => {
     const { assertionQueue, verifiedAssertions } =
       assertionQueues[this.globalKey];
 
     verifiedAssertions.clear();
     console.groupCollapsed(
-      `✅ ${this.globalKey} - ✨${this.state.master!.index}`
+      `✅ ${this.globalKey} - ✨${masterIndex ?? this.state!.master!.index}`
     );
     const queueIndexes = Array.from(assertionQueue.keys()).sort(
       (a, b) => a - b
@@ -49,7 +68,7 @@ class AssertionMaster<
       const { name, result, args, state } = assertionQueue.get(queueIndex)!;
       const assertions = this.assertionChains[name];
       for (const [key, assertion] of Object.entries(assertions)) {
-        (assertion as any)(state, result, args);
+        (assertion as any)(state, args, result);
 
         let count = verifiedAssertions.get(key) || 0;
         count++;
@@ -62,7 +81,7 @@ class AssertionMaster<
     console.groupEnd();
 
     this.reset();
-  }
+  };
 
   wrapFn<T extends (...args: any[]) => any>(
     fn: T,
@@ -81,8 +100,9 @@ class AssertionMaster<
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
         : args;
-      if (processors?.pre) processors.pre(this.state, convertedArgs);
-      const funcIndex = this.state.funcIndex++;
+      if (processors?.pre) processors.pre(this.state!, convertedArgs);
+      const funcIndex = this.state!.funcIndex;
+      this.state!.funcIndex++;
 
       const result = fn(...args);
 
@@ -140,9 +160,9 @@ class AssertionMaster<
     }
   }
 
-  callTopFn<T extends (...args: any[]) => any>(
+  wrapTopFn<T extends (...args: any[]) => any>(
     fn: T,
-    master: TMaster,
+    name: string,
     options?: {
       argsConverter?: (args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
@@ -153,27 +173,20 @@ class AssertionMaster<
       ) => void;
       args?: Parameters<T>;
     }
-  ): ReturnType<T> {
-    this.state.funcIndex = 0;
-    this.state.master = master;
+  ): (...args: Parameters<T>) => ReturnType<T> {
+    return (...args: Parameters<T>): ReturnType<T> => {
+      this.resetState();
+      this.setQueue(new Map());
 
-    // Optionally call pre processor
-    const convertedArgs = options?.argsConverter
-      ? options.argsConverter(options.args!)
-      : options?.args!;
-    if (options?.pre) options.pre(this.state, convertedArgs);
+      const wrappedFn = this.wrapFn(fn, name, options);
+      const result = wrappedFn(...args);
 
-    // Call the original function
-    const result = fn(...(options?.args || []));
+      this.state!.master = this.master;
 
-    // Run all queued postOps after the function executes
+      this.runPostOps();
 
-    // Optionally call post processor for top-level function
-    if (options?.post) options.post(this.state, convertedArgs, result);
-
-    this.runPostOps();
-
-    return result;
+      return result;
+    };
   }
 }
 

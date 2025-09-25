@@ -147,8 +147,6 @@ const cloneMediaRuleAssertions: AssertionChain<
 > = {
   "should clone the media rule": (state, result) => {
     if (result === null) return;
-    console.log(state.absMediaRuleIndex);
-    console.log(result);
     toBeEqualDefined(
       result,
       getMediaRuleByAbsIndex(state.master!.docClone, state.absMediaRuleIndex)
