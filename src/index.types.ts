@@ -57,7 +57,10 @@ declare abstract class AssertionMaster<TState, TMaster> {
 
   abstract newState(): TState;
   resetState(): void;
-  assertQueue(masterIndex: number | undefined): void;
+  assertQueue(options?: {
+    sorting?: "asc" | "desc";
+    masterIndex?: number;
+  }): void;
 
   wrapFn<T extends (...args: any[]) => any>(
     fn: T,

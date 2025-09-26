@@ -53,23 +53,28 @@ abstract class AssertionMaster<TState, TMaster> {
     this._state = { ...this.newState(), funcIndex: 0, master: this.master };
   };
 
-  assertQueue = (masterIndex: number | undefined) => {
+  assertQueue = (options?: {
+    sorting?: "asc" | "desc";
+    masterIndex?: number;
+  }) => {
     const { assertionQueue, verifiedAssertions } =
       assertionQueues[this.globalKey];
 
     verifiedAssertions.clear();
     console.groupCollapsed(
-      `✅ ${this.globalKey} - ✨${masterIndex ?? this.state!.master!.index}`
+      `✅ ${this.globalKey} - ✨${
+        options?.masterIndex ?? this.state!.master!.index
+      }`
     );
-    const queueIndexes = Array.from(assertionQueue.keys()).sort(
-      (a, b) => a - b
+    const queueIndexes = Array.from(assertionQueue.keys()).sort((a, b) =>
+      options?.sorting === "desc" ? a - b : b - a
     );
+
     for (const queueIndex of queueIndexes) {
       const { name, result, args, state } = assertionQueue.get(queueIndex)!;
       const assertions = this.assertionChains[name];
       for (const [key, assertion] of Object.entries(assertions)) {
         (assertion as any)(state, args, result);
-
         let count = verifiedAssertions.get(key) || 0;
         count++;
         verifiedAssertions.set(key, count);
@@ -116,8 +121,6 @@ abstract class AssertionMaster<TState, TMaster> {
 
       if (processors?.post) {
         assertionData.postOp = (state, args, result) => {
-          const newState = { ...state };
-          assertionData.state = newState;
           processors!.post!(state, args as Parameters<T>, result);
         };
       }
@@ -151,11 +154,15 @@ abstract class AssertionMaster<TState, TMaster> {
 
   runPostOps() {
     const { assertionQueue } = assertionQueues[this.globalKey];
+
     const queueIndexes = Array.from(assertionQueue.keys()).sort(
       (a, b) => a - b
     );
     for (const queueIndex of queueIndexes) {
       const value = assertionQueue.get(queueIndex)!;
+
+      value.state = { ...value.state };
+
       if (value.postOp) value.postOp(this.state, value.args, value.result);
     }
   }
