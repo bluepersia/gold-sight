@@ -19,6 +19,11 @@ let c = (results: number[]) => {
   return newResults;
 };
 
+let c2 = (results: number[]) => {
+  let newResults = d(results);
+  return newResults;
+};
+
 let d = (results: number[]) => {
   let newResults = [...results, math.add(results[1], 4)]; //4
   newResults = e(newResults);
@@ -34,14 +39,16 @@ function wrap(
   aWrapped: () => number[],
   bWrapped: (results: number[]) => number[],
   cWrapped: (results: number[]) => number[],
+  c2Wrapped: (results: number[]) => number[],
   dWrapped: (results: number[]) => number[],
   eWrapped: (results: number[]) => number[]
 ) {
   a = aWrapped;
   b = bWrapped;
   c = cWrapped;
+  c2 = c2Wrapped;
   d = dWrapped;
   e = eWrapped;
 }
 
-export { a, b, c, d, e, wrap };
+export { a, b, c, d, e, wrap, c2 };

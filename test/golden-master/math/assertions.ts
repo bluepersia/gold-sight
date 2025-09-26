@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import AssertionMaster from "../../../src";
 import { master } from "./1/master";
 import { AssertionChain } from "../../../src/index.types";
-import { a, b, c, d, e, wrap } from "./1/logic";
+import { a, b, c, d, e, wrap, c2 } from "./1/logic";
 import { Master } from "./index.types";
 
 type Math1State = {
@@ -29,6 +29,12 @@ const cDefaultAssertions = {
   c: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.subResults[state.subAbsIndex]);
+  },
+};
+
+const c2DefaultAssertions = {
+  c2: (state, args, result) => {
+    expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
   },
 };
 const dDefaultAssertions = {
@@ -85,6 +91,8 @@ class Math1Assertions extends AssertionMaster<Math1State, Master> {
     },
   });
 
+  c2 = this.wrapFn(c2, "c2");
+
   d = this.wrapFn(d, "d", {
     post: (state) => {
       state.absIndex++;
@@ -110,6 +118,7 @@ function wrapAll() {
     assertionMaster.a,
     assertionMaster.b,
     assertionMaster.c,
+    assertionMaster.c2,
     assertionMaster.d,
     assertionMaster.e
   );
