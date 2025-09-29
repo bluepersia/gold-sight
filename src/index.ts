@@ -70,11 +70,17 @@ abstract class AssertionMaster<TState, TMaster> {
       options?.sorting === "desc" ? a - b : b - a
     );
 
+    let error;
     for (const queueIndex of queueIndexes) {
       const { name, result, args, state } = assertionQueue.get(queueIndex)!;
       const assertions = this.assertionChains[name];
       for (const [key, assertion] of Object.entries(assertions)) {
-        (assertion as any)(state, args, result);
+        try {
+          (assertion as any)(state, args, result);
+        } catch (e) {
+          error = e;
+          break;
+        }
         let count = verifiedAssertions.get(key) || 0;
         count++;
         verifiedAssertions.set(key, count);
@@ -86,6 +92,7 @@ abstract class AssertionMaster<TState, TMaster> {
     console.groupEnd();
 
     this.reset();
+    if (error) throw error;
   };
 
   wrapFn<T extends (...args: any[]) => any>(

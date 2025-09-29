@@ -7,7 +7,7 @@ type AssertionChain<TState, TArgs, TResult> = {
   [key: string]: AssertionStrong<TState, TArgs, TResult>;
 };
 
-type AssertionStrong<TState, TResult, TArgs> = (
+type AssertionStrong<TState, TArgs, TResult> = (
   state: TState,
   args: TArgs,
   result: TResult
