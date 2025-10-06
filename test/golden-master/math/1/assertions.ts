@@ -1,9 +1,9 @@
 import { expect } from "vitest";
-import AssertionMaster from "../../../src";
-import { master } from "./1/master";
-import { AssertionChain } from "../../../src/index.types";
-import { a, b, c, d, e, wrap, c2 } from "./1/logic";
-import { Master } from "./index.types";
+import AssertionMaster from "../../../../src";
+import { master } from "./master";
+import { AssertionChain } from "../../../../src/index.types";
+import { a, b, c, d, e, wrap, c2 } from "./logic";
+import { Master } from "../index.types";
 
 type Math1State = {
   absIndex: number;
@@ -14,36 +14,36 @@ type Math1State = {
   master?: Master;
 };
 
-const aDefaultAssertions = {
+const aDefaultAssertions: AssertionChain<Math1State, [], number[]> = {
   a: (state, args, result) => {
     expect(result).toEqual(master.finalResults);
   },
 };
-const bDefaultAssertions = {
+const bDefaultAssertions: AssertionChain<Math1State, number[], number[]> = {
   b: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
   },
 };
-const cDefaultAssertions = {
+const cDefaultAssertions: AssertionChain<Math1State, number[], number[]> = {
   c: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.subResults[state.subAbsIndex]);
   },
 };
 
-const c2DefaultAssertions = {
+const c2DefaultAssertions: AssertionChain<Math1State, number[], number[]> = {
   c2: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
   },
 };
-const dDefaultAssertions = {
+const dDefaultAssertions: AssertionChain<Math1State, number[], number[]> = {
   d: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
   },
 };
-const eDefaultAssertions = {
+const eDefaultAssertions: AssertionChain<Math1State, number[], number[]> = {
   e: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.multResults[state.multAbsIndex]);

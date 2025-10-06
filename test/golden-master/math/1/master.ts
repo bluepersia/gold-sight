@@ -1,5 +1,5 @@
 import { Master } from "../index.types";
-import { assertionChains } from "../assertions";
+import { assertionChains } from "./assertions";
 
 const master: Master = {
   finalResults: [3, 0, 4, 12],
