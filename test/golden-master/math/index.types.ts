@@ -11,6 +11,7 @@ type Master = {
     [funcKey: string]: AssertionChain<any, any, any>;
   };
   index: number;
+  topFunc: Function;
   subfunc: Function;
   assertionMaster?: any;
 };

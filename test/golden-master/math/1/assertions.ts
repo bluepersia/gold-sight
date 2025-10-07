@@ -3,6 +3,7 @@ import AssertionMaster from "../../../../src";
 import { master } from "./master";
 import { AssertionChain } from "../../../../src/index.types";
 import { a, b, c, d, e, wrap, c2 } from "./logic";
+import * as logic from "./logic";
 import { Master } from "../index.types";
 
 type Math1State = {
@@ -110,7 +111,6 @@ class Math1Assertions extends AssertionMaster<Math1State, Master> {
 
 const assertionMaster = new Math1Assertions();
 
-master.subfunc = assertionMaster.b;
 master.assertionMaster = assertionMaster;
 
 function wrapAll() {
@@ -122,6 +122,8 @@ function wrapAll() {
     assertionMaster.d,
     assertionMaster.e
   );
+  master.topFunc = logic.a;
+  master.subfunc = logic.b;
 }
 
 export { assertionMaster, wrapAll, assertionChains };

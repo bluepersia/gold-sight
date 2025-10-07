@@ -10,6 +10,7 @@ const master: Master = {
   index: 0,
   finalQueue: new Map(),
   subfunc: () => {},
+  topFunc: () => {},
   assertionMaster: null,
 };
 

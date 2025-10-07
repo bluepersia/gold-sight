@@ -111,14 +111,14 @@ describe("wrapped function call", () => {
 
 describe("top level function", () => {
   test.each(masterCollection)("run and generate assertions", (master) => {
-    const { assertionMaster } = master;
+    const { assertionMaster, topFunc } = master;
 
     assertionMaster.master = master;
 
     vi.spyOn(assertionMaster, "runPostOps");
     vi.spyOn(assertionMaster, "resetState");
 
-    a();
+    topFunc();
 
     expect(assertionMaster.runPostOps).toHaveBeenCalledTimes(1);
     expect(assertionMaster.resetState).toHaveBeenCalledTimes(1);
@@ -153,11 +153,11 @@ describe("top level function", () => {
   });
 
   test.each(masterCollection)("run assertions correctly", (master) => {
-    const { assertionMaster } = master;
+    const { assertionMaster, topFunc } = master;
 
     assertionMaster.master = master;
 
-    a();
+    topFunc();
 
     const queue = getQueue(assertionMaster.globalKey);
     const queueCopy = new Map(queue);
