@@ -16,4 +16,13 @@ type Master = {
   assertionMaster?: any;
 };
 
-export { Master };
+type MathState = {
+  absIndex: number;
+  addAbsIndex: number;
+  multAbsIndex: number;
+  subAbsIndex: number;
+  divAbsIndex: number;
+  master?: Master;
+};
+
+export { Master, MathState };
