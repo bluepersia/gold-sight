@@ -24,10 +24,7 @@ type AssertionBlueprint = {
 };
 
 type AssertionQueues = {
-  [key: string]: {
-    assertionQueue: Map<number, AssertionBlueprint>;
-    verifiedAssertions: Map<string, number>;
-  };
+  [key: string]: Map<number, AssertionBlueprint>;
 };
 
 export declare function getQueue(globalKey: string): any;

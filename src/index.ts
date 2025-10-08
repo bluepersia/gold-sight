@@ -25,10 +25,7 @@ abstract class AssertionMaster<TState, TMaster> {
     this.assertionChains = assertionChains;
     this._globalKey = globalKey;
 
-    assertionQueues[globalKey] = {
-      assertionQueue: new Map(),
-      verifiedAssertions: new Map(),
-    };
+    assertionQueues[globalKey] = new Map();
   }
 
   get globalKey() {
@@ -57,10 +54,10 @@ abstract class AssertionMaster<TState, TMaster> {
     sorting?: "asc" | "desc";
     masterIndex?: number;
   }) => {
-    const { assertionQueue, verifiedAssertions } =
-      assertionQueues[this.globalKey];
+    const assertionQueue = assertionQueues[this.globalKey];
 
-    verifiedAssertions.clear();
+    const verifiedAssertions = new Map<string, number>();
+
     console.groupCollapsed(
       `✅ ${this.globalKey} - ✨${
         options?.masterIndex ?? this.state!.master!.index
@@ -132,10 +129,7 @@ abstract class AssertionMaster<TState, TMaster> {
         };
       }
 
-      assertionQueues[this.globalKey].assertionQueue.set(
-        funcIndex,
-        assertionData
-      );
+      assertionQueues[this.globalKey].set(funcIndex, assertionData);
 
       return result;
     }) as T;
@@ -144,23 +138,21 @@ abstract class AssertionMaster<TState, TMaster> {
   wrapAll() {}
 
   reset() {
-    const { assertionQueue, verifiedAssertions } =
-      assertionQueues[this.globalKey];
+    const assertionQueue = assertionQueues[this.globalKey];
 
     assertionQueue.clear();
-    verifiedAssertions.clear();
   }
 
   setQueue(queue: Map<number, AssertionBlueprint>) {
-    assertionQueues[this.globalKey].assertionQueue = queue;
+    assertionQueues[this.globalKey] = queue;
   }
 
   setQueueFromArray(queue: [number, AssertionBlueprint][]) {
-    assertionQueues[this.globalKey].assertionQueue = new Map(queue);
+    assertionQueues[this.globalKey] = new Map(queue);
   }
 
   runPostOps() {
-    const { assertionQueue } = assertionQueues[this.globalKey];
+    const assertionQueue = assertionQueues[this.globalKey];
 
     const queueIndexes = Array.from(assertionQueue.keys()).sort(
       (a, b) => a - b
@@ -208,7 +200,7 @@ function getQueue(globalKey: string) {
   if (!assertionQueues[globalKey])
     throw Error(`Assertion queue for ${globalKey} not found`);
 
-  return assertionQueues[globalKey].assertionQueue;
+  return assertionQueues[globalKey];
 }
 
 export { getQueue };
