@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import AssertionMaster from "../../../../src";
 import { master } from "./master";
 import { AssertionChain } from "../../../../src/index.types";
-import { a, b, c, d, e, wrap, c2 } from "./logic";
+import { a, b, c, d, e, f, wrap } from "./logic";
 import * as logic from "./logic";
 import { Master, MathState } from "../index.types";
 
@@ -24,11 +24,6 @@ const cDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   },
 };
 
-const c2DefaultAssertions: AssertionChain<MathState, number[], number[]> = {
-  c2: (state, args, result) => {
-    expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
-  },
-};
 const dDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   d: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
@@ -41,20 +36,32 @@ const eDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
     expect(result[state.absIndex]).toBe(master.multResults[state.multAbsIndex]);
   },
 };
-
+const fDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
+  f: (state, args, result) => {
+    expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
+    expect(
+      result[state.absIndex],
+      JSON.stringify({
+        absIndex: state.absIndex,
+        divAbsIndex: state.divAbsIndex,
+      })
+    ).toBe(master.divResults[state.divAbsIndex]);
+  },
+};
 const assertionChains = {
   a: aDefaultAssertions,
   b: bDefaultAssertions,
   c: cDefaultAssertions,
   d: dDefaultAssertions,
   e: eDefaultAssertions,
+  f: fDefaultAssertions,
 };
 
 master.assertionChains = assertionChains;
 
-class Math1Assertions extends AssertionMaster<MathState, Master> {
+class Math2Assertions extends AssertionMaster<MathState, Master> {
   constructor() {
-    super(assertionChains, "math1");
+    super(assertionChains, "math2");
   }
 
   newState(): MathState {
@@ -83,8 +90,6 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
     },
   });
 
-  c2 = this.wrapFn(c2, "c2");
-
   d = this.wrapFn(d, "d", {
     post: (state) => {
       state.absIndex++;
@@ -98,9 +103,16 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
       state.multAbsIndex++;
     },
   });
+
+  f = this.wrapFn(f, "f", {
+    post: (state) => {
+      state.absIndex++;
+      state.divAbsIndex++;
+    },
+  });
 }
 
-const assertionMaster = new Math1Assertions();
+const assertionMaster = new Math2Assertions();
 
 master.assertionMaster = assertionMaster;
 
@@ -109,9 +121,9 @@ function wrapAll() {
     assertionMaster.a,
     assertionMaster.b,
     assertionMaster.c,
-    assertionMaster.c2,
     assertionMaster.d,
-    assertionMaster.e
+    assertionMaster.e,
+    assertionMaster.f
   );
   master.topFunc = logic.a;
   master.subfunc = logic.b;

@@ -1,12 +1,12 @@
 import { Master } from "../index.types";
 
 const master: Master = {
-  finalResults: [3, 0, 4, 12],
-  addResults: [3, 4],
-  subResults: [0],
+  finalResults: [5, 2, 4, 12, 6],
+  addResults: [5, 4],
+  subResults: [2],
   multResults: [12],
-  divResults: [],
-  index: 0,
+  divResults: [6],
+  index: 1,
   finalQueue: new Map(),
   subfunc: () => {},
   topFunc: () => {},
@@ -15,7 +15,7 @@ const master: Master = {
 
 master.finalQueue.set(0, {
   name: "a",
-  result: [3, 0, 4, 12],
+  result: [5, 2, 4, 12, 6],
   args: [],
   state: {
     absIndex: 0,
@@ -29,7 +29,7 @@ master.finalQueue.set(0, {
 
 master.finalQueue.set(1, {
   name: "b",
-  result: [3, 0, 4, 12],
+  result: [5, 2, 4, 12, 6],
   args: [[]],
   state: {
     absIndex: 0,
@@ -43,8 +43,8 @@ master.finalQueue.set(1, {
 
 master.finalQueue.set(2, {
   name: "c",
-  result: [3, 0, 4, 12],
-  args: [[3]],
+  result: [5, 2, 4, 12, 6],
+  args: [[5]],
   state: {
     absIndex: 1,
     addAbsIndex: 1,
@@ -57,8 +57,8 @@ master.finalQueue.set(2, {
 
 master.finalQueue.set(3, {
   name: "d",
-  result: [3, 0, 4, 12],
-  args: [[3, 0]],
+  result: [5, 2, 4, 12],
+  args: [[5, 2]],
   state: {
     absIndex: 2,
     addAbsIndex: 1,
@@ -71,8 +71,8 @@ master.finalQueue.set(3, {
 
 master.finalQueue.set(4, {
   name: "e",
-  result: [3, 0, 4, 12],
-  args: [[3, 0, 4]],
+  result: [5, 2, 4, 12],
+  args: [[5, 2, 4]],
   state: {
     absIndex: 3,
     addAbsIndex: 2,
@@ -82,5 +82,17 @@ master.finalQueue.set(4, {
     master,
   },
 });
-
+master.finalQueue.set(5, {
+  name: "f",
+  result: [5, 2, 4, 12, 6],
+  args: [[5, 2, 4, 12]],
+  state: {
+    absIndex: 4,
+    addAbsIndex: 2,
+    multAbsIndex: 1,
+    subAbsIndex: 1,
+    divAbsIndex: 0,
+    master,
+  },
+});
 export { master };
