@@ -2,6 +2,7 @@ import {
   AssertionBlueprint,
   AssertionChain,
   AssertionQueues,
+  AssertOptions,
   StateBase,
 } from "./index.types";
 import { deepClone } from "./utils/deepClone";
@@ -57,20 +58,18 @@ abstract class AssertionMaster<TState, TMaster> {
     };
   };
 
-  assertQueue = (options?: {
-    sorting?: "asc" | "desc";
-    masterIndex?: number;
-    showAllErrors?: boolean;
-    targetName?: string;
-  }) => {
+  assertQueue = ({
+    errorAlgorithm = "firstOfDeepest",
+    masterIndex,
+    showAllErrors,
+    targetName,
+  }: AssertOptions = {}) => {
     const assertionQueue = assertionQueues[this.globalKey];
 
     const verifiedAssertions = new Map<string, number>();
 
     console.groupCollapsed(
-      `✅ ${this.globalKey} - ✨${
-        options?.masterIndex ?? this.state!.master!.index
-      }`
+      `✅ ${this.globalKey} - ✨${masterIndex ?? this.state!.master!.index}`
     );
     // Step 1: Group items by function name
     let groupedByName: { [name: string]: AssertionBlueprint[] } = {};
@@ -79,10 +78,10 @@ abstract class AssertionMaster<TState, TMaster> {
       groupedByName[item.name].push(item);
     }
 
-    if (options?.targetName) {
-      if (groupedByName.hasOwnProperty(options.targetName))
+    if (targetName) {
+      if (groupedByName.hasOwnProperty(targetName))
         groupedByName = {
-          [options.targetName]: groupedByName[options.targetName],
+          [targetName]: groupedByName[targetName],
         };
     }
 
@@ -96,9 +95,6 @@ abstract class AssertionMaster<TState, TMaster> {
 
     // Step 3: Sort names based on their highest funcIndex
     nameWithHighestIndex.sort((a, b) => {
-      if (options?.sorting === "desc") {
-        return a.highestIndex - b.highestIndex;
-      }
       return b.highestIndex - a.highestIndex;
     });
 
@@ -112,7 +108,9 @@ abstract class AssertionMaster<TState, TMaster> {
         if (a.funcIndex === b.funcIndex) {
           return a.branchCount - b.branchCount;
         }
-        return a.funcIndex - b.funcIndex;
+        if (errorAlgorithm === "firstOfDeepest")
+          return a.funcIndex - b.funcIndex;
+        else return b.funcIndex - a.funcIndex;
       });
 
       for (const { state, args, result } of items) {
@@ -122,7 +120,7 @@ abstract class AssertionMaster<TState, TMaster> {
           try {
             (assertion as any)(state, args, result);
           } catch (e) {
-            if (!options?.showAllErrors) {
+            if (!showAllErrors) {
               error = e;
               break outer;
             }

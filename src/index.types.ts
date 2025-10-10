@@ -31,6 +31,13 @@ type AssertionQueues = {
   [key: string]: Map<number, AssertionBlueprint>;
 };
 
+type AssertOptions = {
+  errorAlgorithm?: "firstOfDeepest" | "deepest";
+  masterIndex?: number;
+  showAllErrors?: boolean;
+  targetName?: string;
+};
+
 export declare function getQueue(globalKey: string): any;
 
 declare abstract class AssertionMaster<TState, TMaster> {
@@ -58,12 +65,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
 
   abstract newState(): TState;
   resetState(): void;
-  assertQueue(options?: {
-    sorting?: "asc" | "desc";
-    showAllErrors?: boolean;
-    masterIndex?: number;
-    targetName?: string;
-  }): void;
+  assertQueue(options: AssertOptions): void;
 
   wrapFn<T extends (...args: any[]) => any>(
     fn: T,
@@ -128,4 +130,5 @@ export type {
   StateBase,
   RunAssertionsParams,
   RunAssertionsOfNameParams,
+  AssertOptions,
 };
