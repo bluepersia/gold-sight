@@ -58,18 +58,23 @@ abstract class AssertionMaster<TState, TMaster> {
     };
   };
 
-  assertQueue = ({
-    errorAlgorithm = "firstOfDeepest",
-    masterIndex,
-    showAllErrors,
-    targetName,
-  }: AssertOptions = {}) => {
+  assertQueue = (options?: AssertOptions) => {
+    if (!options) options = {};
+    if (!options.errorAlgorithm) options.errorAlgorithm = "firstOfDeepest";
+
     const assertionQueue = assertionQueues[this.globalKey];
 
     const verifiedAssertions = new Map<string, number>();
 
+    if (!this.state?.master && options?.master === undefined)
+      console.error(`No master indexes set. Provide it via options.`);
+
     console.groupCollapsed(
-      `✅ ${this.globalKey} - ✨${masterIndex ?? this.state!.master!.index}`
+      `✅ ${this.globalKey} - ✨${
+        options?.master
+          ? printMaster(options.master)
+          : printMaster(this.state?.master)
+      }`
     );
     // Step 1: Group items by function name
     let groupedByName: { [name: string]: AssertionBlueprint[] } = {};
@@ -78,10 +83,10 @@ abstract class AssertionMaster<TState, TMaster> {
       groupedByName[item.name].push(item);
     }
 
-    if (targetName) {
-      if (groupedByName.hasOwnProperty(targetName))
+    if (options.targetName) {
+      if (groupedByName.hasOwnProperty(options.targetName))
         groupedByName = {
-          [targetName]: groupedByName[targetName],
+          [options.targetName]: groupedByName[options.targetName],
         };
     }
 
@@ -108,7 +113,7 @@ abstract class AssertionMaster<TState, TMaster> {
         if (a.funcIndex === b.funcIndex) {
           return a.branchCount - b.branchCount;
         }
-        if (errorAlgorithm === "firstOfDeepest")
+        if (options?.errorAlgorithm === "firstOfDeepest")
           return a.funcIndex - b.funcIndex;
         else return b.funcIndex - a.funcIndex;
       });
@@ -120,7 +125,7 @@ abstract class AssertionMaster<TState, TMaster> {
           try {
             (assertion as any)(state, args, result);
           } catch (e) {
-            if (!showAllErrors) {
+            if (!options.showAllErrors) {
               error = e;
               break outer;
             }
@@ -273,6 +278,15 @@ function getQueue(globalKey: string) {
     throw Error(`Assertion queue for ${globalKey} not found`);
 
   return assertionQueues[globalKey];
+}
+
+function printMaster(master: any) {
+  if (!master) return "";
+
+  if (master.index !== undefined && master.step !== undefined)
+    return `Master ${master.index}, step ${master.step}`;
+  else if (master.index !== undefined) return `Master ${master.index}`;
+  else return "";
 }
 
 export { getQueue };

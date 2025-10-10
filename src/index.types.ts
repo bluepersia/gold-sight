@@ -33,7 +33,7 @@ type AssertionQueues = {
 
 type AssertOptions = {
   errorAlgorithm?: "firstOfDeepest" | "deepest";
-  masterIndex?: number;
+  master?: { index: number; step?: number };
   showAllErrors?: boolean;
   targetName?: string;
 };
@@ -65,7 +65,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
 
   abstract newState(): TState;
   resetState(): void;
-  assertQueue(options: AssertOptions): void;
+  assertQueue(options?: AssertOptions): void;
 
   wrapFn<T extends (...args: any[]) => any>(
     fn: T,
