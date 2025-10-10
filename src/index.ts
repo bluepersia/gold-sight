@@ -4,6 +4,7 @@ import {
   AssertionQueues,
   StateBase,
 } from "./index.types";
+import { deepClone } from "./utils/deepClone";
 
 const assertionQueues: AssertionQueues = {};
 
@@ -47,12 +48,20 @@ abstract class AssertionMaster<TState, TMaster> {
   abstract newState(): TState;
 
   resetState = () => {
-    this._state = { ...this.newState(), funcIndex: 0, master: this.master };
+    this._state = {
+      ...this.newState(),
+      master: this.master,
+      callStack: [],
+      branchCounter: new Map(),
+      queueIndex: 0,
+    };
   };
 
   assertQueue = (options?: {
     sorting?: "asc" | "desc";
     masterIndex?: number;
+    showAllErrors?: boolean;
+    targetName?: string;
   }) => {
     const assertionQueue = assertionQueues[this.globalKey];
 
@@ -63,24 +72,60 @@ abstract class AssertionMaster<TState, TMaster> {
         options?.masterIndex ?? this.state!.master!.index
       }`
     );
-    const queueIndexes = Array.from(assertionQueue.keys()).sort((a, b) =>
-      options?.sorting === "desc" ? a - b : b - a
+    // Step 1: Group items by function name
+    let groupedByName: { [name: string]: AssertionBlueprint[] } = {};
+    for (const [, item] of assertionQueue.entries()) {
+      if (!groupedByName[item.name]) groupedByName[item.name] = [];
+      groupedByName[item.name].push(item);
+    }
+
+    if (options?.targetName) {
+      if (groupedByName.hasOwnProperty(options.targetName))
+        groupedByName = {
+          [options.targetName]: groupedByName[options.targetName],
+        };
+    }
+
+    // Step 2: Determine the highest funcIndex for each name
+    const nameWithHighestIndex = Object.entries(groupedByName).map(
+      ([name, items]) => ({
+        name,
+        highestIndex: Math.max(...items.map((i) => i.funcIndex)),
+      })
     );
 
+    // Step 3: Sort names based on their highest funcIndex
+    nameWithHighestIndex.sort((a, b) => {
+      if (options?.sorting === "desc") {
+        return a.highestIndex - b.highestIndex;
+      }
+      return b.highestIndex - a.highestIndex;
+    });
+
     let error;
-    for (const queueIndex of queueIndexes) {
-      const { name, result, args, state } = assertionQueue.get(queueIndex)!;
-      const assertions = this.assertionChains[name];
-      for (const [key, assertion] of Object.entries(assertions)) {
-        try {
-          (assertion as any)(state, args, result);
-        } catch (e) {
-          error = e;
-          break;
+    const errors: { err: Error; name: string }[] = [];
+    outer: for (const { name } of nameWithHighestIndex) {
+      const items = groupedByName[name].sort(
+        (a, b) => a.funcIndex - b.funcIndex
+      );
+
+      for (const { state, args, result } of items) {
+        const assertions = this.assertionChains[name];
+
+        for (const [key, assertion] of Object.entries(assertions)) {
+          try {
+            (assertion as any)(state, args, result);
+          } catch (e) {
+            if (!options?.showAllErrors) {
+              error = e;
+              break outer;
+            }
+            errors.push({ err: e as Error, name });
+          }
+          let count = verifiedAssertions.get(key) || 0;
+          count++;
+          verifiedAssertions.set(key, count);
         }
-        let count = verifiedAssertions.get(key) || 0;
-        count++;
-        verifiedAssertions.set(key, count);
       }
     }
     for (const [key, count] of verifiedAssertions.entries()) {
@@ -90,6 +135,11 @@ abstract class AssertionMaster<TState, TMaster> {
 
     this.reset();
     if (error) throw error;
+    if (errors.length) {
+      throw new Error(
+        errors.map((e) => `${e.name}:${e.err.message}`).join("\n")
+      );
+    }
   };
 
   wrapFn<T extends (...args: any[]) => any>(
@@ -110,14 +160,24 @@ abstract class AssertionMaster<TState, TMaster> {
         ? processors.argsConverter(args)
         : args;
       if (processors?.pre) processors.pre(this.state!, convertedArgs);
-      const funcIndex = this.state!.funcIndex;
-      this.state!.funcIndex++;
+
+      const parentId =
+        this.state!.callStack[this.state!.callStack.length - 1] ?? -1;
+
+      const funcIndex = parentId + 1;
+      const queueIndex = this.state!.queueIndex;
+      this.state!.queueIndex++;
+
+      this.state!.callStack.push(funcIndex);
 
       const result = fn(...args);
 
+      this.state!.callStack.pop();
+
       const assertionData = {
         state: this.state,
-        result,
+        funcIndex,
+        result: deepClone(result),
         name,
         args: convertedArgs,
         postOp: () => {},
@@ -129,7 +189,7 @@ abstract class AssertionMaster<TState, TMaster> {
         };
       }
 
-      assertionQueues[this.globalKey].set(funcIndex, assertionData);
+      assertionQueues[this.globalKey].set(queueIndex, assertionData);
 
       return result;
     }) as T;
@@ -186,7 +246,6 @@ abstract class AssertionMaster<TState, TMaster> {
 
       const wrappedFn = this.wrapFn(fn, name, options);
       const result = wrappedFn(...args);
-
       this.state!.master = this.master;
 
       this.runPostOps();
