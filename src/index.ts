@@ -103,13 +103,21 @@ abstract class AssertionMaster<TState, TMaster> {
     });
 
     let error;
-    const errors: { err: Error; name: string }[] = [];
+    const errors: {
+      err: Error;
+      name: string;
+      funcIndex: number;
+      branchCount: number;
+    }[] = [];
     outer: for (const { name } of nameWithHighestIndex) {
-      const items = groupedByName[name].sort(
-        (a, b) => a.funcIndex - b.funcIndex
-      );
+      const items = groupedByName[name].sort((a, b) => {
+        if (a.funcIndex === b.funcIndex) {
+          return a.branchCount - b.branchCount;
+        }
+        return a.funcIndex - b.funcIndex;
+      });
 
-      for (const { state, args, result } of items) {
+      for (const { state, args, result, funcIndex, branchCount } of items) {
         const assertions = this.assertionChains[name];
 
         for (const [key, assertion] of Object.entries(assertions)) {
@@ -120,7 +128,7 @@ abstract class AssertionMaster<TState, TMaster> {
               error = e;
               break outer;
             }
-            errors.push({ err: e as Error, name });
+            errors.push({ err: e as Error, name, funcIndex, branchCount });
           }
           let count = verifiedAssertions.get(key) || 0;
           count++;
@@ -137,7 +145,11 @@ abstract class AssertionMaster<TState, TMaster> {
     if (error) throw error;
     if (errors.length) {
       throw new Error(
-        errors.map((e) => `${e.name}:${e.err.message}`).join("\n")
+        errors
+          .map(
+            (e) => `${e.name}:${e.err.message}:${e.funcIndex}:${e.branchCount}`
+          )
+          .join("\n")
       );
     }
   };
@@ -165,11 +177,14 @@ abstract class AssertionMaster<TState, TMaster> {
       const parentId =
         this.state!.callStack[this.state!.callStack.length - 1] ?? -1;
 
-      const funcIndex = parentId + 1;
+      let funcIndex = parentId + 1;
       const queueIndex = this.state!.queueIndex;
       this.state!.queueIndex++;
 
       this.state!.callStack.push(funcIndex);
+
+      const branchCount = this.state!.branchCounter.get(parentId) || 0;
+      this.state!.branchCounter.set(parentId, branchCount + 1);
 
       const result = fn(...args);
 
@@ -184,6 +199,7 @@ abstract class AssertionMaster<TState, TMaster> {
         funcIndex,
         result: deepClone(convertedResult),
         name,
+        branchCount,
         args: convertedArgs,
         postOp: () => {},
       } as AssertionBlueprint;

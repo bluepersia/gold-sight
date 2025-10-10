@@ -2,6 +2,7 @@ type StateBase = {
   queueIndex: number;
   master?: any;
   callStack: number[];
+  branchCounter: Map<number, number>;
 };
 
 type AssertionChain<TState, TArgs, TResult> = {
@@ -22,6 +23,7 @@ type AssertionBlueprint = {
   result: any;
   args: any;
   state: any;
+  branchCount: number;
   postOp?: (state: any, args: any[], result: any) => void;
 };
 

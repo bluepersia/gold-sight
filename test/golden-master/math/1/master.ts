@@ -16,6 +16,7 @@ const master: Master = {
 master.finalQueue.set(0, {
   name: "a",
   funcIndex: 0,
+  branchCount: 0,
   result: [3, 0, 4, 12],
   args: [],
   state: {
@@ -31,6 +32,7 @@ master.finalQueue.set(0, {
 master.finalQueue.set(1, {
   name: "b",
   funcIndex: 1,
+  branchCount: 0,
   result: [3, 0, 4, 12],
   args: [[]],
   state: {
@@ -46,6 +48,7 @@ master.finalQueue.set(1, {
 master.finalQueue.set(2, {
   name: "c",
   funcIndex: 2,
+  branchCount: 0,
   result: [3, 0, 4, 12],
   args: [[3]],
   state: {
@@ -61,6 +64,7 @@ master.finalQueue.set(2, {
 master.finalQueue.set(3, {
   name: "d",
   funcIndex: 3,
+  branchCount: 0,
   result: [3, 0, 4, 12],
   args: [[3, 0]],
   state: {
@@ -76,6 +80,7 @@ master.finalQueue.set(3, {
 master.finalQueue.set(4, {
   name: "e",
   funcIndex: 4,
+  branchCount: 0,
   result: [3, 0, 4, 12],
   args: [[3, 0, 4]],
   state: {
