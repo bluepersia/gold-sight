@@ -147,6 +147,7 @@ abstract class AssertionMaster<TState, TMaster> {
     name: string,
     processors?: {
       argsConverter?: (args: Parameters<T>) => any;
+      resultConverter?: (result: ReturnType<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
@@ -174,10 +175,14 @@ abstract class AssertionMaster<TState, TMaster> {
 
       this.state!.callStack.pop();
 
+      const convertedResult = processors?.resultConverter
+        ? processors.resultConverter(result)
+        : result;
+
       const assertionData = {
         state: this.state,
         funcIndex,
-        result: deepClone(result),
+        result: deepClone(convertedResult),
         name,
         args: convertedArgs,
         postOp: () => {},

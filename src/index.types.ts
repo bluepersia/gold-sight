@@ -68,6 +68,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
     name: string,
     processors?: {
       argsConverter?: (args: Parameters<T>) => any;
+      resultConverter?: (result: ReturnType<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
