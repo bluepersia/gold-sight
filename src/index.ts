@@ -106,8 +106,6 @@ abstract class AssertionMaster<TState, TMaster> {
     const errors: {
       err: Error;
       name: string;
-      funcIndex: number;
-      branchCount: number;
     }[] = [];
     outer: for (const { name } of nameWithHighestIndex) {
       const items = groupedByName[name].sort((a, b) => {
@@ -117,7 +115,7 @@ abstract class AssertionMaster<TState, TMaster> {
         return a.funcIndex - b.funcIndex;
       });
 
-      for (const { state, args, result, funcIndex, branchCount } of items) {
+      for (const { state, args, result } of items) {
         const assertions = this.assertionChains[name];
 
         for (const [key, assertion] of Object.entries(assertions)) {
@@ -128,7 +126,7 @@ abstract class AssertionMaster<TState, TMaster> {
               error = e;
               break outer;
             }
-            errors.push({ err: e as Error, name, funcIndex, branchCount });
+            errors.push({ err: e as Error, name });
           }
           let count = verifiedAssertions.get(key) || 0;
           count++;
@@ -145,11 +143,7 @@ abstract class AssertionMaster<TState, TMaster> {
     if (error) throw error;
     if (errors.length) {
       throw new Error(
-        errors
-          .map(
-            (e) => `${e.name}:${e.err.message}:${e.funcIndex}:${e.branchCount}`
-          )
-          .join("\n")
+        errors.map((e) => `${e.name}:${e.err.message}`).join("\n")
       );
     }
   };
