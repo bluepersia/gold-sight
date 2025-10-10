@@ -81,7 +81,9 @@ describe("wrapped function call", () => {
       assertionMaster.setQueue(new Map());
 
       assertionMaster.resetState();
-      assertionMaster.state!.funcIndex = 1;
+      assertionMaster.state!.queueIndex = 1;
+      assertionMaster.state!.branchCounter = new Map([[0, 0]]);
+      assertionMaster.state!.callStack = [0];
 
       master.subfunc([]);
 
@@ -99,7 +101,6 @@ describe("wrapped function call", () => {
           ...value,
           state: {
             ...assertionMaster.newState(),
-            funcIndex: undefined,
             master: undefined,
           },
         });
@@ -194,7 +195,13 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
         {
           ...value,
           postOp: undefined,
-          state: { ...value.state, master: undefined, funcIndex: undefined },
+          state: {
+            ...value.state,
+            master: undefined,
+            callStack: undefined,
+            branchCounter: undefined,
+            queueIndex: undefined,
+          },
         },
       ];
     })

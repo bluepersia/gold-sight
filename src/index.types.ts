@@ -1,6 +1,7 @@
 type StateBase = {
-  funcIndex: number;
+  queueIndex: number;
   master?: any;
+  callStack: number[];
 };
 
 type AssertionChain<TState, TArgs, TResult> = {
@@ -17,6 +18,7 @@ type AssertionWeak = AssertionStrong<any, any, any>;
 
 type AssertionBlueprint = {
   name: string;
+  funcIndex: number;
   result: any;
   args: any;
   state: any;
@@ -56,7 +58,9 @@ declare abstract class AssertionMaster<TState, TMaster> {
   resetState(): void;
   assertQueue(options?: {
     sorting?: "asc" | "desc";
+    showAllErrors?: boolean;
     masterIndex?: number;
+    targetName?: string;
   }): void;
 
   wrapFn<T extends (...args: any[]) => any>(
@@ -64,6 +68,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
     name: string,
     processors?: {
       argsConverter?: (args: Parameters<T>) => any;
+      resultConverter?: (result: ReturnType<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
@@ -95,6 +100,21 @@ declare abstract class AssertionMaster<TState, TMaster> {
   ): (...args: Parameters<T>) => ReturnType<T>;
 }
 
+type RunAssertionsParams<TState> = {
+  nameWithLowestIndex: { name: string; lowestIndex: number }[];
+  groupedByName: { [name: string]: AssertionBlueprint[] };
+  assertionChains: {
+    [funcKey: string]: AssertionChain<TState, any, any>;
+  };
+  globalKey: string;
+  masterIndex: number;
+};
+
+type RunAssertionsOfNameParams<TState> = Pick<
+  RunAssertionsParams<TState>,
+  "assertionChains" | "groupedByName"
+>;
+
 export default AssertionMaster;
 
 export type {
@@ -104,4 +124,6 @@ export type {
   AssertionBlueprint,
   AssertionQueues,
   StateBase,
+  RunAssertionsParams,
+  RunAssertionsOfNameParams,
 };
