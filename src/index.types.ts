@@ -1,6 +1,6 @@
-type StateBase = {
+type StateBase<TMaster> = {
   queueIndex: number;
-  master?: any;
+  master?: TMaster;
   callStack: number[];
   branchCounter: Map<number, number>;
 };
@@ -41,7 +41,7 @@ type AssertOptions = {
 export declare function getQueue(globalKey: string): any;
 
 declare abstract class AssertionMaster<TState, TMaster> {
-  protected _state: (TState & StateBase) | undefined;
+  protected _state: (TState & StateBase<TMaster>) | undefined;
   private assertionChains: {
     [funcKey: string]: AssertionChain<TState, any, any>;
   };
@@ -61,7 +61,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
   set master(master: TMaster);
   get master(): TMaster | undefined;
 
-  get state(): (TState & StateBase) | undefined;
+  get state(): (TState & StateBase<TMaster>) | undefined;
 
   abstract newState(): TState;
   resetState(): void;
