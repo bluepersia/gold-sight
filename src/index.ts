@@ -3,14 +3,18 @@ import {
   AssertionChain,
   AssertionQueues,
   AssertOptions,
+  DeepCloneOptions,
   StateBase,
 } from "./index.types";
 import { deepClone } from "./utils/deepClone";
+import { getConfig } from "./getConfig";
+
+const globalConfig = getConfig();
 
 const assertionQueues: AssertionQueues = {};
 
 abstract class AssertionMaster<TState, TMaster> {
-  protected _state: (TState & StateBase) | undefined;
+  protected _state: (TState & StateBase<TMaster>) | undefined;
   private assertionChains: {
     [funcKey: string]: AssertionChain<TState, any, any>;
   };
@@ -163,6 +167,7 @@ abstract class AssertionMaster<TState, TMaster> {
         args: Parameters<T>,
         result: ReturnType<T>
       ) => void;
+      deepClone?: DeepCloneOptions;
     }
   ): T {
     return ((...args: Parameters<T>): ReturnType<T> => {
@@ -170,6 +175,17 @@ abstract class AssertionMaster<TState, TMaster> {
         ? processors.argsConverter(args)
         : args;
       if (processors?.pre) processors.pre(this.state!, convertedArgs);
+
+      const deepCloneOpts = {
+        result: true,
+        args: false,
+        ...(globalConfig.deepCloneOptions || {}),
+        ...(processors?.deepClone || {}),
+      };
+
+      const argsClone = deepCloneOpts.args
+        ? deepClone(convertedArgs)
+        : convertedArgs;
 
       const parentId =
         this.state!.callStack[this.state!.callStack.length - 1] ?? -1;
@@ -194,10 +210,12 @@ abstract class AssertionMaster<TState, TMaster> {
       const assertionData = {
         state: this.state,
         funcIndex,
-        result: deepClone(convertedResult),
+        result: deepCloneOpts.result
+          ? deepClone(convertedResult)
+          : convertedResult,
         name,
         branchCount,
-        args: convertedArgs,
+        args: argsClone,
         postOp: () => {},
       } as AssertionBlueprint;
 

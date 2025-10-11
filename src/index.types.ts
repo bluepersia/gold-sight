@@ -38,6 +38,11 @@ type AssertOptions = {
   targetName?: string;
 };
 
+type DeepCloneOptions = {
+  result: true;
+  args: false;
+};
+
 export declare function getQueue(globalKey: string): any;
 
 declare abstract class AssertionMaster<TState, TMaster> {
@@ -79,6 +84,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
         args: Parameters<T>,
         result: ReturnType<T>
       ) => void;
+      deepClone: DeepCloneOptions;
     }
   ): T;
 
@@ -131,4 +137,5 @@ export type {
   RunAssertionsParams,
   RunAssertionsOfNameParams,
   AssertOptions,
+  DeepCloneOptions,
 };
