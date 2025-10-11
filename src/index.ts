@@ -63,8 +63,11 @@ abstract class AssertionMaster<TState, TMaster> {
   };
 
   assertQueue = (options?: AssertOptions) => {
-    if (!options) options = {};
-    if (!options.errorAlgorithm) options.errorAlgorithm = "firstOfDeepest";
+    options = {
+      errorAlgorithm: "firstOfDeepest",
+      ...(globalConfig.assertOptions || {}),
+      ...(options || {}),
+    };
 
     const assertionQueue = assertionQueues[this.globalKey];
 
