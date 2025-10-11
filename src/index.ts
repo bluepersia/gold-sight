@@ -3,13 +3,11 @@ import {
   AssertionChain,
   AssertionQueues,
   AssertOptions,
+  Config,
   DeepCloneOptions,
   StateBase,
 } from "./index.types";
 import { deepClone } from "./utils/deepClone";
-import { getConfig } from "./getConfig";
-
-const globalConfig = getConfig();
 
 const assertionQueues: AssertionQueues = {};
 
@@ -21,15 +19,18 @@ abstract class AssertionMaster<TState, TMaster> {
 
   private _globalKey: string;
   private _master?: TMaster;
+  private _globalOptions: Config | undefined;
 
   constructor(
     assertionChains: {
       [funcKey: string]: AssertionChain<TState, any, any>;
     },
-    globalKey: string
+    globalKey: string,
+    globalOptions?: Config
   ) {
     this.assertionChains = assertionChains;
     this._globalKey = globalKey;
+    this._globalOptions = globalOptions;
 
     assertionQueues[globalKey] = new Map();
   }
@@ -65,7 +66,7 @@ abstract class AssertionMaster<TState, TMaster> {
   assertQueue = (options?: AssertOptions) => {
     options = {
       errorAlgorithm: "firstOfDeepest",
-      ...(globalConfig.assertOptions || {}),
+      ...(this._globalOptions?.assert || {}),
       ...(options || {}),
     };
 
@@ -182,7 +183,7 @@ abstract class AssertionMaster<TState, TMaster> {
       const deepCloneOpts = {
         result: true,
         args: false,
-        ...(globalConfig.deepCloneOptions || {}),
+        ...(this._globalOptions?.deepClone || {}),
         ...(processors?.deepClone || {}),
       };
 

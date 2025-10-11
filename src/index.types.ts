@@ -39,9 +39,14 @@ type AssertOptions = {
 };
 
 type DeepCloneOptions = {
-  result: true;
-  args: false;
+  result?: boolean;
+  args?: boolean;
 };
+
+export interface Config {
+  assert?: AssertOptions;
+  deepClone?: DeepCloneOptions;
+}
 
 export declare function getQueue(globalKey: string): any;
 
@@ -58,7 +63,8 @@ declare abstract class AssertionMaster<TState, TMaster> {
     assertionChains: {
       [funcKey: string]: AssertionChain<TState, any, any>;
     },
-    globalKey: string
+    globalKey: string,
+    globalOptions?: Config
   );
 
   get globalKey(): string;
@@ -84,7 +90,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
         args: Parameters<T>,
         result: ReturnType<T>
       ) => void;
-      deepClone: DeepCloneOptions;
+      deepClone?: DeepCloneOptions;
     }
   ): T;
 
