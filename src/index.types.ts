@@ -12,7 +12,8 @@ type AssertionChain<TState, TArgs, TResult> = {
 type AssertionStrong<TState, TArgs, TResult> = (
   state: TState,
   args: TArgs,
-  result: TResult
+  result: TResult,
+  allAssertions: AssertionBlueprint[]
 ) => void;
 
 type AssertionWeak = AssertionStrong<any, any, any>;
@@ -83,7 +84,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
     name: string,
     processors?: {
       argsConverter?: (args: Parameters<T>) => any;
-      resultConverter?: (result: ReturnType<T>) => any;
+      resultConverter?: (result: ReturnType<T>, args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
@@ -97,6 +98,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
   wrapAll(): void;
   reset(): void;
   setQueue(queue: Map<number, AssertionBlueprint>): void;
+  getQueue(): Map<number, AssertionBlueprint>;
   setQueueFromArray(queue: [number, AssertionBlueprint][]): void;
   runPostOps(): void;
 

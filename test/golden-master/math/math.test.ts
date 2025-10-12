@@ -125,6 +125,7 @@ describe("top level function", () => {
     expect(assertionMaster.resetState).toHaveBeenCalledTimes(1);
 
     const queue = getQueue(assertionMaster.globalKey);
+    const allAssertions = Array.from(queue.values());
 
     expect(stripQueue(queue)).toEqual(stripQueue(master.finalQueue));
 
@@ -148,7 +149,12 @@ describe("top level function", () => {
 
       const assertions = master.assertionChains![name];
       for (const [key, assertion] of Object.entries(assertions)) {
-        expect(assertion).toHaveBeenCalledWith(state, args, result);
+        expect(assertion).toHaveBeenCalledWith(
+          state,
+          args,
+          result,
+          allAssertions
+        );
       }
     }
   });
@@ -161,6 +167,7 @@ describe("top level function", () => {
     topFunc();
 
     const queue = getQueue(assertionMaster.globalKey);
+    const allAssertions = Array.from(queue.values());
     const queueCopy = new Map(queue);
 
     const queueIndexes = Array.from(queue.keys()).sort((a, b) => a - b);
@@ -181,7 +188,12 @@ describe("top level function", () => {
 
       const assertions = master.assertionChains![name];
       for (const [key, assertion] of Object.entries(assertions)) {
-        expect(assertion).toHaveBeenCalledWith(state, args, result);
+        expect(assertion).toHaveBeenCalledWith(
+          state,
+          args,
+          result,
+          allAssertions
+        );
       }
     }
   });

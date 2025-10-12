@@ -72,6 +72,8 @@ abstract class AssertionMaster<TState, TMaster> {
 
     const assertionQueue = assertionQueues[this.globalKey];
 
+    const allAssertions = Array.from(assertionQueue.values());
+
     const verifiedAssertions = new Map<string, number>();
 
     if (!this.state?.master && options?.master === undefined)
@@ -131,7 +133,7 @@ abstract class AssertionMaster<TState, TMaster> {
 
         for (const [key, assertion] of Object.entries(assertions)) {
           try {
-            (assertion as any)(state, args, result);
+            (assertion as any)(state, args, result, allAssertions);
           } catch (e) {
             if (!options.showAllErrors) {
               error = e;
@@ -164,7 +166,7 @@ abstract class AssertionMaster<TState, TMaster> {
     name: string,
     processors?: {
       argsConverter?: (args: Parameters<T>) => any;
-      resultConverter?: (result: ReturnType<T>) => any;
+      resultConverter?: (result: ReturnType<T>, args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
@@ -181,7 +183,7 @@ abstract class AssertionMaster<TState, TMaster> {
       if (processors?.pre) processors.pre(this.state!, convertedArgs);
 
       const deepCloneOpts = {
-        result: true,
+        result: false,
         args: false,
         ...(this._globalOptions?.deepClone || {}),
         ...(processors?.deepClone || {}),
@@ -208,7 +210,7 @@ abstract class AssertionMaster<TState, TMaster> {
       this.state!.callStack.pop();
 
       const convertedResult = processors?.resultConverter
-        ? processors.resultConverter(result)
+        ? processors.resultConverter(result, args)
         : result;
 
       const assertionData = {
@@ -245,6 +247,10 @@ abstract class AssertionMaster<TState, TMaster> {
 
   setQueue(queue: Map<number, AssertionBlueprint>) {
     assertionQueues[this.globalKey] = queue;
+  }
+
+  getQueue() {
+    return getQueue(this.globalKey);
   }
 
   setQueueFromArray(queue: [number, AssertionBlueprint][]) {
