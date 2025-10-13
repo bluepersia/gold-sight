@@ -9,6 +9,11 @@ type AssertionChain<TState, TArgs, TResult> = {
   [key: string]: AssertionStrong<TState, TArgs, TResult>;
 };
 
+type AssertionChainForFunc<
+  TState,
+  TFunc extends (...args: any[]) => any
+> = AssertionChain<TState, Parameters<TFunc>, ReturnType<TFunc>>;
+
 type AssertionStrong<TState, TArgs, TResult> = (
   state: TState,
   args: TArgs,
@@ -18,15 +23,25 @@ type AssertionStrong<TState, TArgs, TResult> = (
 
 type AssertionWeak = AssertionStrong<any, any, any>;
 
-type AssertionBlueprint = {
+type AssertionForFunc<
+  TState,
+  TFunc extends (...args: any[]) => any
+> = AssertionStrong<TState, Parameters<TFunc>, ReturnType<TFunc>>;
+
+type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   name: string;
   funcIndex: number;
-  result: any;
-  args: any;
-  state: any;
+  result: TResult;
+  args: TArgs;
+  state: TState;
   branchCount: number;
   postOp?: (state: any, args: any[], result: any) => void;
 };
+
+type AssertionBlueprintForFunc<
+  TState,
+  TFunc extends (...args: any[]) => any
+> = AssertionBlueprint<TState, Parameters<TFunc>, ReturnType<TFunc>>;
 
 type AssertionQueues = {
   [key: string]: Map<number, AssertionBlueprint>;
@@ -107,6 +122,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
     name: string,
     options?: {
       argsConverter?: (args: Parameters<T>) => any;
+      resultConverter?: (result: ReturnType<T>, args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
@@ -146,4 +162,7 @@ export type {
   RunAssertionsOfNameParams,
   AssertOptions,
   DeepCloneOptions,
+  AssertionBlueprintForFunc,
+  AssertionForFunc,
+  AssertionChainForFunc,
 };

@@ -130,7 +130,10 @@ abstract class AssertionMaster<TState, TMaster> {
 
       for (const { state, args, result } of items) {
         const assertions = this.assertionChains[name];
-
+        if (!assertions)
+          throw Error(
+            `Assertion chain for ${name} not found. Are you setting up the default assertion chains?`
+          );
         for (const [key, assertion] of Object.entries(assertions)) {
           try {
             (assertion as any)(state, args, result, allAssertions);
@@ -192,6 +195,11 @@ abstract class AssertionMaster<TState, TMaster> {
       const argsClone = deepCloneOpts.args
         ? deepClone(convertedArgs)
         : convertedArgs;
+
+      if (!this.state)
+        throw new Error(
+          "State is not initialized. The top function wrapper may not be executing"
+        );
 
       const parentId =
         this.state!.callStack[this.state!.callStack.length - 1] ?? -1;
@@ -277,6 +285,7 @@ abstract class AssertionMaster<TState, TMaster> {
     name: string,
     options?: {
       argsConverter?: (args: Parameters<T>) => any;
+      resultConverter?: (result: ReturnType<T>, args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (
         state: TState,
