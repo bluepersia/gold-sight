@@ -274,6 +274,10 @@ abstract class AssertionMaster<TState, TMaster> {
     return getQueue(this.globalKey);
   }
 
+  async getQueueAsync() {
+    return await getQueueAsync(this.globalKey);
+  }
+
   setQueueFromArray(queue: [number, AssertionBlueprint][]) {
     assertionQueues[this.globalKey] = new Map(queue);
   }
@@ -330,6 +334,17 @@ function getQueue(globalKey: string) {
   return assertionQueues[globalKey];
 }
 
+async function getQueueAsync(globalKey: string) {
+  const queue = getQueue(globalKey);
+
+  for (const assertion of queue.values()) {
+    if (assertion.constructor.name === "AsyncFunction") {
+      await assertion.result;
+    }
+  }
+  return queue;
+}
+
 function printMaster(master: any) {
   if (!master) return "";
 
@@ -339,6 +354,6 @@ function printMaster(master: any) {
   else return "";
 }
 
-export { getQueue };
+export { getQueue, getQueueAsync };
 
 export default AssertionMaster;
