@@ -187,9 +187,7 @@ abstract class AssertionMaster<TState, TMaster> {
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
     }
   ): T {
-    const isAsync = fn.constructor.name === "AsyncFunction";
-
-    const wrapper = (...args: Parameters<T>) => {
+    return ((...args: Parameters<T>) => {
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
         : args;
@@ -223,47 +221,54 @@ abstract class AssertionMaster<TState, TMaster> {
       const branchCount = this.state!.branchCounter.get(parentId) || 0;
       this.state!.branchCounter.set(parentId, branchCount + 1);
 
-      const handleResult = (result: ReturnType<T>) => {
-        this.state!.callStack.pop();
+      const result = fn(...args);
 
+      this.state!.callStack.pop();
+
+      function processResult(result: ReturnType<T>) {
         const convertedResult = processors?.resultConverter
           ? processors.resultConverter(result, args)
           : result;
 
-        const id = processors?.getId
-          ? processors.getId(args, convertedResult)
-          : "";
+        const resultClone = deepCloneOpts.result
+          ? deepClone(convertedResult)
+          : convertedResult;
 
-        const assertionData = {
-          state: this.state,
-          funcIndex,
-          result: deepCloneOpts.result
-            ? deepClone(convertedResult)
-            : convertedResult,
-          name,
-          id,
-          branchCount,
-          args: argsClone,
-          postOp: () => {},
-        } as AssertionBlueprint;
+        return resultClone;
+      }
 
-        if (processors?.post) {
-          assertionData.postOp = (state, args, result) => {
-            processors!.post!(state, args as Parameters<T>, result);
-          };
-        }
+      const isAsync = fn.constructor.name === "AsyncFunction";
+      const finalResult = isAsync ? result : processResult(result);
 
-        assertionQueues[this.globalKey].set(queueIndex, assertionData);
+      const id = processors?.getId ? processors.getId(args, result) : "";
 
-        return result;
-      };
-      const result = fn(...args);
+      const assertionData = {
+        state: this.state,
+        funcIndex,
+        result: finalResult,
+        name,
+        id,
+        branchCount,
+        args: argsClone,
+        postOp: () => {},
+      } as AssertionBlueprint;
 
-      return isAsync
-        ? (result as Promise<any>).then(handleResult)
-        : handleResult(result);
-    };
-    return wrapper as T;
+      if (fn.constructor.name === "AsyncFunction") {
+        (result as Promise<any>).then(
+          (r) => (assertionData.result = processResult(r) as ReturnType<T>)
+        );
+      }
+
+      if (processors?.post) {
+        assertionData.postOp = (state, args, result) => {
+          processors!.post!(state, args as Parameters<T>, result);
+        };
+      }
+
+      assertionQueues[this.globalKey].set(queueIndex, assertionData);
+
+      return isAsync ? (result as Promise<any>) : result;
+    }) as T;
   }
 
   wrapAll() {}
@@ -347,7 +352,6 @@ async function getQueueAsync(globalKey: string) {
 
   for (const assertion of queue.values()) {
     if (assertion.constructor.name === "AsyncFunction") {
-      throw new Error("Async assertion found in queue");
       await assertion.result;
     }
   }
