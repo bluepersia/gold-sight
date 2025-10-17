@@ -63,7 +63,7 @@ abstract class AssertionMaster<TState, TMaster> {
     };
   };
 
-  assertQueue = (options?: AssertOptions) => {
+  assertQueue = async (options?: AssertOptions) => {
     options = {
       errorAlgorithm: "firstOfDeepest",
       ...(this._globalOptions?.assert || {}),
@@ -113,10 +113,11 @@ abstract class AssertionMaster<TState, TMaster> {
       return b.highestIndex - a.highestIndex;
     });
 
-    let error;
+    let error: Error | undefined;
     const errors: {
       err: Error;
       name: string;
+      id: string;
     }[] = [];
     outer: for (const { name } of nameWithHighestIndex) {
       const items = groupedByName[name].sort((a, b) => {
@@ -128,7 +129,7 @@ abstract class AssertionMaster<TState, TMaster> {
         else return b.funcIndex - a.funcIndex;
       });
 
-      for (const { state, args, result } of items) {
+      for (const { state, args, result, id } of items) {
         const assertions = this.assertionChains[name];
         if (!assertions)
           throw Error(
@@ -136,13 +137,19 @@ abstract class AssertionMaster<TState, TMaster> {
           );
         for (const [key, assertion] of Object.entries(assertions)) {
           try {
-            (assertion as any)(state, args, result, allAssertions);
+            if (assertion.constructor.name === "AsyncFunction") {
+              await assertion(state, args, result, allAssertions);
+            } else {
+              (assertion as any)(state, args, result, allAssertions);
+            }
           } catch (e) {
+            const err = e as Error;
+            if (id) err.message = `ID: ${id}, ${err.message}`;
             if (!options.showAllErrors) {
-              error = e;
+              error = err;
               break outer;
             }
-            errors.push({ err: e as Error, name });
+            errors.push({ err, name, id });
           }
           let count = verifiedAssertions.get(key) || 0;
           count++;
@@ -177,6 +184,7 @@ abstract class AssertionMaster<TState, TMaster> {
         result: ReturnType<T>
       ) => void;
       deepClone?: DeepCloneOptions;
+      getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
     }
   ): T {
     return ((...args: Parameters<T>): ReturnType<T> => {
@@ -221,6 +229,10 @@ abstract class AssertionMaster<TState, TMaster> {
         ? processors.resultConverter(result, args)
         : result;
 
+      const id = processors?.getId
+        ? processors.getId(args, convertedResult)
+        : "";
+
       const assertionData = {
         state: this.state,
         funcIndex,
@@ -228,6 +240,7 @@ abstract class AssertionMaster<TState, TMaster> {
           ? deepClone(convertedResult)
           : convertedResult,
         name,
+        id,
         branchCount,
         args: argsClone,
         postOp: () => {},
