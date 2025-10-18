@@ -19,15 +19,16 @@ abstract class AssertionMaster<TState, TMaster> {
 
   private _globalKey: string;
   private _master?: TMaster;
-  private _globalOptions: Config | undefined;
+  private _globalOptions: Config<TState> | undefined;
   private _hasFirstTopFnRun: boolean = false;
+  private _hasAssertionBeenInserted: boolean = false;
 
   constructor(
     assertionChains: {
       [funcKey: string]: AssertionChain<TState, any, any>;
     },
     globalKey: string,
-    globalOptions?: Config
+    globalOptions?: Config<TState>
   ) {
     this.assertionChains = assertionChains;
     this._globalKey = globalKey;
@@ -74,6 +75,7 @@ abstract class AssertionMaster<TState, TMaster> {
 
   assertQueue = (options?: AssertOptions) => {
     options = {
+      logMasterName: this._globalKey,
       errorAlgorithm: "firstOfDeepest",
       ...(this._globalOptions?.assert || {}),
       ...(options || {}),
@@ -89,7 +91,7 @@ abstract class AssertionMaster<TState, TMaster> {
       console.error(`No master indexes set. Provide it via options.`);
 
     console.groupCollapsed(
-      `✅ ${this.globalKey} - ✨${
+      `✅ ${options.logMasterName} - ✨${
         options?.master
           ? printMaster(options.master)
           : printMaster(this.state?.master)
@@ -198,7 +200,7 @@ abstract class AssertionMaster<TState, TMaster> {
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
       insertionRequirement?: (context: any) => boolean;
       assertionRequirement?: (context: any) => boolean;
-      getContext?: (
+      getReqContext?: (
         state: TState,
         args: Parameters<T>,
         result?: ReturnType<T>
@@ -260,8 +262,10 @@ abstract class AssertionMaster<TState, TMaster> {
 
       const id = processors?.getId ? processors.getId(args, result) : "";
 
-      const context = processors?.getContext
-        ? processors.getContext(this.state, args, result)
+      const context = processors?.getReqContext
+        ? processors.getReqContext(this.state, args, result)
+        : this._globalOptions?.getReqContext
+        ? this._globalOptions.getReqContext(this.state, args, result)
         : undefined;
       const assertionData = {
         state: this.state,
@@ -299,8 +303,10 @@ abstract class AssertionMaster<TState, TMaster> {
         const isValidPass =
           !this._globalOptions?.onlyRunFirstTopFn ||
           (this._globalOptions?.onlyRunFirstTopFn && !this.hasFirstTopFnRun);
-        if (isValidPass)
+        if (isValidPass) {
           assertionQueues[this.globalKey].set(queueIndex, assertionData);
+          this._hasAssertionBeenInserted = true;
+        }
       }
       return isAsync ? (result as Promise<any>) : result;
     }) as T;
@@ -356,7 +362,7 @@ abstract class AssertionMaster<TState, TMaster> {
       args?: Parameters<T>;
       insertionRequirement?: (context: any) => boolean;
       assertionRequirement?: (context: any) => boolean;
-      getContext?: (
+      getReqContext?: (
         state: TState,
         args: Parameters<T>,
         result?: ReturnType<T>
@@ -365,11 +371,12 @@ abstract class AssertionMaster<TState, TMaster> {
   ): (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T> {
     return (...args) => {
       this.resetState();
+      this._hasAssertionBeenInserted = false;
       const wrappedFn = this.wrapFn(fn, name, options);
       const result = wrappedFn(...args);
       this.state!.master = this.master;
       this.runPostOps();
-      this._hasFirstTopFnRun = true;
+      if (this._hasAssertionBeenInserted) this._hasFirstTopFnRun = true;
       return result;
     };
   }

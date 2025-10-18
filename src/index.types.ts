@@ -55,6 +55,7 @@ type AssertOptions = {
   master?: { index: number; step?: number };
   showAllErrors?: boolean;
   targetName?: string;
+  logMasterName?: string;
 };
 
 type DeepCloneOptions = {
@@ -62,12 +63,13 @@ type DeepCloneOptions = {
   args?: boolean;
 };
 
-export interface Config {
+export interface Config<TState> {
   assert?: AssertOptions;
   deepClone?: DeepCloneOptions;
   onlyRunFirstTopFn?: boolean;
   insertionRequirement?: (context: any) => boolean;
   assertionRequirement?: (context: any) => boolean;
+  getReqContext?: (state: TState, args: any, result?: any) => any;
 }
 
 export declare function getQueue(globalKey: string): any;
@@ -87,7 +89,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
       [funcKey: string]: AssertionChain<TState, any, any>;
     },
     globalKey: string,
-    globalOptions?: Config
+    globalOptions?: Config<TState>
   );
 
   get globalKey(): string;
@@ -120,7 +122,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
       insertionRequirement?: (context: any) => boolean;
       assertionRequirement?: (context: any) => boolean;
-      getContext?: (
+      getReqContext?: (
         state: TState,
         args: Parameters<T>,
         result?: ReturnType<T>
@@ -151,7 +153,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
       insertionRequirement?: (context: any) => boolean;
       assertionRequirement?: (context: any) => boolean;
-      getContext?: (
+      getReqContext?: (
         state: TState,
         args: Parameters<T>,
         result?: ReturnType<T>
