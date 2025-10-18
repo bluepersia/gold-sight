@@ -36,6 +36,8 @@ type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   args: TArgs;
   state: TState;
   branchCount: number;
+  context?: any;
+  requirement?: (context: any) => boolean;
   postOp?: (state: any, args: any[], result: any) => void;
 };
 
@@ -63,6 +65,9 @@ type DeepCloneOptions = {
 export interface Config {
   assert?: AssertOptions;
   deepClone?: DeepCloneOptions;
+  onlyRunFirstTopFn?: boolean;
+  insertionRequirement?: (context: any) => boolean;
+  assertionRequirement?: (context: any) => boolean;
 }
 
 export declare function getQueue(globalKey: string): any;
@@ -75,6 +80,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
 
   private _globalKey: string;
   private _master?: TMaster;
+  private _hasFirstTopFnRun: boolean;
 
   constructor(
     assertionChains: {
@@ -90,6 +96,9 @@ declare abstract class AssertionMaster<TState, TMaster> {
   get master(): TMaster | undefined;
 
   get state(): (TState & StateBase<TMaster>) | undefined;
+
+  get hasFirstTopFnRun(): boolean;
+  resetTopFnCounter(): void;
 
   abstract newState(): TState;
   resetState(): void;
@@ -109,6 +118,13 @@ declare abstract class AssertionMaster<TState, TMaster> {
       ) => void;
       deepClone?: DeepCloneOptions;
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
+      insertionRequirement?: (context: any) => boolean;
+      assertionRequirement?: (context: any) => boolean;
+      getContext?: (
+        state: TState,
+        args: Parameters<T>,
+        result?: ReturnType<T>
+      ) => any;
     }
   ): T;
 
@@ -116,7 +132,6 @@ declare abstract class AssertionMaster<TState, TMaster> {
   reset(): void;
   setQueue(queue: Map<number, AssertionBlueprint>): void;
   getQueue(): Map<number, AssertionBlueprint>;
-  processPromises(): Promise<Map<number, AssertionBlueprint>>;
   setQueueFromArray(queue: [number, AssertionBlueprint][]): void;
   runPostOps(): void;
 
@@ -134,6 +149,13 @@ declare abstract class AssertionMaster<TState, TMaster> {
       ) => void;
       args?: Parameters<T>;
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
+      insertionRequirement?: (context: any) => boolean;
+      assertionRequirement?: (context: any) => boolean;
+      getContext?: (
+        state: TState,
+        args: Parameters<T>,
+        result?: ReturnType<T>
+      ) => any;
     }
   ): (...args: Parameters<T>) => ReturnType<T>;
 }

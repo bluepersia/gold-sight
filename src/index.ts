@@ -20,6 +20,7 @@ abstract class AssertionMaster<TState, TMaster> {
   private _globalKey: string;
   private _master?: TMaster;
   private _globalOptions: Config | undefined;
+  private _hasFirstTopFnRun: boolean = false;
 
   constructor(
     assertionChains: {
@@ -51,6 +52,10 @@ abstract class AssertionMaster<TState, TMaster> {
     return this._state;
   }
 
+  get hasFirstTopFnRun(): boolean {
+    return this._hasFirstTopFnRun;
+  }
+
   abstract newState(): TState;
 
   resetState = () => {
@@ -62,6 +67,10 @@ abstract class AssertionMaster<TState, TMaster> {
       queueIndex: 0,
     };
   };
+
+  resetTopFnCounter(): void {
+    this._hasFirstTopFnRun = false;
+  }
 
   assertQueue = (options?: AssertOptions) => {
     options = {
@@ -129,7 +138,7 @@ abstract class AssertionMaster<TState, TMaster> {
         else return b.funcIndex - a.funcIndex;
       });
 
-      for (const { state, args, result, id } of items) {
+      for (const { state, args, result, id, requirement, context } of items) {
         const assertions = this.assertionChains[name];
         if (!assertions)
           throw Error(
@@ -137,7 +146,13 @@ abstract class AssertionMaster<TState, TMaster> {
           );
         for (const [key, assertion] of Object.entries(assertions)) {
           try {
-            (assertion as any)(state, args, result, allAssertions);
+            const assertionRequirementPass =
+              !requirement || requirement(context);
+            const globalRequirementPass =
+              !this._globalOptions?.assertionRequirement ||
+              this._globalOptions.assertionRequirement(context);
+            if (assertionRequirementPass && globalRequirementPass)
+              (assertion as any)(state, args, result, allAssertions);
           } catch (e) {
             const err = e as Error;
             if (id) err.message = `ID: ${id}, ${err.message}`;
@@ -181,6 +196,13 @@ abstract class AssertionMaster<TState, TMaster> {
       ) => void;
       deepClone?: DeepCloneOptions;
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
+      insertionRequirement?: (context: any) => boolean;
+      assertionRequirement?: (context: any) => boolean;
+      getContext?: (
+        state: TState,
+        args: Parameters<T>,
+        result?: ReturnType<T>
+      ) => any;
     }
   ): T {
     return ((...args: Parameters<T>) => {
@@ -238,6 +260,9 @@ abstract class AssertionMaster<TState, TMaster> {
 
       const id = processors?.getId ? processors.getId(args, result) : "";
 
+      const context = processors?.getContext
+        ? processors.getContext(this.state, args, result)
+        : undefined;
       const assertionData = {
         state: this.state,
         funcIndex,
@@ -246,6 +271,8 @@ abstract class AssertionMaster<TState, TMaster> {
         id,
         branchCount,
         args: argsClone,
+        context,
+        requirement: processors?.assertionRequirement,
         postOp: () => {},
       } as AssertionBlueprint;
 
@@ -261,8 +288,20 @@ abstract class AssertionMaster<TState, TMaster> {
         };
       }
 
-      assertionQueues[this.globalKey].set(queueIndex, assertionData);
+      const insertionRequirementPass =
+        !processors?.insertionRequirement ||
+        processors.insertionRequirement(context);
 
+      const globalRequirementPass =
+        !this._globalOptions?.insertionRequirement ||
+        this._globalOptions.insertionRequirement(context);
+      if (insertionRequirementPass && globalRequirementPass) {
+        const isValidPass =
+          !this._globalOptions?.onlyRunFirstTopFn ||
+          (this._globalOptions?.onlyRunFirstTopFn && !this.hasFirstTopFnRun);
+        if (isValidPass)
+          assertionQueues[this.globalKey].set(queueIndex, assertionData);
+      }
       return isAsync ? (result as Promise<any>) : result;
     }) as T;
   }
@@ -281,10 +320,6 @@ abstract class AssertionMaster<TState, TMaster> {
 
   getQueue() {
     return getQueue(this.globalKey);
-  }
-
-  async processPromises() {
-    return await processPromises(this.globalKey);
   }
 
   setQueueFromArray(queue: [number, AssertionBlueprint][]) {
@@ -319,28 +354,22 @@ abstract class AssertionMaster<TState, TMaster> {
         result: ReturnType<T>
       ) => void;
       args?: Parameters<T>;
+      insertionRequirement?: (context: any) => boolean;
+      assertionRequirement?: (context: any) => boolean;
+      getContext?: (
+        state: TState,
+        args: Parameters<T>,
+        result?: ReturnType<T>
+      ) => any;
     }
   ): (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T> {
-    const isAsync = fn.constructor.name === "AsyncFunction";
-    if (isAsync) {
-      return async (...args) => {
-        this.resetState();
-        this.setQueue(new Map());
-        const wrappedFn = this.wrapFn(fn, name, options);
-        const result = await wrappedFn(...args);
-        this.state!.master = this.master;
-        await this.processPromises();
-        this.runPostOps();
-        return result;
-      };
-    }
     return (...args) => {
       this.resetState();
-      this.setQueue(new Map());
       const wrappedFn = this.wrapFn(fn, name, options);
       const result = wrappedFn(...args);
       this.state!.master = this.master;
       this.runPostOps();
+      this._hasFirstTopFnRun = true;
       return result;
     };
   }
@@ -351,17 +380,6 @@ function getQueue(globalKey: string) {
     throw Error(`Assertion queue for ${globalKey} not found`);
 
   return assertionQueues[globalKey];
-}
-
-async function processPromises(globalKey: string) {
-  const queue = getQueue(globalKey);
-
-  for (const assertion of queue.values()) {
-    if (assertion.result instanceof Promise) {
-      assertion.result = await assertion.result;
-    }
-  }
-  return queue;
 }
 
 function printMaster(master: any) {

@@ -206,6 +206,9 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
         key,
         {
           ...value,
+          originalArgs: undefined,
+          originalResult: undefined,
+          requirement: undefined,
           postOp: undefined,
           state: {
             ...value.state,
