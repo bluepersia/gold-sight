@@ -36,8 +36,7 @@ type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   args: TArgs;
   state: TState;
   branchCount: number;
-  context?: any;
-  requirement?: (context: any) => boolean;
+  snapshot?: any;
   postOp?: (state: any, args: any[], result: any) => void;
 };
 
@@ -66,10 +65,7 @@ type DeepCloneOptions = {
 export interface Config<TState> {
   assert?: AssertOptions;
   deepClone?: DeepCloneOptions;
-  onlyRunFirstTopFn?: boolean;
-  insertionRequirement?: (context: any) => boolean;
-  assertionRequirement?: (context: any) => boolean;
-  getReqContext?: (state: TState, args: any, result?: any) => any;
+  getSnapshot?: (state: TState, args: any, result: any) => any;
 }
 
 export declare function getQueue(globalKey: string): any;
@@ -99,9 +95,6 @@ declare abstract class AssertionMaster<TState, TMaster> {
 
   get state(): (TState & StateBase<TMaster>) | undefined;
 
-  get hasFirstTopFnRun(): boolean;
-  resetTopFnCounter(): void;
-
   abstract newState(): TState;
   resetState(): void;
   assertQueue(options?: AssertOptions): void;
@@ -120,11 +113,10 @@ declare abstract class AssertionMaster<TState, TMaster> {
       ) => void;
       deepClone?: DeepCloneOptions;
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
-      insertionRequirement?: (context: any) => boolean;
-      assertionRequirement?: (context: any) => boolean;
-      getReqContext?: (
-        state: TState,
-        args: Parameters<T>,
+
+      getSnapshot?: (
+        state?: TState,
+        args?: Parameters<T>,
         result?: ReturnType<T>
       ) => any;
     }
@@ -151,11 +143,10 @@ declare abstract class AssertionMaster<TState, TMaster> {
       ) => void;
       args?: Parameters<T>;
       getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
-      insertionRequirement?: (context: any) => boolean;
-      assertionRequirement?: (context: any) => boolean;
-      getReqContext?: (
-        state: TState,
-        args: Parameters<T>,
+
+      getSnapshot?: (
+        state?: TState,
+        args?: Parameters<T>,
         result?: ReturnType<T>
       ) => any;
     }
