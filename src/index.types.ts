@@ -66,9 +66,6 @@ export interface Config {
 }
 
 export declare function getQueue(globalKey: string): any;
-export declare function getQueueAsync(
-  globalKey: string
-): Promise<Map<number, AssertionBlueprint>>;
 
 declare abstract class AssertionMaster<TState, TMaster> {
   protected _state: (TState & StateBase<TMaster>) | undefined;
@@ -119,7 +116,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
   reset(): void;
   setQueue(queue: Map<number, AssertionBlueprint>): void;
   getQueue(): Map<number, AssertionBlueprint>;
-  getQueueAsync(): Promise<Map<number, AssertionBlueprint>>;
+  processPromises(): Promise<Map<number, AssertionBlueprint>>;
   setQueueFromArray(queue: [number, AssertionBlueprint][]): void;
   runPostOps(): void;
 

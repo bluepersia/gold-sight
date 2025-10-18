@@ -63,7 +63,7 @@ abstract class AssertionMaster<TState, TMaster> {
     };
   };
 
-  assertQueue = async (options?: AssertOptions) => {
+  assertQueue = (options?: AssertOptions) => {
     options = {
       errorAlgorithm: "firstOfDeepest",
       ...(this._globalOptions?.assert || {}),
@@ -137,11 +137,7 @@ abstract class AssertionMaster<TState, TMaster> {
           );
         for (const [key, assertion] of Object.entries(assertions)) {
           try {
-            if (assertion.constructor.name === "AsyncFunction") {
-              await assertion(state, args, result, allAssertions);
-            } else {
-              (assertion as any)(state, args, result, allAssertions);
-            }
+            (assertion as any)(state, args, result, allAssertions);
           } catch (e) {
             const err = e as Error;
             if (id) err.message = `ID: ${id}, ${err.message}`;
@@ -287,8 +283,8 @@ abstract class AssertionMaster<TState, TMaster> {
     return getQueue(this.globalKey);
   }
 
-  async getQueueAsync() {
-    return await getQueueAsync(this.globalKey);
+  async processPromises() {
+    return await processPromises(this.globalKey);
   }
 
   setQueueFromArray(queue: [number, AssertionBlueprint][]) {
@@ -324,17 +320,27 @@ abstract class AssertionMaster<TState, TMaster> {
       ) => void;
       args?: Parameters<T>;
     }
-  ): (...args: Parameters<T>) => ReturnType<T> {
-    return (...args: Parameters<T>): ReturnType<T> => {
+  ): (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T> {
+    const isAsync = fn.constructor.name === "AsyncFunction";
+    if (isAsync) {
+      return async (...args) => {
+        this.resetState();
+        this.setQueue(new Map());
+        const wrappedFn = this.wrapFn(fn, name, options);
+        const result = await wrappedFn(...args);
+        this.state!.master = this.master;
+        await this.processPromises();
+        this.runPostOps();
+        return result;
+      };
+    }
+    return (...args) => {
       this.resetState();
       this.setQueue(new Map());
-
       const wrappedFn = this.wrapFn(fn, name, options);
       const result = wrappedFn(...args);
       this.state!.master = this.master;
-
       this.runPostOps();
-
       return result;
     };
   }
@@ -347,12 +353,12 @@ function getQueue(globalKey: string) {
   return assertionQueues[globalKey];
 }
 
-async function getQueueAsync(globalKey: string) {
+async function processPromises(globalKey: string) {
   const queue = getQueue(globalKey);
 
   for (const assertion of queue.values()) {
-    if (assertion.constructor.name === "AsyncFunction") {
-      await assertion.result;
+    if (assertion.result instanceof Promise) {
+      assertion.result = await assertion.result;
     }
   }
   return queue;
@@ -367,6 +373,6 @@ function printMaster(master: any) {
   else return "";
 }
 
-export { getQueue, getQueueAsync };
+export { getQueue };
 
 export default AssertionMaster;
