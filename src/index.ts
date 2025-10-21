@@ -209,6 +209,9 @@ abstract class AssertionMaster<
     return ((...args: Parameters<T>) => {
       const eventBus = getEventBus(args);
 
+      if (eventBus) eventBus.incrementCallIndex();
+      const callIndex = eventBus?.getCallIndex() ?? 0;
+
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
         : args;
@@ -277,7 +280,8 @@ abstract class AssertionMaster<
         branchCount,
         args: argsClone,
         snapshot,
-        uninitializedEvents: eventBus?.getUninitializedEvents() || [],
+        eventBus,
+        callIndex,
         postOp: () => {},
       } as AssertionBlueprint;
 
@@ -330,13 +334,15 @@ abstract class AssertionMaster<
 
       value.state = { ...value.state };
 
-      if (value.postOp) value.postOp(this.state, value.args, value.result);
+      if (value.eventBus && value.callIndex) {
+        const events = value.eventBus.getEventsForCallIndex(value.callIndex);
 
-      if (value.uninitializedEvents) {
-        for (const event of value.uninitializedEvents) {
-          event.state = { ...this.state };
+        for (const event of events) {
+          event.state = value.state;
         }
       }
+
+      if (value.postOp) value.postOp(this.state, value.args, value.result);
     }
   }
 

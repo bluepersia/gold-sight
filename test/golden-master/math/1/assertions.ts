@@ -5,45 +5,76 @@ import { AssertionChain } from "../../../../src/index.types";
 import { a, b, c, d, e, wrap, c2 } from "./logic";
 import * as logic from "./logic";
 import { Master, MathState } from "../index.types";
+import { EventBus, getEventByState } from "../../../../src/utils/eventBus";
 
-const aDefaultAssertions: AssertionChain<MathState, [], number[]> = {
+const aDefaultAssertions: AssertionChain<MathState, [EventBus], number[]> = {
   a: (state, args, result) => {
+    const event = getEventByState(args[0], "a", {});
+    expect(event?.state.absIndex).toBe(state.absIndex);
     expect(result).toEqual(master.finalResults);
     return true;
   },
 };
-const bDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
+const bDefaultAssertions: AssertionChain<
+  MathState,
+  [number[], EventBus],
+  number[]
+> = {
   b: (state, args, result) => {
+    const event = getEventByState(args[1], "b", {});
+    expect(event?.state.absIndex).toBe(state.absIndex);
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
     return true;
   },
 };
-const cDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
+const cDefaultAssertions: AssertionChain<
+  MathState,
+  [number[], EventBus],
+  number[]
+> = {
   c: (state, args, result) => {
+    const event = getEventByState(args[1], "c", {});
+    expect(event?.state.absIndex).toBe(state.absIndex);
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.subResults[state.subAbsIndex]);
     return true;
   },
 };
 
-const c2DefaultAssertions: AssertionChain<MathState, number[], number[]> = {
+const c2DefaultAssertions: AssertionChain<
+  MathState,
+  [number[], EventBus],
+  number[]
+> = {
   c2: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
 
     return true;
   },
 };
-const dDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
+const dDefaultAssertions: AssertionChain<
+  MathState,
+  [number[], EventBus],
+  number[]
+> = {
   d: (state, args, result) => {
+    const event = getEventByState(args[1], "d", {});
+    expect(event?.state.absIndex).toBe(state.absIndex);
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
 
     return true;
   },
 };
-const eDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
+const eDefaultAssertions: AssertionChain<
+  MathState,
+  [number[], EventBus],
+  number[]
+> = {
   e: (state, args, result) => {
+    const event = getEventByState(args[1], "e", {});
+    expect(event?.state.absIndex).toBe(state.absIndex);
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.multResults[state.multAbsIndex]);
 

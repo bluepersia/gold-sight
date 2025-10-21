@@ -3,6 +3,7 @@ import { masterCollection } from "./masterCollection";
 import { a } from "./1/logic";
 import { getQueue } from "../../../src";
 import { AssertionBlueprint } from "../../../src/index.types";
+import { EventBus } from "../../../src/utils/eventBus";
 
 describe("assert queue", () => {
   test.each(masterCollection)("set queue", (master) => {
@@ -119,7 +120,7 @@ describe("top level function", () => {
     vi.spyOn(assertionMaster, "runPostOps");
     vi.spyOn(assertionMaster, "resetState");
 
-    topFunc();
+    topFunc(new EventBus());
 
     expect(assertionMaster.runPostOps).toHaveBeenCalledTimes(1);
     expect(assertionMaster.resetState).toHaveBeenCalledTimes(1);
@@ -164,7 +165,7 @@ describe("top level function", () => {
 
     assertionMaster.master = master;
 
-    topFunc();
+    topFunc(new EventBus());
 
     const queue = getQueue(assertionMaster.globalKey);
     const allAssertions = Array.from(queue.values());
@@ -206,11 +207,14 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
         key,
         {
           ...value,
+          args: undefined,
           originalArgs: undefined,
           originalResult: undefined,
           requirement: undefined,
           postOp: undefined,
-          uninitializedEvents: undefined,
+          snapshot: undefined,
+          eventBus: undefined,
+          callIndex: undefined,
           state: {
             ...value.state,
             master: undefined,

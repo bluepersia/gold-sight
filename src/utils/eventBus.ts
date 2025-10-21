@@ -2,6 +2,7 @@ type IEvent = {
   name: string;
   payload: any;
   state?: any;
+  callIndex: number;
 };
 
 type IEventBus = {
@@ -10,19 +11,37 @@ type IEventBus = {
   };
 
   emit(name: string, payload: any): void;
-  getUninitializedEvents(): IEvent[];
+  incrementCallIndex(): void;
+  getEventsForCallIndex(callIndex: number): IEvent[];
 };
 
 class EventBus implements IEventBus {
+  private callIndex: number = 0;
+
+  constructor(
+    callIndex: number = 0,
+    events: { [name: string]: IEvent[] } = {}
+  ) {
+    this.callIndex = callIndex;
+    this.events = events;
+  }
   events: {
     [name: string]: IEvent[];
   } = {};
 
   uninitialized: IEvent[] = [];
+
+  incrementCallIndex() {
+    this.callIndex++;
+  }
+  getCallIndex(): number {
+    return this.callIndex;
+  }
   emit(name: string, payload: any) {
     const newEvent: IEvent = {
       name,
       payload,
+      callIndex: this.callIndex,
     };
     if (!this.events[name]) {
       this.events[name] = [];
@@ -31,10 +50,10 @@ class EventBus implements IEventBus {
     this.uninitialized.push(newEvent);
   }
 
-  getUninitializedEvents(): IEvent[] {
-    const uninitializedEvents = this.uninitialized;
-    this.uninitialized = [];
-    return uninitializedEvents;
+  getEventsForCallIndex(callIndex: number): IEvent[] {
+    return Object.values(this.events)
+      .flat()
+      .filter((event: IEvent) => event.callIndex === callIndex);
   }
 }
 
@@ -55,7 +74,7 @@ function getEventBus(args: any[]): EventBus | null {
   return null;
 }
 
-function getFirstEventByState(
+function getEventByState(
   eventBus: EventBus,
   name: string,
   state: any
@@ -64,7 +83,7 @@ function getFirstEventByState(
   return events[0] || null;
 }
 
-function getFirstEventByPayload(
+function getEventByPayload(
   eventBus: EventBus,
   name: string,
   payload: any
@@ -73,7 +92,7 @@ function getFirstEventByPayload(
   return events[0] || null;
 }
 
-function getFirstEventByPayloadAndState(
+function getEventByPayloadAndState(
   eventBus: EventBus,
   name: string,
   payload: any,
@@ -127,8 +146,27 @@ function filterEventsByPayloadAndState(
   payload: any,
   state: any
 ): IEvent[] {
-  const events = filterEventsByPayload(eventBus, name, payload);
-  return filterEventsByState(eventBus, name, state);
+  let events = eventBus.events[name];
+  if (!events) {
+    return [];
+  }
+  events = events.filter((event: IEvent) => {
+    for (const key in payload) {
+      if (payload[key] !== event.payload[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  return events.filter((event: IEvent) => {
+    for (const key in state) {
+      if (state[key] !== event.state[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
 }
 
 export {
@@ -136,7 +174,7 @@ export {
   EventBus,
   IEvent,
   IEventBus,
-  getFirstEventByState,
-  getFirstEventByPayload,
-  getFirstEventByPayloadAndState,
+  getEventByState,
+  getEventByPayload,
+  getEventByPayloadAndState,
 };

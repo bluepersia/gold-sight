@@ -1,3 +1,4 @@
+import { EventBus } from "../../../../src/utils/eventBus";
 import { Master } from "../index.types";
 
 const master: Master = {
@@ -12,14 +13,19 @@ const master: Master = {
   topFunc: () => {},
   assertionMaster: null,
 };
-
+const eventBusA = new EventBus(5, {
+  a: [{ name: "a", payload: {}, state: { absIndex: 0 }, callIndex: 1 }],
+});
 master.finalQueue.set(0, {
   name: "a",
   funcIndex: 0,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [],
+  args: [eventBusA],
   id: "",
+  eventBus: new EventBus(1, {
+    a: [{ name: "a", payload: {}, state: { absIndex: 0 }, callIndex: 1 }],
+  }),
   state: {
     absIndex: 0,
     addAbsIndex: 0,
@@ -29,13 +35,15 @@ master.finalQueue.set(0, {
     master,
   },
 });
-
+const eventBusB = new EventBus(5, {
+  b: [{ name: "b", payload: {}, state: { absIndex: 0 }, callIndex: 2 }],
+});
 master.finalQueue.set(1, {
   name: "b",
   funcIndex: 1,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [[]],
+  args: [[], eventBusB],
   id: "",
   state: {
     absIndex: 0,
@@ -46,13 +54,15 @@ master.finalQueue.set(1, {
     master,
   },
 });
-
+const eventBusC = new EventBus(5, {
+  c: [{ name: "c", payload: {}, state: { absIndex: 1 }, callIndex: 3 }],
+});
 master.finalQueue.set(2, {
   name: "c",
   funcIndex: 2,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [[3]],
+  args: [[3], eventBusC],
   id: "",
   state: {
     absIndex: 1,
@@ -63,13 +73,15 @@ master.finalQueue.set(2, {
     master,
   },
 });
-
+const eventBusD = new EventBus(5, {
+  d: [{ name: "d", payload: {}, state: { absIndex: 2 }, callIndex: 4 }],
+});
 master.finalQueue.set(3, {
   name: "d",
   funcIndex: 3,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [[3, 0]],
+  args: [[3, 0], eventBusD],
   id: "",
   state: {
     absIndex: 2,
@@ -81,12 +93,16 @@ master.finalQueue.set(3, {
   },
 });
 
+const eventBusE = new EventBus(5, {
+  e: [{ name: "e", payload: {}, state: { absIndex: 3 }, callIndex: 5 }],
+});
+
 master.finalQueue.set(4, {
   name: "e",
   funcIndex: 4,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [[3, 0, 4]],
+  args: [[3, 0, 4], eventBusE],
   id: "",
   state: {
     absIndex: 3,

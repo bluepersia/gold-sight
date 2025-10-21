@@ -1,47 +1,54 @@
+import { EventBus } from "../../../../src/utils/eventBus";
 import * as math from "../math";
 
-let a = () => {
+let a = (eventBus?: EventBus) => {
+  eventBus?.emit("a", {});
   let results: number[] = [];
-  results = b(results);
+  results = b(results, eventBus);
 
   return results;
 };
 
-let b = (results: number[]) => {
+let b = (results: number[], eventBus?: EventBus) => {
+  eventBus?.emit("b", {});
   let newResults = [...results, math.add(1, 2)]; //3
-  newResults = c(newResults);
+  newResults = c(newResults, eventBus);
   return newResults;
 };
 
-let c = (results: number[]) => {
+let c = (results: number[], eventBus?: EventBus) => {
+  eventBus?.emit("c", {});
   let newResults = [...results, math.subtract(results[0], 3)]; //0
-  newResults = d(newResults);
+  newResults = d(newResults, eventBus);
   return newResults;
 };
 
-let c2 = (results: number[]) => {
-  let newResults = d(results);
+let c2 = (results: number[], eventBus?: EventBus) => {
+  eventBus?.emit("c2", {});
+  let newResults = d(results, eventBus);
   return newResults;
 };
 
-let d = (results: number[]) => {
+let d = (results: number[], eventBus?: EventBus) => {
+  eventBus?.emit("d", {});
   let newResults = [...results, math.add(results[1], 4)]; //4
-  newResults = e(newResults);
+  newResults = e(newResults, eventBus);
   return newResults;
 };
 
-let e = (results: number[]) => {
+let e = (results: number[], eventBus?: EventBus) => {
+  eventBus?.emit("e", {});
   let newResults = [...results, math.multiply(results[2], 3)]; //12
   return newResults;
 };
 
 function wrap(
-  aWrapped: () => number[],
-  bWrapped: (results: number[]) => number[],
-  cWrapped: (results: number[]) => number[],
-  c2Wrapped: (results: number[]) => number[],
-  dWrapped: (results: number[]) => number[],
-  eWrapped: (results: number[]) => number[]
+  aWrapped: (eventBus?: EventBus) => number[],
+  bWrapped: (results: number[], eventBus?: EventBus) => number[],
+  cWrapped: (results: number[], eventBus?: EventBus) => number[],
+  c2Wrapped: (results: number[], eventBus?: EventBus) => number[],
+  dWrapped: (results: number[], eventBus?: EventBus) => number[],
+  eWrapped: (results: number[], eventBus?: EventBus) => number[]
 ) {
   a = aWrapped;
   b = bWrapped;
