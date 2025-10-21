@@ -8,10 +8,14 @@ import {
   StateBase,
 } from "./index.types";
 import { deepClone } from "./utils/deepClone";
+import { getEventBus } from "./utils/eventBus";
 
 const assertionQueues: AssertionQueues = {};
 
-abstract class AssertionMaster<TState, TMaster> {
+abstract class AssertionMaster<
+  TState,
+  TMaster extends { index: number; step?: number }
+> {
   protected _state: (TState & StateBase<TMaster>) | undefined;
   private assertionChains: {
     [funcKey: string]: AssertionChain<TState, any, any>;
@@ -80,12 +84,9 @@ abstract class AssertionMaster<TState, TMaster> {
     if (!this.state?.master && options?.master === undefined)
       console.error(`No master indexes set. Provide it via options.`);
 
+    const master = options?.master ?? this.state?.master;
     console.groupCollapsed(
-      `✅ ${options.logMasterName} - ✨${
-        options?.master
-          ? printMaster(options.master)
-          : printMaster(this.state?.master)
-      }`
+      `✅ ${options.logMasterName} - ✨${printMaster(options.master)}`
     );
     // Step 1: Group items by function name
     let groupedByName: { [name: string]: AssertionBlueprint[] } = {};
@@ -137,20 +138,36 @@ abstract class AssertionMaster<TState, TMaster> {
             `Assertion chain for ${name} not found. Are you setting up the default assertion chains?`
           );
         for (const [key, assertion] of Object.entries(assertions)) {
+          let didRun = false;
           try {
-            (assertion as any)(state, args, result, allAssertions);
+            didRun = (assertion as any)(state, args, result, allAssertions);
           } catch (e) {
             const err = e as Error;
-            if (id) err.message = `ID: ${id}, ${err.message}`;
+            let prelog = "";
+            if (master) {
+              prelog = `Master:${master.index} `;
+              if (master.step) {
+                prelog += `, Step:${master.step} `;
+              }
+            }
+            if (id) {
+              prelog += `, ID: ${id} `;
+            }
+            if (prelog) {
+              prelog += ", ";
+              err.message = `${prelog}${err.message}`;
+            }
             if (!options.showAllErrors) {
               error = err;
               break outer;
             }
             errors.push({ err, name, id });
           }
-          let count = verifiedAssertions.get(key) || 0;
-          count++;
-          verifiedAssertions.set(key, count);
+          if (didRun) {
+            let count = verifiedAssertions.get(key) || 0;
+            count++;
+            verifiedAssertions.set(key, count);
+          }
         }
       }
     }
@@ -190,6 +207,8 @@ abstract class AssertionMaster<TState, TMaster> {
     }
   ): T {
     return ((...args: Parameters<T>) => {
+      const eventBus = getEventBus(args);
+
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
         : args;
@@ -258,6 +277,7 @@ abstract class AssertionMaster<TState, TMaster> {
         branchCount,
         args: argsClone,
         snapshot,
+        uninitializedEvents: eventBus?.getUninitializedEvents() || [],
         postOp: () => {},
       } as AssertionBlueprint;
 
@@ -311,6 +331,12 @@ abstract class AssertionMaster<TState, TMaster> {
       value.state = { ...value.state };
 
       if (value.postOp) value.postOp(this.state, value.args, value.result);
+
+      if (value.uninitializedEvents) {
+        for (const event of value.uninitializedEvents) {
+          event.state = { ...this.state };
+        }
+      }
     }
   }
 

@@ -1,3 +1,5 @@
+import { IEvent } from "./utils/eventBus";
+
 type StateBase<TMaster> = {
   queueIndex: number;
   master?: TMaster;
@@ -38,6 +40,7 @@ type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   branchCount: number;
   snapshot?: any;
   postOp?: (state: any, args: any[], result: any) => void;
+  uninitializedEvents?: IEvent[];
 };
 
 type AssertionBlueprintForFunc<

@@ -9,18 +9,23 @@ import { Master, MathState } from "../index.types";
 const aDefaultAssertions: AssertionChain<MathState, [], number[]> = {
   a: (state, args, result) => {
     expect(result).toEqual(master.finalResults);
+    return true;
   },
 };
 const bDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   b: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
+
+    return true;
   },
 };
 const cDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   c: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.subResults[state.subAbsIndex]);
+
+    return true;
   },
 };
 
@@ -28,12 +33,16 @@ const dDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   d: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
+
+    return true;
   },
 };
 const eDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   e: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.multResults[state.multAbsIndex]);
+
+    return true;
   },
 };
 const fDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
@@ -46,6 +55,8 @@ const fDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
         divAbsIndex: state.divAbsIndex,
       })
     ).toBe(master.divResults[state.divAbsIndex]);
+
+    return true;
   },
 };
 const assertionChains = {
@@ -74,7 +85,7 @@ class Math2Assertions extends AssertionMaster<MathState, Master> {
     };
   }
 
-  a = this.wrapTopFn(a, "a");
+  a = this.wrapTopFn(a, "a") as () => number[];
 
   b = this.wrapFn(b, "b", {
     post: (state) => {
