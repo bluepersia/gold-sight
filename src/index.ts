@@ -8,7 +8,15 @@ import {
   StateBase,
 } from "./index.types";
 import { deepClone } from "./utils/deepClone";
-import { getEventBus } from "./utils/eventBus";
+import {
+  getEventBus,
+  EventBus,
+  IEvent,
+  IEventBus,
+  getEventByState,
+  getEventByPayload,
+  getEventByPayloadAndState,
+} from "./utils/eventBus";
 
 const assertionQueues: AssertionQueues = {};
 
@@ -393,6 +401,15 @@ function printMaster(master: any) {
   else return "";
 }
 
-export { getQueue };
+export {
+  getQueue,
+  deepClone,
+  EventBus,
+  IEvent,
+  IEventBus,
+  getEventByState,
+  getEventByPayload,
+  getEventByPayloadAndState,
+};
 
 export default AssertionMaster;
