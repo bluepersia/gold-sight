@@ -112,19 +112,11 @@ function filterEventsByState(
     return [];
   }
   return events.filter((event: IEvent) => {
-    if (!state || !event.state) return false;
-
     for (const key in state) {
-      if (key in event.state && state[key] !== event.state[key]) {
+      if (state[key] !== event.state[key]) {
         return false;
       }
     }
-    for (const key in event.state) {
-      if (key in state && state[key] !== event.state[key]) {
-        return false;
-      }
-    }
-
     return true;
   });
 }
@@ -139,20 +131,11 @@ function filterEventsByPayload(
     return [];
   }
   return events.filter((event: IEvent) => {
-    if (!payload || !event.payload) return false;
-
     for (const key in payload) {
-      if (key in event.payload && payload[key] !== event.payload[key]) {
+      if (payload[key] !== event.payload[key]) {
         return false;
       }
     }
-
-    for (const key in event.payload) {
-      if (key in payload && payload[key] !== event.payload[key]) {
-        return false;
-      }
-    }
-
     return true;
   });
 }
@@ -168,37 +151,20 @@ function filterEventsByPayloadAndState(
     return [];
   }
   events = events.filter((event: IEvent) => {
-    if (!payload || !event.payload) return false;
-
     for (const key in payload) {
-      if (key in event.payload && payload[key] !== event.payload[key]) {
+      if (payload[key] !== event.payload[key]) {
         return false;
       }
     }
-
-    for (const key in event.payload) {
-      if (key in payload && payload[key] !== event.payload[key]) {
-        return false;
-      }
-    }
-
     return true;
   });
 
   return events.filter((event: IEvent) => {
-    if (!state || !event.state) return false;
-
     for (const key in state) {
-      if (key in event.state && state[key] !== event.state[key]) {
+      if (state[key] !== event.state[key]) {
         return false;
       }
     }
-    for (const key in event.state) {
-      if (key in state && state[key] !== event.state[key]) {
-        return false;
-      }
-    }
-
     return true;
   });
 }
