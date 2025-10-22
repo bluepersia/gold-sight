@@ -2,7 +2,7 @@ import { EventBus } from "../../../../src/utils/eventBus";
 import * as math from "../math";
 
 let a = (eventBus?: EventBus) => {
-  eventBus?.emit("a", {});
+  eventBus?.emitOnce("a", {});
   let results: number[] = [];
   results = b(results, eventBus);
 
@@ -11,13 +11,15 @@ let a = (eventBus?: EventBus) => {
 
 let b = (results: number[], eventBus?: EventBus) => {
   eventBus?.emit("b", {});
+  eventBus?.emit("b", {});
   let newResults = [...results, math.add(1, 2)]; //3
   newResults = c(newResults, eventBus);
   return newResults;
 };
 
 let c = (results: number[], eventBus?: EventBus) => {
-  eventBus?.emit("c", {});
+  eventBus?.emitOnce("c", {});
+  eventBus?.emitOnce("c", {});
   let newResults = [...results, math.subtract(results[0], 3)]; //0
   newResults = d(newResults, eventBus);
   return newResults;

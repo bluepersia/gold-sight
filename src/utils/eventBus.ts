@@ -1,6 +1,7 @@
 type IEvent = {
   name: string;
   payload?: any;
+  id?: string;
   state?: any;
   callIndex: number;
 };
@@ -31,6 +32,10 @@ class EventBus implements IEventBus {
 
   uninitialized: IEvent[] = [];
 
+  emitOnceEvents: {
+    [name: string]: IEvent[];
+  } = {};
+
   incrementCallIndex() {
     this.callIndex++;
   }
@@ -43,11 +48,28 @@ class EventBus implements IEventBus {
       payload,
       callIndex: this.callIndex,
     };
-    if (!this.events[name]) {
-      this.events[name] = [];
+    let events = this.events[name];
+    if (!events) {
+      events = this.events[name] = [];
     }
-    this.events[name].push(newEvent);
+    events.push(newEvent);
     this.uninitialized.push(newEvent);
+  }
+
+  emitOnce(name: string, payload?: any) {
+    let emitOnceEvents = this.emitOnceEvents[name];
+    if (!emitOnceEvents) this.emitOnceEvents[name] = emitOnceEvents = [];
+
+    if (emitOnceEvents.find((event) => event.callIndex === this.callIndex))
+      return;
+
+    emitOnceEvents.push({
+      name,
+      payload,
+      callIndex: this.callIndex,
+    });
+
+    this.emit(name, payload);
   }
 
   getEventsForCallIndex(callIndex: number): IEvent[] {
