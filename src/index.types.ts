@@ -1,4 +1,12 @@
-import { EventBus } from "./utils/eventBus";
+import { deepClone } from "./utils/deepClone";
+import {
+  EventBus,
+  IEvent,
+  IEventBus,
+  getEventByState,
+  getEventByPayload,
+  getEventByPayloadAndState,
+} from "./utils/eventBus";
 
 type StateBase<TMaster> = {
   queueIndex: number;
@@ -173,6 +181,16 @@ type RunAssertionsOfNameParams<TState> = Pick<
 >;
 
 export default AssertionMaster;
+
+export {
+  deepClone,
+  EventBus,
+  IEvent,
+  IEventBus,
+  getEventByState,
+  getEventByPayload,
+  getEventByPayloadAndState,
+};
 
 export type {
   AssertionChain,
