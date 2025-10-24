@@ -86,7 +86,10 @@ describe("wrapped function call", () => {
       assertionMaster.state!.branchCounter = new Map([[0, 0]]);
       assertionMaster.state!.callStack = [0];
 
-      master.subfunc([]);
+      master.subfunc([], {
+        eventBus: new EventBus(),
+        eventUUID: "",
+      });
 
       let queue = new Map(getQueue(assertionMaster.globalKey));
 
@@ -120,7 +123,10 @@ describe("top level function", () => {
     vi.spyOn(assertionMaster, "runPostOps");
     vi.spyOn(assertionMaster, "resetState");
 
-    topFunc(new EventBus());
+    topFunc({
+      eventBus: new EventBus(),
+      eventUUID: "",
+    });
 
     expect(assertionMaster.runPostOps).toHaveBeenCalledTimes(1);
     expect(assertionMaster.resetState).toHaveBeenCalledTimes(1);
@@ -165,7 +171,10 @@ describe("top level function", () => {
 
     assertionMaster.master = master;
 
-    topFunc(new EventBus());
+    topFunc({
+      eventBus: new EventBus(),
+      eventUUID: "",
+    });
 
     const queue = getQueue(assertionMaster.globalKey);
     const allAssertions = Array.from(queue.values());
@@ -214,7 +223,7 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
           postOp: undefined,
           snapshot: undefined,
           eventBus: undefined,
-          callIndex: undefined,
+          eventUUID: undefined,
           state: {
             ...value.state,
             master: undefined,

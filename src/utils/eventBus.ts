@@ -3,7 +3,7 @@ type IEvent = {
   payload?: any;
   id?: string;
   state?: any;
-  callIndex: number;
+  uuid: string;
 };
 
 type IEventBus = {
@@ -11,19 +11,19 @@ type IEventBus = {
     [name: string]: IEvent[];
   };
 
+  isEventBus: boolean;
   emit(name: string, payload: any): void;
-  incrementCallIndex(): void;
-  getEventsForCallIndex(callIndex: number): IEvent[];
+  getEventsForUUID(uuid: string): IEvent[];
 };
 
 class EventBus implements IEventBus {
-  private callIndex: number = 0;
-
+  public isEventBus: boolean = true;
+  private queueIndex: number = 0;
   constructor(
-    callIndex: number = 0,
+    queueIndex: number = 0,
     events: { [name: string]: IEvent[] } = {}
   ) {
-    this.callIndex = callIndex;
+    this.queueIndex = queueIndex;
     this.events = events;
   }
   events: {
@@ -36,17 +36,18 @@ class EventBus implements IEventBus {
     [name: string]: IEvent[];
   } = {};
 
-  incrementCallIndex() {
-    this.callIndex++;
+  setQueueIndex(queueIndex: number) {
+    this.queueIndex = queueIndex;
   }
-  getCallIndex(): number {
-    return this.callIndex;
+  getQueueIndex(): number {
+    return this.queueIndex;
   }
-  emit(name: string, payload?: any) {
+  emit(name: string, uuid: string | { eventUUID?: string }, payload?: any) {
+    const uuidValue = typeof uuid === "string" ? uuid : uuid.eventUUID;
     const newEvent: IEvent = {
       name,
       payload,
-      callIndex: this.callIndex,
+      uuid: uuidValue!,
     };
     let events = this.events[name];
     if (!events) {
@@ -56,34 +57,32 @@ class EventBus implements IEventBus {
     this.uninitialized.push(newEvent);
   }
 
-  emitOnce(name: string, payload?: any) {
+  emitOnce(name: string, uuid: string | { eventUUID?: string }, payload?: any) {
+    const uuidValue = typeof uuid === "string" ? uuid : uuid.eventUUID;
     let emitOnceEvents = this.emitOnceEvents[name];
     if (!emitOnceEvents) this.emitOnceEvents[name] = emitOnceEvents = [];
 
-    if (emitOnceEvents.find((event) => event.callIndex === this.callIndex))
-      return;
+    if (emitOnceEvents.find((event) => event.uuid === uuidValue)) return;
 
     emitOnceEvents.push({
       name,
       payload,
-      callIndex: this.callIndex,
+      uuid: uuidValue!,
     });
 
-    this.emit(name, payload);
+    this.emit(name, uuid, payload);
   }
 
-  getEventsForCallIndex(callIndex: number): IEvent[] {
+  getEventsForUUID(uuid: string): IEvent[] {
     return Object.values(this.events)
       .flat()
-      .filter((event: IEvent) => event.callIndex === callIndex);
+      .filter((event: IEvent) => event.uuid === uuid);
   }
 }
 
 function getEventBus(args: any[]): EventBus | null {
   for (const arg of args) {
-    if (arg instanceof EventBus) {
-      return arg;
-    }
+    if (arg?.isEventBus) return arg as EventBus;
     if (typeof arg === "object") {
       if ("events" in arg) {
         return arg.events;
@@ -91,9 +90,24 @@ function getEventBus(args: any[]): EventBus | null {
       if ("eventBus" in arg) {
         return arg.eventBus;
       }
+      if ("event" in arg) {
+        return arg.event;
+      }
+      for (const value of Object.values(arg)) {
+        if ((value as any).isEventBus) return value as EventBus;
+      }
     }
   }
   return null;
+}
+
+function getEventUUID(args: any[]): string | undefined {
+  for (const arg of args) {
+    if (typeof arg === "object" && "eventUUID" in arg) {
+      return arg.eventUUID;
+    }
+  }
+  return undefined;
 }
 
 function getEventByState(
@@ -101,8 +115,15 @@ function getEventByState(
   name: string,
   state: any
 ): IEvent | null {
-  const events = filterEventsByState(eventBus, name, state);
-  return events[0] || null;
+  const event = eventBus.events[name]?.find((e) => {
+    for (const key in state) {
+      if (state[key] !== e.state[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+  return event || null;
 }
 
 function getEventByPayload(
@@ -110,18 +131,46 @@ function getEventByPayload(
   name: string,
   payload: any
 ): IEvent | null {
-  const events = filterEventsByPayload(eventBus, name, payload);
-  return events[0] || null;
+  const event = eventBus.events[name]?.find((e) => {
+    for (const key in payload) {
+      if (payload[key] !== e.payload[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+  return event || null;
 }
 
-function getEventByPayloadAndState(
+function getEvent(
   eventBus: EventBus,
   name: string,
   payload: any,
   state: any
 ): IEvent | null {
-  const events = filterEventsByPayloadAndState(eventBus, name, payload, state);
-  return events[0] || null;
+  const event = eventBus.events[name]?.find((e) => {
+    for (const key in state) {
+      if (state[key] !== e.state[key]) {
+        return false;
+      }
+    }
+    for (const key in payload) {
+      if (payload[key] !== e.payload[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+  return event || null;
+}
+
+function getEventByUUID(
+  eventBus: EventBus,
+  name: string,
+  uuid: string
+): IEvent | null {
+  const event = eventBus.events[name]?.find((e) => e.uuid === uuid);
+  return event || null;
 }
 
 function filterEventsByState(
@@ -162,7 +211,19 @@ function filterEventsByPayload(
   });
 }
 
-function filterEventsByPayloadAndState(
+function filterEventsByUUID(
+  eventBus: EventBus,
+  name: string,
+  uuid: string
+): IEvent[] {
+  const events = eventBus.events[name];
+  if (!events) {
+    return [];
+  }
+  return events.filter((event: IEvent) => event.uuid === uuid);
+}
+
+function filterEvents(
   eventBus: EventBus,
   name: string,
   payload: any,
@@ -191,6 +252,32 @@ function filterEventsByPayloadAndState(
   });
 }
 
+function funcWithEventBus(
+  args: any[],
+  func: (eventBus: EventBus, ...args: any[]) => any
+): (...args: any[]) => any {
+  const eventBus = getEventBus(args);
+  if (!eventBus) {
+    throw new Error("Event bus not found");
+  }
+  return func(eventBus, ...args);
+}
+
+function funcWithEvents(
+  args: any[],
+  func: (eventBus: EventBus, eventUUID: string, ...args: any[]) => any
+): (...args: any[]) => any {
+  const eventBus = getEventBus(args);
+  const eventUUID = getEventUUID(args);
+  if (!eventBus) {
+    throw new Error("Event bus not found");
+  }
+  if (!eventUUID) {
+    throw new Error("Event UUID not found");
+  }
+  return func(eventBus, eventUUID, ...args);
+}
+
 export {
   getEventBus,
   EventBus,
@@ -198,5 +285,13 @@ export {
   IEventBus,
   getEventByState,
   getEventByPayload,
-  getEventByPayloadAndState,
+  getEvent,
+  filterEventsByState,
+  filterEventsByPayload,
+  filterEvents,
+  getEventUUID,
+  getEventByUUID,
+  filterEventsByUUID,
+  funcWithEventBus,
+  funcWithEvents,
 };

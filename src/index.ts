@@ -15,8 +15,15 @@ import {
   IEventBus,
   getEventByState,
   getEventByPayload,
-  getEventByPayloadAndState,
+  getEvent,
+  getEventUUID,
+  getEventByUUID,
+  filterEventsByUUID,
+  funcWithEventBus,
+  funcWithEvents,
 } from "./utils/eventBus";
+
+import { AbsCounter } from "./utils/absCounter";
 
 const assertionQueues: AssertionQueues = {};
 
@@ -217,9 +224,6 @@ abstract class AssertionMaster<
     return ((...args: Parameters<T>) => {
       const eventBus = getEventBus(args);
 
-      if (eventBus) eventBus.incrementCallIndex();
-      const callIndex = eventBus?.getCallIndex() ?? 0;
-
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
         : args;
@@ -252,6 +256,18 @@ abstract class AssertionMaster<
 
       const branchCount = this.state!.branchCounter.get(parentId) || 0;
       this.state!.branchCounter.set(parentId, branchCount + 1);
+
+      let eventUUID: string | undefined;
+      if (eventBus) {
+        eventUUID = crypto.randomUUID().toString();
+        for (let i = 0; i < args.length; i++) {
+          const arg = args[i];
+          if (typeof arg === "object" && "eventUUID" in arg) {
+            args[i] = { ...arg, eventUUID };
+            break;
+          }
+        }
+      }
 
       const result = fn(...args);
 
@@ -289,7 +305,7 @@ abstract class AssertionMaster<
         args: argsClone,
         snapshot,
         eventBus,
-        callIndex,
+        eventUUID,
         postOp: () => {},
       } as AssertionBlueprint;
 
@@ -342,9 +358,8 @@ abstract class AssertionMaster<
 
       value.state = { ...value.state };
 
-      if (value.eventBus && value.callIndex) {
-        const events = value.eventBus.getEventsForCallIndex(value.callIndex);
-
+      if (value.eventBus && value.eventUUID) {
+        const events = value.eventBus.getEventsForUUID(value.eventUUID);
         for (const event of events) {
           event.state = value.state;
         }
@@ -409,7 +424,13 @@ export {
   IEventBus,
   getEventByState,
   getEventByPayload,
-  getEventByPayloadAndState,
+  getEvent,
+  AbsCounter,
+  getEventUUID,
+  getEventByUUID,
+  filterEventsByUUID,
+  funcWithEventBus,
+  funcWithEvents,
 };
 
 export default AssertionMaster;

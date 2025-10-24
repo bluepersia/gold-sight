@@ -1,56 +1,57 @@
 import { EventBus } from "../../../../src/utils/eventBus";
+import { EventUUID, LogicContext } from "../index.types";
 import * as math from "../math";
 
-let a = (eventBus?: EventBus) => {
-  eventBus?.emitOnce("a", {});
+let a = (ctx: LogicContext) => {
+  ctx.eventBus?.emitOnce("a", ctx, {});
   let results: number[] = [];
-  results = b(results, eventBus);
+  results = b(results, ctx);
 
   return results;
 };
 
-let b = (results: number[], eventBus?: EventBus) => {
-  eventBus?.emit("b", {});
-  eventBus?.emit("b", {});
+let b = (results: number[], ctx: LogicContext) => {
+  ctx.eventBus?.emit("b", ctx, {});
+  ctx.eventBus?.emit("b", ctx, {});
   let newResults = [...results, math.add(1, 2)]; //3
-  newResults = c(newResults, eventBus);
+  newResults = c(newResults, ctx);
   return newResults;
 };
 
-let c = (results: number[], eventBus?: EventBus) => {
-  eventBus?.emitOnce("c", {});
-  eventBus?.emitOnce("c", {});
+let c = (results: number[], ctx: LogicContext) => {
+  ctx.eventBus?.emitOnce("c", ctx, {});
+  ctx.eventBus?.emitOnce("c", ctx, {});
   let newResults = [...results, math.subtract(results[0], 3)]; //0
-  newResults = d(newResults, eventBus);
+  newResults = d(newResults, ctx);
   return newResults;
 };
 
-let c2 = (results: number[], eventBus?: EventBus) => {
-  eventBus?.emit("c2", {});
-  let newResults = d(results, eventBus);
+let c2 = (results: number[], ctx: LogicContext) => {
+  ctx.eventBus?.emit("c2", ctx, {});
+  let newResults = d(results, ctx);
   return newResults;
 };
 
-let d = (results: number[], eventBus?: EventBus) => {
-  eventBus?.emit("d", {});
+let d = (results: number[], ctx: LogicContext) => {
+  ctx.eventBus?.emit("d", ctx, {});
   let newResults = [...results, math.add(results[1], 4)]; //4
-  newResults = e(newResults, eventBus);
+  newResults = e(newResults, ctx);
   return newResults;
 };
 
-let e = (results: number[], eventBus?: EventBus) => {
-  eventBus?.emit("e", {});
+let e = (results: number[], ctx: LogicContext) => {
+  ctx.eventBus?.emit("e", ctx, {});
   let newResults = [...results, math.multiply(results[2], 3)]; //12
   return newResults;
 };
 
 function wrap(
-  aWrapped: (eventBus?: EventBus) => number[],
-  bWrapped: (results: number[], eventBus?: EventBus) => number[],
-  cWrapped: (results: number[], eventBus?: EventBus) => number[],
-  c2Wrapped: (results: number[], eventBus?: EventBus) => number[],
-  dWrapped: (results: number[], eventBus?: EventBus) => number[],
-  eWrapped: (results: number[], eventBus?: EventBus) => number[]
+  aWrapped: (ctx: LogicContext) => number[],
+  bWrapped: (results: number[], ctx: LogicContext) => number[],
+  cWrapped: (results: number[], ctx: LogicContext) => number[],
+  c2Wrapped: (results: number[], ctx: LogicContext) => number[],
+  dWrapped: (results: number[], ctx: LogicContext) => number[],
+  eWrapped: (results: number[], ctx: LogicContext) => number[]
 ) {
   a = aWrapped;
   b = bWrapped;

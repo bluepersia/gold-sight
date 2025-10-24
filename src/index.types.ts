@@ -5,8 +5,13 @@ import {
   IEventBus,
   getEventByState,
   getEventByPayload,
-  getEventByPayloadAndState,
+  getEvent,
+  filterEventsByState,
+  filterEventsByPayload,
+  filterEvents,
 } from "./utils/eventBus";
+
+import { AbsCounter } from "./utils/absCounter";
 
 type StateBase<TMaster> = {
   queueIndex: number;
@@ -49,7 +54,7 @@ type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   snapshot?: any;
   postOp?: (state: any, args: any[], result: any) => void;
   eventBus?: EventBus;
-  callIndex?: number;
+  eventUUID?: string;
 };
 
 type AssertionBlueprintForFunc<
@@ -189,7 +194,11 @@ export {
   IEventBus,
   getEventByState,
   getEventByPayload,
-  getEventByPayloadAndState,
+  filterEventsByState,
+  filterEventsByPayload,
+  filterEvents,
+  getEvent,
+  AbsCounter,
 };
 
 export type {
