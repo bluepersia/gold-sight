@@ -1,5 +1,5 @@
-import { DocClone } from "../../../docCloner/src/parsing/docClone";
-import { makeDefaultGlobalConfig } from "../../../docCloner/src/utils/globalConfig";
+import { DocClone } from "../src/parsing/docClone";
+import { makeDefaultGlobalConfig } from "../src/utils/globalConfig";
 
 const docClone = new DocClone(makeDefaultGlobalConfig());
 writeDocClone(docClone);

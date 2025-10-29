@@ -1,5 +1,5 @@
-import { FluidData } from "../../../../docCloner/src/parsing/fluidData";
-import { makeDefaultGlobalConfig } from "../../../../docCloner/src/utils/globalConfig";
+import { FluidData } from "../../src/parsing/fluidData";
+import { makeDefaultGlobalConfig } from "../../src/utils/globalConfig";
 import { writeGlobal } from "./global";
 import { writeProductCard } from "./product-card";
 import { writeUtils } from "./utils";

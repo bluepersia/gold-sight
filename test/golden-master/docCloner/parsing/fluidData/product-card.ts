@@ -1,5 +1,5 @@
-import { FluidValueSingle } from "../../../../docCloner/src/index.types";
-import { FluidData } from "../../../../docCloner/src/parsing/fluidData";
+import { FluidValueSingle } from "../../src/index.types";
+import { FluidData } from "../../src/parsing/fluidData";
 
 function writeProductCard(fluidData: FluidData) {
   fluidData.addAutoForceProperty(

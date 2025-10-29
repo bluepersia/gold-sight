@@ -1,4 +1,4 @@
-import { EventBus } from "gold-sight";
+import { EventBus } from "../../../../src/utils/eventBus";
 type GlobalConfig = UserConfig &
   Features & {
     isBrowser: boolean;

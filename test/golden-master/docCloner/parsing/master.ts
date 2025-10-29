@@ -1,4 +1,4 @@
-import { SerializeDocMaster } from "../parsing/serializer/index.types";
+import { SerializeDocMaster } from "./serializer/index.types";
 import { docClone } from "./docClone";
 const master: SerializeDocMaster = {
   index: 0,

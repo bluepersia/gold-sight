@@ -2,12 +2,12 @@ import {
   DocClone,
   MediaRuleClone,
   StyleRuleClone,
-} from "../../../src/parsing/docClone";
-import { AbsCounter } from "gold-sight";
+} from "../../src/parsing/docClone";
+import { AbsCounter } from "../../../../../src/utils/absCounter";
 import {
   MEDIA_RULE_TYPE,
   STYLE_RULE_TYPE,
-} from "../../../src/parsing/docSerializerConsts";
+} from "../../src/parsing/docSerializerConsts";
 function findRule(docClone: DocClone, index: number) {
   const counter = new AbsCounter(index);
   for (const sheet of docClone.styleSheets) {

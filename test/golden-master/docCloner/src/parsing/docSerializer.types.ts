@@ -2,6 +2,8 @@ import { EventContext, GlobalConfig } from "../index.types";
 
 type SerializeDocContext = {
   globalConfig: GlobalConfig;
+  break?: string[];
+  minWidth?: number;
 } & EventContext;
 
 type PropsResults = {

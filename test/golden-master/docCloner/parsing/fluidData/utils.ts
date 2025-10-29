@@ -1,4 +1,4 @@
-import { FluidData } from "../../../../docCloner/src/parsing/fluidData";
+import { FluidData } from "../../src/parsing/fluidData";
 
 function writeUtils(fluidData: FluidData) {
   fluidData.addAutoForceProperty(

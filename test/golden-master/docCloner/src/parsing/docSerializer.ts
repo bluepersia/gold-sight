@@ -65,7 +65,7 @@ let serializeRules = (rules: CSSRule[], ctx: SerializeDocContext) => {
 
 let serializeRule = (rule: CSSRule, ctx: SerializeDocContext) => {
   let type;
-  let result = null;
+  let result: StyleRuleClone | MediaRuleClone | null = null;
   switch (rule.type) {
     case STYLE_RULE_TYPE:
       type = STYLE_RULE_TYPE;
@@ -108,6 +108,12 @@ let serializeStyleRule = (
   styleRuleClone.style = style;
   styleRuleClone.specialProps = specialProps;
   event?.emit("styleRuleSerialized", ctx, { styleRuleClone });
+
+  if (ctx.break) {
+    for (const breakStr of ctx.break) {
+      if (styleRuleClone.selector.includes(breakStr)) return null;
+    }
+  }
 
   return styleRuleClone;
 };
@@ -229,7 +235,10 @@ let serializeMediaRule = (rule: CSSMediaRule, ctx: SerializeDocContext) => {
   if (match) {
     const mediaRuleClone = new MediaRuleClone(ctx.globalConfig);
     mediaRuleClone.minWidth = Number(match[1]);
-    mediaRuleClone.rules = serializeRules(Array.from(mediaRule.cssRules), ctx);
+    mediaRuleClone.rules = serializeRules(Array.from(mediaRule.cssRules), {
+      ...ctx,
+      minWidth: mediaRuleClone.minWidth,
+    });
     event?.emit("mediaRuleSerialized", ctx, { mediaRuleClone });
     return mediaRuleClone;
   }

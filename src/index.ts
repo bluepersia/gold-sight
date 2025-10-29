@@ -389,7 +389,7 @@ abstract class AssertionMaster<
         result?: ReturnType<T>
       ) => any;
     }
-  ): (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T> {
+  ): (...args: Parameters<T>) => ReturnType<T> {
     return (...args) => {
       this.resetState();
       const wrappedFn = this.wrapFn(fn, name, options);

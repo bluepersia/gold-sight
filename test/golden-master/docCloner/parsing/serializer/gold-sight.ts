@@ -3,8 +3,8 @@ if (process.env.NODE_ENV === "test") {
   expect = (await import("vitest")).expect;
 }
 import { SerializeDocMaster, State } from "./index.types";
-import AssertionMaster from "../../../../../../src";
-import { AssertionChainForFunc } from "../../../../../../src/index.types";
+import AssertionMaster from "../../../../../src";
+import { AssertionChainForFunc } from "../../../../../src/index.types";
 import {
   serializeDoc,
   serializeRule,
@@ -19,11 +19,11 @@ import {
   serializeProp,
   serializeShorthandProp,
   serializeFluidProp,
-} from "../../../src/parsing/docSerializer";
+} from "../../src/parsing/docSerializer";
 
 import * as controller from "./controller";
-import { withEventNames } from "../../../../../../src/utils/eventBus";
-import { EXPLICIT_PROPS_FOR_SHORTHAND } from "../../../src/parsing/docSerializerConsts";
+import { withEventNames } from "../../../../../src/utils/eventBus";
+import { EXPLICIT_PROPS_FOR_SHORTHAND } from "../../src/parsing/docSerializerConsts";
 
 const serializeDocAssertionChain: AssertionChainForFunc<
   State,
@@ -334,6 +334,9 @@ class SerializeDocAssertionMaster extends AssertionMaster<
   });
 
   serializeStyleRule = this.wrapFn(serializeStyleRule, "serializeStyleRule", {
+    getId: (args) => {
+      return `${args[0].selectorText}/${args[1].minWidth || "baseline"}`;
+    },
     post: (state, args, result) =>
       withEventNames(args, ["styleRuleSerialized"], (events) => {
         if (events.styleRuleSerialized) {

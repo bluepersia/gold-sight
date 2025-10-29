@@ -1,6 +1,6 @@
-import { EventBus } from "../../../../../../src/utils/eventBus";
-import { DocClone } from "../../../src/parsing/docClone";
-import { Master } from "../../../../../index.types";
+import { EventBus } from "../../../../../src/utils/eventBus";
+import { DocClone } from "../../src/parsing/docClone";
+import { Master } from "../../../../index.types";
 
 type SerializeDocMaster = Master & {
   docClone: DocClone;

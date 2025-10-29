@@ -1,4 +1,4 @@
-import { FluidData } from "../../../../docCloner/src/parsing/fluidData";
+import { FluidData } from "../../src/parsing/fluidData";
 
 function writeGlobal(fluidData: FluidData) {
   fluidData.addAutoForceProperty("html", "html", "font-size", "14px");
