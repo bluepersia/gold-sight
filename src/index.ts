@@ -19,8 +19,9 @@ import {
   getEventUUID,
   getEventByUUID,
   filterEventsByUUID,
-  funcWithEventBus,
-  funcWithEvents,
+  withEventBus,
+  withEvents,
+  withEventNames,
 } from "./utils/eventBus";
 
 import { AbsCounter } from "./utils/absCounter";
@@ -160,13 +161,13 @@ abstract class AssertionMaster<
             const err = e as Error;
             let prelog = "";
             if (master) {
-              prelog = `Master:${master.index} `;
+              prelog = `Master:${master.index}`;
               if (master.step) {
-                prelog += `, Step:${master.step} `;
+                prelog += `, Step:${master.step}`;
               }
             }
             if (id) {
-              prelog += `, ID: ${id} `;
+              prelog += `, ID: ${id}`;
             }
             if (prelog) {
               prelog += ", ";
@@ -429,8 +430,9 @@ export {
   getEventUUID,
   getEventByUUID,
   filterEventsByUUID,
-  funcWithEventBus,
-  funcWithEvents,
+  withEventBus,
+  withEvents,
+  withEventNames,
 };
 
 export default AssertionMaster;

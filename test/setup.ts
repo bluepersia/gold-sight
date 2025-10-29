@@ -1,5 +1,29 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import { wrapAll as wrapAllMath1 } from "./golden-master/math/1/assertions";
 import { wrapAll as wrapAllMath2 } from "./golden-master/math/2/assertions";
+import { wrapAll as wrapAllDocCloner } from "./golden-master/docCloner/0/parsing/serializer/gold-sight";
+import { PlaywrightBlueprint } from "./index.types";
+import { generateJSDOMDocument } from "./golden-master/docCloner/src/parsing/jsonBuilder";
 
 wrapAllMath1();
 wrapAllMath2();
+wrapAllDocCloner();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const realProjectsData: PlaywrightBlueprint[] = [
+  {
+    htmlFilePath: "./golden-master/0/docCloner",
+    addCss: ["css/global.css", "css/utils.css", "css/product-card.css"],
+    useServer: false,
+  },
+];
+
+const JSDOMDocs = realProjectsData.map(({ htmlFilePath }, index) => {
+  const finalPath = path.resolve(__dirname, htmlFilePath, "index.html");
+  return { doc: generateJSDOMDocument([finalPath]), index };
+});
+
+export { JSDOMDocs };

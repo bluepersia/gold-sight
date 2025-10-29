@@ -44,6 +44,8 @@ class EventBus implements IEventBus {
   }
   emit(name: string, uuid: string | { eventUUID?: string }, payload?: any) {
     const uuidValue = typeof uuid === "string" ? uuid : uuid.eventUUID;
+    if (!payload) payload = {};
+
     const newEvent: IEvent = {
       name,
       payload,
@@ -94,7 +96,7 @@ function getEventBus(args: any[]): EventBus | null {
         return arg.event;
       }
       for (const value of Object.values(arg)) {
-        if ((value as any).isEventBus) return value as EventBus;
+        if ((value as any)?.isEventBus) return value as EventBus;
       }
     }
   }
@@ -252,7 +254,7 @@ function filterEvents(
   });
 }
 
-function funcWithEventBus(
+function withEventBus(
   args: any[],
   func: (eventBus: EventBus, ...args: any[]) => any
 ): (...args: any[]) => any {
@@ -263,7 +265,7 @@ function funcWithEventBus(
   return func(eventBus, ...args);
 }
 
-function funcWithEvents(
+function withEvents(
   args: any[],
   func: (eventBus: EventBus, eventUUID: string, ...args: any[]) => any
 ): (...args: any[]) => any {
@@ -276,6 +278,32 @@ function funcWithEvents(
     throw new Error("Event UUID not found");
   }
   return func(eventBus, eventUUID, ...args);
+}
+function withEventNames(
+  args: any[],
+  eventNames: string[],
+  func: (events: Record<string, IEvent>, ...args: any[]) => any
+): (...args: any[]) => any {
+  const eventBus = getEventBus(args);
+  const eventUUID = getEventUUID(args);
+
+  if (!eventBus) {
+    throw new Error("Event bus not found");
+  }
+  if (!eventUUID) {
+    throw new Error("Event UUID not found");
+  }
+
+  // Fetch all events into a record keyed by their name
+  const events: Record<string, IEvent> = {};
+  for (const name of eventNames) {
+    const event = getEventByUUID(eventBus, name, eventUUID);
+    if (event) {
+      events[name] = event;
+    }
+  }
+
+  return func(events, ...args);
 }
 
 export {
@@ -292,6 +320,7 @@ export {
   getEventUUID,
   getEventByUUID,
   filterEventsByUUID,
-  funcWithEventBus,
-  funcWithEvents,
+  withEventBus,
+  withEvents,
+  withEventNames,
 };
