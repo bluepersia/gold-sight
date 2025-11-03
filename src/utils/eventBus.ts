@@ -303,7 +303,12 @@ function withEvents(
 function withEventNames(
   args: any[],
   eventNames: string[],
-  func: (events: Record<string, IEvent>, ...args: any[]) => any
+  func: (
+    events: Record<string, IEvent>,
+    eventBus: EventBus,
+    eventUUID: string,
+    ...args: any[]
+  ) => any
 ): (...args: any[]) => any {
   const eventBus = getEventBus(args);
   const eventUUID = getEventUUID(args);
@@ -324,7 +329,7 @@ function withEventNames(
     }
   }
 
-  return func(events, ...args);
+  return func(events, eventBus, eventUUID, ...args);
 }
 
 export {
