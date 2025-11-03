@@ -3,7 +3,7 @@ import { JSDOMDocs } from "../../setup";
 import { serializeDoc } from "./src/parsing/docSerializer";
 import { serializeDocAssertionMaster } from "./parsing/serializer/gold-sight";
 import { collection } from "./parsing/serializer/collection";
-import { EventBus } from "../../../src";
+import { EventBus } from "../../../src/utils/eventBus";
 describe("serialiezDoc", () => {
   test.each(JSDOMDocs)("should serialize the doc", ({ doc, index }) => {
     serializeDocAssertionMaster.master = collection[index];

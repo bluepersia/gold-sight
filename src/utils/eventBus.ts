@@ -42,7 +42,11 @@ class EventBus implements IEventBus {
   getQueueIndex(): number {
     return this.queueIndex;
   }
-  emit(name: string, uuid: string | { eventUUID?: string }, payload?: any) {
+  emit(
+    name: string,
+    uuid: string | { eventUUID?: string },
+    payload?: any
+  ): IEvent {
     const uuidValue = typeof uuid === "string" ? uuid : uuid.eventUUID;
     if (!payload) payload = {};
 
@@ -57,14 +61,19 @@ class EventBus implements IEventBus {
     }
     events.push(newEvent);
     this.uninitialized.push(newEvent);
+    return newEvent;
   }
 
-  emitOnce(name: string, uuid: string | { eventUUID?: string }, payload?: any) {
+  emitOnce(
+    name: string,
+    uuid: string | { eventUUID?: string },
+    payload?: any
+  ): IEvent | null {
     const uuidValue = typeof uuid === "string" ? uuid : uuid.eventUUID;
     let emitOnceEvents = this.emitOnceEvents[name];
     if (!emitOnceEvents) this.emitOnceEvents[name] = emitOnceEvents = [];
 
-    if (emitOnceEvents.find((event) => event.uuid === uuidValue)) return;
+    if (emitOnceEvents.find((event) => event.uuid === uuidValue)) return null;
 
     emitOnceEvents.push({
       name,
@@ -72,7 +81,7 @@ class EventBus implements IEventBus {
       uuid: uuidValue!,
     });
 
-    this.emit(name, uuid, payload);
+    return this.emit(name, uuid, payload);
   }
 
   getEventsForUUID(uuid: string): IEvent[] {
@@ -180,7 +189,10 @@ function filterEventsByState(
   name: string,
   state: any
 ): IEvent[] {
-  const events = eventBus.events[name];
+  const events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
   if (!events) {
     return [];
   }
@@ -199,7 +211,10 @@ function filterEventsByPayload(
   name: string,
   payload: any
 ): IEvent[] {
-  const events = eventBus.events[name];
+  const events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
   if (!events) {
     return [];
   }
@@ -218,7 +233,10 @@ function filterEventsByUUID(
   name: string,
   uuid: string
 ): IEvent[] {
-  const events = eventBus.events[name];
+  const events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
   if (!events) {
     return [];
   }
@@ -231,7 +249,10 @@ function filterEvents(
   payload: any,
   state: any
 ): IEvent[] {
-  let events = eventBus.events[name];
+  let events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
   if (!events) {
     return [];
   }

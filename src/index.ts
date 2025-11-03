@@ -179,11 +179,12 @@ abstract class AssertionMaster<
             }
             errors.push({ err, name, id });
           }
-          if (didRun) {
-            let count = verifiedAssertions.get(key) || 0;
-            count++;
-            verifiedAssertions.set(key, count);
-          }
+          didRun = didRun;
+          // if (didRun) {
+          let count = verifiedAssertions.get(key) || 0;
+          count++;
+          verifiedAssertions.set(key, count);
+          //}
         }
       }
     }

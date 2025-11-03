@@ -9,6 +9,12 @@ import {
   filterEventsByState,
   filterEventsByPayload,
   filterEvents,
+  getEventUUID,
+  getEventByUUID,
+  filterEventsByUUID,
+  withEventBus,
+  withEvents,
+  withEventNames,
 } from "./utils/eventBus";
 
 import { AbsCounter } from "./utils/absCounter";
@@ -199,6 +205,12 @@ export {
   filterEvents,
   getEvent,
   AbsCounter,
+  getEventUUID,
+  getEventByUUID,
+  filterEventsByUUID,
+  withEventBus,
+  withEvents,
+  withEventNames,
 };
 
 export type {

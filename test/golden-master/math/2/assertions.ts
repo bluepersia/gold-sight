@@ -1,8 +1,6 @@
 import { expect } from "vitest";
-import AssertionMaster, {
-  funcWithEvents,
-  getEventByUUID,
-} from "../../../../src";
+import AssertionMaster from "../../../../src";
+import { getEventByUUID } from "../../../../src/utils/eventBus";
 import { master } from "./master";
 import { AssertionChain } from "../../../../src/index.types";
 import { a, b, c, d, e, f, wrap } from "./logic";
