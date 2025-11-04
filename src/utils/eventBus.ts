@@ -64,6 +64,21 @@ class EventBus implements IEventBus {
     return newEvent;
   }
 
+  emitOver(
+    name: string,
+    uuid: string | { eventUUID?: string },
+    key: any,
+    payload?: any
+  ) {
+    const exisitingEvents = filterEventsByPayload(this, name, key);
+    for (const [name, events] of Object.entries(this.events)) {
+      this.events[name] = events.filter(
+        (event) => !exisitingEvents.includes(event)
+      );
+    }
+    this.emit(name, uuid, payload);
+  }
+
   emitOnce(
     name: string,
     uuid: string | { eventUUID?: string },
