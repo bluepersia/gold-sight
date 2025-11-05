@@ -399,8 +399,15 @@ abstract class AssertionMaster<
       const wrappedFn = this.wrapFn(fn, name, options);
       const result = wrappedFn(...args);
       this.state!.master = this.master;
-      this.runPostOps();
-      return result;
+      if (result instanceof Promise) {
+        return result.then((resolved) => {
+          this.runPostOps();
+          return resolved;
+        });
+      } else {
+        this.runPostOps();
+        return result;
+      }
     };
   }
 }
