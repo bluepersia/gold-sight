@@ -224,6 +224,7 @@ let cloneMediaRule = (
     const mediaRuleClone = new MediaRuleClone(ctx);
     const width: number = Number(match[1]);
     mediaRuleClone.minWidth = width;
+    if (ctx.breakMedia === width) mediaRuleClone.minWidth = 0;
 
     const subCtx: CloneRulesContext = {
       ...ctx,
