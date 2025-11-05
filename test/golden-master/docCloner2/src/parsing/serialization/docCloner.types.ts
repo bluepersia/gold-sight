@@ -5,6 +5,8 @@ type CloneDocContext = Global &
     counter: {
       orderID: number;
     };
+    breakStyleRules?: string[];
+    breakMedia?: number;
   };
 
 type CloneSheetContext = CloneDocContext & {

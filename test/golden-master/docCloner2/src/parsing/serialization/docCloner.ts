@@ -21,6 +21,7 @@ import {
   SHORTHAND_PROPERTIES,
   SPECIAL_PROPERTIES,
 } from "./docClonerConsts";
+import "../../global.d.ts";
 
 let cloneDoc = (doc: Document, ctx: CloneDocContext): DocClone => {
   const docClone = new DocClone(ctx);
@@ -110,6 +111,12 @@ let cloneStyleRule = (
   ctx.counter.orderID++;
   styleRuleClone.orderID = ctx.counter.orderID;
   if (dev) event?.emit("styleRuleCloned", ctx, { rule: styleRuleClone });
+
+  if (ctx.breakStyleRules) {
+    for (const breakStr of ctx.breakStyleRules) {
+      if (styleRuleClone.selector.includes(breakStr)) return null;
+    }
+  }
   return styleRuleClone;
 };
 

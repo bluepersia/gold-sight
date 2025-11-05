@@ -1,4 +1,4 @@
-import type { EventBus } from "gold-sight";
+import type { EventBus } from "../../../../src/utils/eventBus";
 
 type Global = UserSettings & Features & {};
 
