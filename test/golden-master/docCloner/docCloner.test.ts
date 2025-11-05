@@ -49,19 +49,22 @@ describe("serialiezDoc", () => {
       }
     });
 
-    test.each(JSDOMDocs)("should break with deepest", ({ doc, index }) => {
-      serializeDocAssertionMaster.master = collection[index];
-      serializeDoc(doc, {
-        breakMedia: 375,
-        globalConfig: { isBrowser: false, autoForce: true },
-        event: new EventBus(),
-        eventUUID: "",
-      });
-      try {
-        serializeDocAssertionMaster.assertQueue({ errorAlgorithm: "deepest" });
-      } catch (err) {
-        expect(err.message).includes(`ID: (min-width: 375px)`);
+    test.each(JSDOMDocs)(
+      "should break with firstOfDeepest",
+      ({ doc, index }) => {
+        serializeDocAssertionMaster.master = collection[index];
+        serializeDoc(doc, {
+          breakMedia: 375,
+          globalConfig: { isBrowser: false, autoForce: true },
+          event: new EventBus(),
+          eventUUID: "",
+        });
+        try {
+          serializeDocAssertionMaster.assertQueue();
+        } catch (err) {
+          expect(err.message).includes(`ID: (min-width: 375px)`);
+        }
       }
-    });
+    );
   });
 });
