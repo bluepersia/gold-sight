@@ -14,7 +14,7 @@ const master: Master = {
   assertionMaster: null,
 };
 const eventBusA = new EventBus(5, {
-  a: [{ name: "a", payload: {}, state: { absIndex: 0 }, callIndex: 1 }],
+  a: [{ name: "a", payload: {}, state: { absIndex: 0 }, uuid: "" }],
 });
 master.finalQueue.set(0, {
   name: "a",
@@ -22,9 +22,8 @@ master.finalQueue.set(0, {
   branchCount: 0,
   result: [3, 0, 4, 12],
   args: [eventBusA],
-  id: "",
   eventBus: new EventBus(1, {
-    a: [{ name: "a", payload: {}, state: { absIndex: 0 }, callIndex: 1 }],
+    a: [{ name: "a", payload: {}, state: { absIndex: 0 }, uuid: "a" }],
   }),
   state: {
     absIndex: 0,
@@ -36,7 +35,7 @@ master.finalQueue.set(0, {
   },
 });
 const eventBusB = new EventBus(5, {
-  b: [{ name: "b", payload: {}, state: { absIndex: 0 }, callIndex: 2 }],
+  b: [{ name: "b", payload: {}, state: { absIndex: 0 }, uuid: "b" }],
 });
 master.finalQueue.set(1, {
   name: "b",
@@ -44,7 +43,6 @@ master.finalQueue.set(1, {
   branchCount: 0,
   result: [3, 0, 4, 12],
   args: [[], eventBusB],
-  id: "",
   state: {
     absIndex: 0,
     addAbsIndex: 0,
@@ -55,7 +53,7 @@ master.finalQueue.set(1, {
   },
 });
 const eventBusC = new EventBus(5, {
-  c: [{ name: "c", payload: {}, state: { absIndex: 1 }, callIndex: 3 }],
+  c: [{ name: "c", payload: {}, state: { absIndex: 1 }, uuid: "c" }],
 });
 master.finalQueue.set(2, {
   name: "c",
@@ -63,7 +61,6 @@ master.finalQueue.set(2, {
   branchCount: 0,
   result: [3, 0, 4, 12],
   args: [[3], eventBusC],
-  id: "",
   state: {
     absIndex: 1,
     addAbsIndex: 1,
@@ -74,7 +71,7 @@ master.finalQueue.set(2, {
   },
 });
 const eventBusD = new EventBus(5, {
-  d: [{ name: "d", payload: {}, state: { absIndex: 2 }, callIndex: 4 }],
+  d: [{ name: "d", payload: {}, state: { absIndex: 2 }, uuid: "d" }],
 });
 master.finalQueue.set(3, {
   name: "d",
@@ -82,7 +79,6 @@ master.finalQueue.set(3, {
   branchCount: 0,
   result: [3, 0, 4, 12],
   args: [[3, 0], eventBusD],
-  id: "",
   state: {
     absIndex: 2,
     addAbsIndex: 1,
@@ -94,7 +90,7 @@ master.finalQueue.set(3, {
 });
 
 const eventBusE = new EventBus(5, {
-  e: [{ name: "e", payload: {}, state: { absIndex: 3 }, callIndex: 5 }],
+  e: [{ name: "e", payload: {}, state: { absIndex: 3 }, uuid: "e" }],
 });
 
 master.finalQueue.set(4, {
@@ -103,7 +99,6 @@ master.finalQueue.set(4, {
   branchCount: 0,
   result: [3, 0, 4, 12],
   args: [[3, 0, 4], eventBusE],
-  id: "",
   state: {
     absIndex: 3,
     addAbsIndex: 2,

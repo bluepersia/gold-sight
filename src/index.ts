@@ -135,7 +135,6 @@ abstract class AssertionMaster<
     const errors: {
       err: Error;
       name: string;
-      id: string;
     }[] = [];
     outer: for (const { name } of nameWithHighestIndex) {
       const items = groupedByName[name].sort((a, b) => {
@@ -177,7 +176,7 @@ abstract class AssertionMaster<
               error = err;
               break outer;
             }
-            errors.push({ err, name, id });
+            errors.push({ err, name });
           }
           didRun = didRun;
           // if (didRun) {
@@ -209,17 +208,17 @@ abstract class AssertionMaster<
       argsConverter?: (args: Parameters<T>) => any;
       resultConverter?: (result: ReturnType<T>, args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
-      post?: (
+      post?: (state: TState, args: any[], result: any) => void;
+      deepClone?: DeepCloneOptions;
+      getId?: (
         state: TState,
         args: Parameters<T>,
         result: ReturnType<T>
-      ) => void;
-      deepClone?: DeepCloneOptions;
-      getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
+      ) => string;
       getSnapshot?: (
-        state?: TState,
-        args?: Parameters<T>,
-        result?: ReturnType<T>
+        state: TState,
+        args: Parameters<T>,
+        result: ReturnType<T>
       ) => any;
     }
   ): T {
@@ -290,22 +289,13 @@ abstract class AssertionMaster<
       const isAsync = fn.constructor.name === "AsyncFunction";
       const finalResult = isAsync ? result : processResult(result);
 
-      const id = processors?.getId ? processors.getId(args, result) : "";
-
-      const snapshot = processors?.getSnapshot
-        ? processors.getSnapshot(this.state, args, result)
-        : this._globalOptions?.getSnapshot
-        ? this._globalOptions.getSnapshot(this.state, args, result)
-        : undefined;
       const assertionData = {
         state: this.state,
         funcIndex,
         result: finalResult,
         name,
-        id,
         branchCount,
         args: argsClone,
-        snapshot,
         eventBus,
         eventUUID,
         postOp: () => {},
@@ -317,11 +307,18 @@ abstract class AssertionMaster<
         );
       }
 
-      if (processors?.post) {
-        assertionData.postOp = (state, args, result) => {
-          processors!.post!(state, args as Parameters<T>, result);
-        };
-      }
+      assertionData.postOp = (state, postOpArgs, postOpResult) => {
+        assertionData.id = processors?.getId
+          ? processors.getId(state, args, result)
+          : "";
+
+        assertionData.snapshot = processors?.getSnapshot
+          ? processors.getSnapshot(state, args, result)
+          : this._globalOptions?.getSnapshot
+          ? this._globalOptions.getSnapshot(state, args, result)
+          : undefined;
+        if (processors?.post) processors!.post(state, postOpArgs, postOpResult);
+      };
 
       assertionQueues[this.globalKey].set(queueIndex, assertionData);
 
@@ -378,11 +375,7 @@ abstract class AssertionMaster<
       argsConverter?: (args: Parameters<T>) => any;
       resultConverter?: (result: ReturnType<T>, args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
-      post?: (
-        state: TState,
-        args: Parameters<T>,
-        result: ReturnType<T>
-      ) => void;
+      post?: (state: TState, args: any[], result: any) => void;
       args?: Parameters<T>;
       getSnapshot?: (
         state?: TState,

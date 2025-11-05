@@ -334,7 +334,7 @@ class SerializeDocAssertionMaster extends AssertionMaster<
   });
 
   serializeStyleRule = this.wrapFn(serializeStyleRule, "serializeStyleRule", {
-    getId: (args) => {
+    getId: (state, args) => {
       return `${args[0].selectorText}/${args[1].minWidth || "baseline"}`;
     },
     post: (state, args, result) =>
