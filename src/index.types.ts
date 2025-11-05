@@ -169,7 +169,11 @@ declare abstract class AssertionMaster<TState, TMaster> {
         result: ReturnType<T>
       ) => void;
       args?: Parameters<T>;
-      getId?: (args: Parameters<T>, result?: ReturnType<T>) => string;
+      getId?: (
+        state: TState,
+        args: Parameters<T>,
+        result?: ReturnType<T>
+      ) => string;
 
       getSnapshot?: (
         state?: TState,
