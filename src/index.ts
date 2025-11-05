@@ -307,7 +307,7 @@ abstract class AssertionMaster<
         );
       }
 
-      assertionData.postOp = (state, postOpArgs, postOpResult) => {
+      assertionData.postOp = (state) => {
         assertionData.id = processors?.getId
           ? processors.getId(state, args, result)
           : "";
@@ -317,7 +317,7 @@ abstract class AssertionMaster<
           : this._globalOptions?.getSnapshot
           ? this._globalOptions.getSnapshot(state, args, result)
           : undefined;
-        if (processors?.post) processors!.post(state, postOpArgs, postOpResult);
+        if (processors?.post) processors!.post(state, args, result);
       };
 
       assertionQueues[this.globalKey].set(queueIndex, assertionData);
