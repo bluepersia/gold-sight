@@ -141,7 +141,14 @@ function getEventByState(
   name: string,
   state: any
 ): IEvent | null {
-  const event = eventBus.events[name]?.find((e) => {
+  const events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
+  if (!events) {
+    return null;
+  }
+  const event = events.find((e) => {
     for (const key in state) {
       if (state[key] !== e.state[key]) {
         return false;
@@ -157,7 +164,14 @@ function getEventByPayload(
   name: string,
   payload: any
 ): IEvent | null {
-  const event = eventBus.events[name]?.find((e) => {
+  const events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
+  if (!events) {
+    return null;
+  }
+  const event = events.find((e) => {
     for (const key in payload) {
       if (payload[key] !== e.payload[key]) {
         return false;
@@ -174,7 +188,14 @@ function getEvent(
   payload: any,
   state: any
 ): IEvent | null {
-  const event = eventBus.events[name]?.find((e) => {
+  const events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
+  if (!events) {
+    return null;
+  }
+  const event = events.find((e) => {
     for (const key in state) {
       if (state[key] !== e.state[key]) {
         return false;
@@ -195,8 +216,14 @@ function getEventByUUID(
   name: string,
   uuid: string
 ): IEvent | null {
-  const event = eventBus.events[name]?.find((e) => e.uuid === uuid);
-  return event || null;
+  const events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
+  if (!events) {
+    return null;
+  }
+  return events.find((e) => e.uuid === uuid) || null;
 }
 
 function filterEventsByState(
@@ -292,18 +319,18 @@ function filterEvents(
 
 function withEventBus(
   args: any[],
-  func: (eventBus: EventBus, ...args: any[]) => any
+  func: (eventBus: EventBus) => any
 ): (...args: any[]) => any {
   const eventBus = getEventBus(args);
   if (!eventBus) {
     throw new Error("Event bus not found");
   }
-  return func(eventBus, ...args);
+  return func(eventBus);
 }
 
 function withEvents(
   args: any[],
-  func: (eventBus: EventBus, eventUUID: string, ...args: any[]) => any
+  func: (eventBus: EventBus, eventUUID: string) => any
 ): (...args: any[]) => any {
   const eventBus = getEventBus(args);
   const eventUUID = getEventUUID(args);
@@ -313,7 +340,7 @@ function withEvents(
   if (!eventUUID) {
     throw new Error("Event UUID not found");
   }
-  return func(eventBus, eventUUID, ...args);
+  return func(eventBus, eventUUID);
 }
 function withEventNames(
   args: any[],
@@ -321,8 +348,7 @@ function withEventNames(
   func: (
     events: Record<string, IEvent>,
     eventBus: EventBus,
-    eventUUID: string,
-    ...args: any[]
+    eventUUID: string
   ) => any
 ): (...args: any[]) => any {
   const eventBus = getEventBus(args);
@@ -344,7 +370,7 @@ function withEventNames(
     }
   }
 
-  return func(events, eventBus, eventUUID, ...args);
+  return func(events, eventBus, eventUUID);
 }
 
 export {
