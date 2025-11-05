@@ -201,6 +201,13 @@ type RunAssertionsOfNameParams<TState> = Pick<
 
 export default AssertionMaster;
 
+type AssertionError = {
+  err: Error;
+  name: string;
+  funcIndex: number;
+  branchCount: number;
+};
+
 export {
   deepClone,
   EventBus,
@@ -235,4 +242,5 @@ export type {
   AssertionBlueprintForFunc,
   AssertionForFunc,
   AssertionChainForFunc,
+  AssertionError,
 };

@@ -3,6 +3,7 @@ import { EventContext, GlobalConfig } from "../index.types";
 type SerializeDocContext = {
   globalConfig: GlobalConfig;
   break?: string[];
+  breakMedia?: number;
   minWidth?: number;
 } & EventContext;
 

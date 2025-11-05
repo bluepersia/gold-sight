@@ -1,6 +1,7 @@
 import {
   AssertionBlueprint,
   AssertionChain,
+  AssertionError,
   AssertionQueues,
   AssertOptions,
   Config,
@@ -104,11 +105,50 @@ abstract class AssertionMaster<
     console.groupCollapsed(
       `✅ ${options.logMasterName} - ✨${printMaster(options.master)}`
     );
+
+    const errors: AssertionError[] = [];
+
     // Step 1: Group items by function name
-    let groupedByName: { [name: string]: AssertionBlueprint[] } = {};
+    let groupedByName: { [name: string]: AssertionError[] } = {};
     for (const [, item] of assertionQueue.entries()) {
+      const { state, args, result, id, name } = item;
+      const assertions = this.assertionChains[name];
+      if (!assertions)
+        throw Error(
+          `Assertion chain for ${name} not found. Are you setting up the default assertion chains?`
+        );
+      for (const [key, assertion] of Object.entries(assertions)) {
+        let didRun = false;
+        try {
+          didRun = (assertion as any)(state, args, result, allAssertions);
+        } catch (e) {
+          const err = e as Error;
+          let prelog = "";
+          if (master) {
+            prelog = `Master:${master.index}`;
+            if (master.step) {
+              prelog += `, Step:${master.step}`;
+            }
+          }
+          if (id) {
+            prelog += `, ID: ${id}`;
+          }
+          if (prelog) {
+            prelog += ", ";
+            err.message = `${prelog}${err.message}`;
+          }
+          errors.push({ err, ...item });
+        }
+        didRun = didRun;
+        // if (didRun) {
+        let count = verifiedAssertions.get(key) || 0;
+        count++;
+        verifiedAssertions.set(key, count);
+        //}
+      }
+
       if (!groupedByName[item.name]) groupedByName[item.name] = [];
-      groupedByName[item.name].push(item);
+      groupedByName[item.name].push(...errors);
     }
 
     if (options.targetName) {
@@ -131,11 +171,6 @@ abstract class AssertionMaster<
       return b.highestIndex - a.highestIndex;
     });
 
-    let error: Error | undefined;
-    const errors: {
-      err: Error;
-      name: string;
-    }[] = [];
     outer: for (const { name } of nameWithHighestIndex) {
       const items = groupedByName[name].sort((a, b) => {
         if (a.funcIndex === b.funcIndex) {
@@ -145,46 +180,8 @@ abstract class AssertionMaster<
           return a.funcIndex - b.funcIndex;
         else return b.funcIndex - a.funcIndex;
       });
-
-      for (const { state, args, result, id } of items) {
-        const assertions = this.assertionChains[name];
-        if (!assertions)
-          throw Error(
-            `Assertion chain for ${name} not found. Are you setting up the default assertion chains?`
-          );
-        for (const [key, assertion] of Object.entries(assertions)) {
-          let didRun = false;
-          try {
-            didRun = (assertion as any)(state, args, result, allAssertions);
-          } catch (e) {
-            const err = e as Error;
-            let prelog = "";
-            if (master) {
-              prelog = `Master:${master.index}`;
-              if (master.step) {
-                prelog += `, Step:${master.step}`;
-              }
-            }
-            if (id) {
-              prelog += `, ID: ${id}`;
-            }
-            if (prelog) {
-              prelog += ", ";
-              err.message = `${prelog}${err.message}`;
-            }
-            if (!options.showAllErrors) {
-              error = err;
-              break outer;
-            }
-            errors.push({ err, name });
-          }
-          didRun = didRun;
-          // if (didRun) {
-          let count = verifiedAssertions.get(key) || 0;
-          count++;
-          verifiedAssertions.set(key, count);
-          //}
-        }
+      if (!options.showAllErrors) {
+        for (const err of items) throw err.err;
       }
     }
     for (const [key, count] of verifiedAssertions.entries()) {
@@ -193,11 +190,12 @@ abstract class AssertionMaster<
     console.groupEnd();
 
     this.reset();
-    if (error) throw error;
     if (errors.length) {
-      throw new Error(
-        errors.map((e) => `${e.name}:${e.err.message}`).join("\n")
-      );
+      if (options.showAllErrors) {
+        throw new Error(
+          errors.map((e) => `${e.name}:${e.err.message}`).join("\n")
+        );
+      }
     }
   };
 

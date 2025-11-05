@@ -235,6 +235,8 @@ let serializeMediaRule = (rule: CSSMediaRule, ctx: SerializeDocContext) => {
   if (match) {
     const mediaRuleClone = new MediaRuleClone(ctx.globalConfig);
     mediaRuleClone.minWidth = Number(match[1]);
+    if (ctx.breakMedia === mediaRuleClone.minWidth) mediaRuleClone.minWidth = 0;
+
     mediaRuleClone.rules = serializeRules(Array.from(mediaRule.cssRules), {
       ...ctx,
       minWidth: mediaRuleClone.minWidth,

@@ -48,5 +48,20 @@ describe("serialiezDoc", () => {
         expect(err.message).includes(`ID: .product-card/600`);
       }
     });
+
+    test.each(JSDOMDocs)("should break with deepest", ({ doc, index }) => {
+      serializeDocAssertionMaster.master = collection[index];
+      serializeDoc(doc, {
+        breakMedia: 375,
+        globalConfig: { isBrowser: false, autoForce: true },
+        event: new EventBus(),
+        eventUUID: "",
+      });
+      try {
+        serializeDocAssertionMaster.assertQueue({ errorAlgorithm: "deepest" });
+      } catch (err) {
+        expect(err.message).includes(`ID: (min-width: 375px)`);
+      }
+    });
   });
 });

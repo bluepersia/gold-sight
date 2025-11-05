@@ -357,6 +357,9 @@ class SerializeDocAssertionMaster extends AssertionMaster<
   );
 
   serializeMediaRule = this.wrapFn(serializeMediaRule, "serializeMediaRule", {
+    getId: (state, args) => {
+      return args[0].media.mediaText;
+    },
     post: (state, args, result) =>
       withEventNames(args, ["mediaRuleSerialized"], (events) => {
         if (events.mediaRuleSerialized) state.mediaRuleIndex++;
