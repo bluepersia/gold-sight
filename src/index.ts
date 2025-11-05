@@ -112,6 +112,7 @@ abstract class AssertionMaster<
     let groupedByName: { [name: string]: AssertionError[] } = {};
     for (const [, item] of assertionQueue.entries()) {
       const { state, args, result, id, name } = item;
+
       const assertions = this.assertionChains[name];
       if (!assertions)
         throw Error(
@@ -148,7 +149,9 @@ abstract class AssertionMaster<
       }
 
       if (!groupedByName[item.name]) groupedByName[item.name] = [];
-      groupedByName[item.name].push(...errors);
+      groupedByName[item.name].push(
+        ...errors.filter((err) => err.name === item.name)
+      );
     }
 
     if (options.targetName) {
@@ -193,7 +196,11 @@ abstract class AssertionMaster<
     if (errors.length) {
       if (options.showAllErrors) {
         throw new Error(
-          errors.map((e) => `${e.name}:${e.err.message}`).join("\n")
+          errors
+            .map(
+              (e) => `${e.name}:${e.funcIndex}:${e.branchCount}${e.err.message}`
+            )
+            .join("\n")
         );
       }
     }
