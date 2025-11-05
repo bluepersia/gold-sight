@@ -352,14 +352,16 @@ abstract class AssertionMaster<
   }
 
   runPostOps() {
-    const assertionQueue = assertionQueues[this.globalKey];
+    let assertionQueue = assertionQueues[this.globalKey];
 
-    const queueIndexes = Array.from(assertionQueue.keys()).sort(
-      (a, b) => a - b
+    const sortedEntries = Array.from(assertionQueue.entries()).sort(
+      ([a], [b]) => a - b
     );
-    for (const queueIndex of queueIndexes) {
-      const value = assertionQueue.get(queueIndex)!;
 
+    assertionQueue = new Map(sortedEntries);
+    assertionQueues[this.globalKey] = assertionQueue;
+
+    for (const value of assertionQueue.values()) {
       value.state = { ...value.state };
 
       if (value.eventBus && value.eventUUID) {
