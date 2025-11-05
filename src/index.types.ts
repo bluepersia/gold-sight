@@ -51,7 +51,7 @@ type AssertionForFunc<
 
 type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   name: string;
-  id?: string;
+  address?: string;
   funcIndex: number;
   result: TResult;
   args: TArgs;
@@ -135,7 +135,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
         result: ReturnType<T>
       ) => void;
       deepClone?: DeepCloneOptions;
-      getId?: (
+      getAddress?: (
         state: TState,
         args: Parameters<T>,
         result: ReturnType<T>
@@ -169,7 +169,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
         result: ReturnType<T>
       ) => void;
       args?: Parameters<T>;
-      getId?: (
+      getAddress?: (
         state: TState,
         args: Parameters<T>,
         result?: ReturnType<T>

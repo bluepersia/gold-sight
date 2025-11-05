@@ -30,7 +30,7 @@ describe("serialiezDoc", () => {
         try {
           serializeDocAssertionMaster.assertQueue();
         } catch (err) {
-          expect(err.message).includes(`ID: .product-card/baseline`);
+          expect(err.message).includes(`.product-card/baseline`);
         }
       }
     );
@@ -45,7 +45,7 @@ describe("serialiezDoc", () => {
       try {
         serializeDocAssertionMaster.assertQueue({ errorAlgorithm: "deepest" });
       } catch (err) {
-        expect(err.message).includes(`ID: .product-card/600`);
+        expect(err.message).includes(`.product-card/600`);
       }
     });
 
@@ -62,7 +62,7 @@ describe("serialiezDoc", () => {
         try {
           serializeDocAssertionMaster.assertQueue();
         } catch (err) {
-          expect(err.message).includes(`ID: (min-width: 375px)`);
+          expect(err.message).includes(`(min-width: 375px)`);
         }
       }
     );

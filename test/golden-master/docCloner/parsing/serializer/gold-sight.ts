@@ -334,7 +334,7 @@ class SerializeDocAssertionMaster extends AssertionMaster<
   });
 
   serializeStyleRule = this.wrapFn(serializeStyleRule, "serializeStyleRule", {
-    getId: (state, args) => {
+    getAddress: (state, args) => {
       return `${args[0].selectorText}/${args[1].minWidth || "baseline"}`;
     },
     post: (state, args, result) =>
@@ -357,7 +357,7 @@ class SerializeDocAssertionMaster extends AssertionMaster<
   );
 
   serializeMediaRule = this.wrapFn(serializeMediaRule, "serializeMediaRule", {
-    getId: (state, args) => {
+    getAddress: (state, args) => {
       return args[0].media.mediaText;
     },
     post: (state, args, result) =>

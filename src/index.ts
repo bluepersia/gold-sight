@@ -114,7 +114,7 @@ abstract class AssertionMaster<
     // Step 1: Group items by function name
     let groupedByName: { [name: string]: AssertionError[] } = {};
     for (const [, item] of assertionQueue.entries()) {
-      const { state, args, result, id, name } = item;
+      const { state, args, result, address, name } = item;
 
       const assertions = this.assertionChains[name];
       if (!assertions)
@@ -134,8 +134,8 @@ abstract class AssertionMaster<
               prelog += `, Step:${master.step}`;
             }
           }
-          if (id) {
-            prelog += `, ID: ${id}`;
+          if (address) {
+            prelog += `, ${address}`;
           }
           if (prelog) {
             prelog += ", ";
@@ -218,7 +218,7 @@ abstract class AssertionMaster<
       pre?: (state: TState, args: Parameters<T>) => void;
       post?: (state: TState, args: any[], result: any) => void;
       deepClone?: DeepCloneOptions;
-      getId?: (
+      getAddress?: (
         state: TState,
         args: Parameters<T>,
         result: ReturnType<T>
@@ -316,8 +316,8 @@ abstract class AssertionMaster<
       }
 
       assertionData.postOp = (state) => {
-        assertionData.id = processors?.getId
-          ? processors.getId(state, args, result)
+        assertionData.address = processors?.getAddress
+          ? processors.getAddress(state, args, result)
           : "";
 
         assertionData.snapshot = processors?.getSnapshot
