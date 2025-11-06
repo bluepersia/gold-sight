@@ -4,6 +4,12 @@ type IEvent = {
   id?: string;
   state?: any;
   uuidStack: string[];
+  funcData: IFuncData;
+};
+
+type IFuncData = {
+  funcName: string;
+  funcIndex: number;
 };
 
 type IEventBus = {
@@ -42,13 +48,18 @@ class EventBus implements IEventBus {
   getQueueIndex(): number {
     return this.queueIndex;
   }
-  emit(name: string, uuid: { eventUUIDs?: string[] }, payload?: any): IEvent {
+  emit(
+    name: string,
+    ctx: { eventUUIDs?: string[]; funcData?: IFuncData },
+    payload?: any
+  ): IEvent {
     if (!payload) payload = {};
 
     const newEvent: IEvent = {
       name,
       payload,
-      uuidStack: uuid.eventUUIDs!,
+      uuidStack: ctx.eventUUIDs!,
+      funcData: ctx.funcData!,
     };
     let events = this.events[name];
     if (!events) {
@@ -78,24 +89,25 @@ class EventBus implements IEventBus {
 
   emitOnce(
     name: string,
-    uuid: { eventUUID?: string; eventUUIDs?: string[] },
+    ctx: { eventUUID?: string; eventUUIDs?: string[]; funcData?: IFuncData },
     payload?: any
   ): IEvent | null {
     let emitOnceEvents = this.emitOnceEvents[name];
     if (!emitOnceEvents) this.emitOnceEvents[name] = emitOnceEvents = [];
 
     if (
-      emitOnceEvents.find((event) => event.uuidStack.includes(uuid.eventUUID!))
+      emitOnceEvents.find((event) => event.uuidStack.includes(ctx.eventUUID!))
     )
       return null;
 
     emitOnceEvents.push({
       name,
       payload,
-      uuidStack: uuid.eventUUIDs!,
+      uuidStack: ctx.eventUUIDs!,
+      funcData: ctx.funcData!,
     });
 
-    return this.emit(name, uuid, payload);
+    return this.emit(name, ctx, payload);
   }
 
   getEventsForUUID(uuid: string): IEvent[] {
@@ -213,14 +225,32 @@ function getEvent(
 function getEventByUUID(
   eventBus: EventBus,
   name: string,
-  uuid: string
+  uuid: string,
+  funcData?: { funcName: string; funcIndex: number }
 ): IEvent | null {
-  const events =
+  let events =
     name === "*"
       ? Object.values(eventBus.events).flat()
       : eventBus.events[name];
   if (!events) {
     return null;
+  }
+
+  if (funcData) {
+    const nextLowestFuncIndex =
+      [
+        ...new Set(
+          events
+            .filter(
+              (e) =>
+                e.funcData.funcName === funcData.funcName &&
+                e.funcData.funcIndex >= funcData.funcIndex
+            )
+            .map((e) => e.funcData.funcIndex)
+        ),
+      ].sort((a, b) => a - b)[1] || Infinity;
+
+    events = events.filter((e) => e.funcData.funcIndex < nextLowestFuncIndex);
   }
 
   return events.find((e) => e.uuidStack.includes(uuid)) || null;
@@ -361,10 +391,12 @@ function withEventNames(
     throw new Error("Event UUID not found");
   }
 
+  const funcData = getFuncData(args);
+
   // Fetch all events into a record keyed by their name
   const events: Record<string, IEvent> = {};
   for (const name of eventNames) {
-    const event = getEventByUUID(eventBus, name, eventUUID);
+    const event = getEventByUUID(eventBus, name, eventUUID, funcData);
     if (event) {
       events[name] = event;
     }
@@ -373,6 +405,13 @@ function withEventNames(
   return func(events, eventBus, eventUUID);
 }
 
+function getFuncData(args: any[]): IFuncData | undefined {
+  for (const arg of args) {
+    if (typeof arg === "object" && "funcData" in arg) {
+      return arg.funcData;
+    }
+  }
+}
 export {
   getEventBus,
   EventBus,

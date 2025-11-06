@@ -285,6 +285,7 @@ abstract class AssertionMaster<
               ...arg,
               eventUUID,
               eventUUIDs: [...this.state!.uuidStack],
+              funcData: { funcName: name, funcIndex: funcIndex },
             };
             break;
           }
