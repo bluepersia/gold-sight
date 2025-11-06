@@ -5,6 +5,7 @@ type IEvent = {
   state?: any;
   uuidStack: string[];
   funcData: IFuncData;
+  eventUUID: string;
 };
 
 type IFuncData = {
@@ -50,7 +51,7 @@ class EventBus implements IEventBus {
   }
   emit(
     name: string,
-    ctx: { eventUUIDs?: string[]; funcData?: IFuncData },
+    ctx: { eventUUID?: string; eventUUIDs?: string[]; funcData?: IFuncData },
     payload?: any
   ): IEvent {
     if (!payload) payload = {};
@@ -60,6 +61,7 @@ class EventBus implements IEventBus {
       payload,
       uuidStack: ctx.eventUUIDs!,
       funcData: ctx.funcData!,
+      eventUUID: ctx.eventUUID!,
     };
     let events = this.events[name];
     if (!events) {
@@ -105,6 +107,7 @@ class EventBus implements IEventBus {
       payload,
       uuidStack: ctx.eventUUIDs!,
       funcData: ctx.funcData!,
+      eventUUID: ctx.eventUUID!,
     });
 
     return this.emit(name, ctx, payload);
@@ -237,20 +240,30 @@ function getEventByUUID(
   }
 
   if (funcData) {
+    const sameFuncEvents = events.filter(
+      (e) =>
+        e.funcData.funcName === funcData.funcName &&
+        e.funcData.funcIndex >= funcData.funcIndex
+    );
+
     const nextLowestFuncIndex =
       [
         ...new Set(
-          events
-            .filter(
-              (e) =>
-                e.funcData.funcName === funcData.funcName &&
-                e.funcData.funcIndex >= funcData.funcIndex
-            )
-            .map((e) => e.funcData.funcIndex)
+          sameFuncEvents.map((e) => e.funcData.funcIndex).sort((a, b) => a - b)
         ),
-      ].sort((a, b) => a - b)[1] || Infinity;
+      ][1] || Infinity;
 
-    events = events.filter((e) => e.funcData.funcIndex < nextLowestFuncIndex);
+    const nextEvents = sameFuncEvents.filter(
+      (e) => e.funcData.funcIndex === nextLowestFuncIndex
+    );
+
+    events = events.filter((e) => {
+      for (const nextEvent of nextEvents) {
+        if (e.uuidStack.includes(nextEvent.eventUUID))
+          return e.funcData.funcIndex < nextLowestFuncIndex;
+      }
+      return true;
+    });
   }
 
   return events.find((e) => e.uuidStack.includes(uuid)) || null;
