@@ -84,6 +84,7 @@ abstract class AssertionMaster<
       callStack: [],
       branchCounter: new Map(),
       queueIndex: 0,
+      uuidStack: [],
     };
   };
 
@@ -269,10 +270,15 @@ abstract class AssertionMaster<
       let eventUUID: string | undefined;
       if (eventBus) {
         eventUUID = crypto.randomUUID().toString();
+        this.state!.uuidStack.push(eventUUID);
         for (let i = 0; i < args.length; i++) {
           const arg = args[i];
           if (typeof arg === "object" && "eventUUID" in arg) {
-            args[i] = { ...arg, eventUUID };
+            args[i] = {
+              ...arg,
+              eventUUID,
+              eventUUIDs: [...this.state!.uuidStack],
+            };
             break;
           }
         }
@@ -281,6 +287,8 @@ abstract class AssertionMaster<
       const result = fn(...args);
 
       this.state!.callStack.pop();
+
+      if (eventUUID) this.state!.uuidStack.pop();
 
       function processResult(result: ReturnType<T>) {
         const convertedResult = processors?.resultConverter

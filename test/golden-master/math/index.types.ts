@@ -36,6 +36,7 @@ type MathState = {
 type LogicContext = {
   eventBus?: EventBus;
   eventUUID?: string;
+  eventUUIDs?: string[];
 };
 
 export { Master, MathState, EventUUID, LogicContext };

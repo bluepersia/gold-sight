@@ -3,7 +3,7 @@ type IEvent = {
   payload?: any;
   id?: string;
   state?: any;
-  uuid: string;
+  uuidStack: string[];
 };
 
 type IEventBus = {
@@ -42,18 +42,13 @@ class EventBus implements IEventBus {
   getQueueIndex(): number {
     return this.queueIndex;
   }
-  emit(
-    name: string,
-    uuid: string | { eventUUID?: string },
-    payload?: any
-  ): IEvent {
-    const uuidValue = typeof uuid === "string" ? uuid : uuid.eventUUID;
+  emit(name: string, uuid: { eventUUIDs?: string[] }, payload?: any): IEvent {
     if (!payload) payload = {};
 
     const newEvent: IEvent = {
       name,
       payload,
-      uuid: uuidValue!,
+      uuidStack: uuid.eventUUIDs!,
     };
     let events = this.events[name];
     if (!events) {
@@ -66,7 +61,7 @@ class EventBus implements IEventBus {
 
   emitOver(
     name: string,
-    uuid: string | { eventUUID?: string },
+    uuid: { eventUUIDs?: string[] },
     key: any,
     payload?: any
   ) {
@@ -81,19 +76,21 @@ class EventBus implements IEventBus {
 
   emitOnce(
     name: string,
-    uuid: string | { eventUUID?: string },
+    uuid: { eventUUID?: string; eventUUIDs?: string[] },
     payload?: any
   ): IEvent | null {
-    const uuidValue = typeof uuid === "string" ? uuid : uuid.eventUUID;
     let emitOnceEvents = this.emitOnceEvents[name];
     if (!emitOnceEvents) this.emitOnceEvents[name] = emitOnceEvents = [];
 
-    if (emitOnceEvents.find((event) => event.uuid === uuidValue)) return null;
+    if (
+      emitOnceEvents.find((event) => event.uuidStack.includes(uuid.eventUUID!))
+    )
+      return null;
 
     emitOnceEvents.push({
       name,
       payload,
-      uuid: uuidValue!,
+      uuidStack: uuid.eventUUIDs!,
     });
 
     return this.emit(name, uuid, payload);
@@ -102,7 +99,7 @@ class EventBus implements IEventBus {
   getEventsForUUID(uuid: string): IEvent[] {
     return Object.values(this.events)
       .flat()
-      .filter((event: IEvent) => event.uuid === uuid);
+      .filter((event: IEvent) => event.uuidStack.includes(uuid));
   }
 }
 
@@ -223,7 +220,8 @@ function getEventByUUID(
   if (!events) {
     return null;
   }
-  return events.find((e) => e.uuid === uuid) || null;
+
+  return events.find((e) => e.uuidStack.includes(uuid)) || null;
 }
 
 function filterEventsByState(
@@ -282,7 +280,7 @@ function filterEventsByUUID(
   if (!events) {
     return [];
   }
-  return events.filter((event: IEvent) => event.uuid === uuid);
+  return events.filter((event: IEvent) => event.uuidStack.includes(uuid));
 }
 
 function filterEvents(

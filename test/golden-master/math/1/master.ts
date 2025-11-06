@@ -14,7 +14,7 @@ const master: Master = {
   assertionMaster: null,
 };
 const eventBusA = new EventBus(5, {
-  a: [{ name: "a", payload: {}, state: { absIndex: 0 }, uuid: "" }],
+  a: [{ name: "a", payload: {}, state: { absIndex: 0 }, uuidStack: [] }],
 });
 master.finalQueue.set(0, {
   name: "a",
@@ -23,7 +23,7 @@ master.finalQueue.set(0, {
   result: [3, 0, 4, 12],
   args: [eventBusA],
   eventBus: new EventBus(1, {
-    a: [{ name: "a", payload: {}, state: { absIndex: 0 }, uuid: "a" }],
+    a: [{ name: "a", payload: {}, state: { absIndex: 0 }, uuidStack: ["a"] }],
   }),
   state: {
     absIndex: 0,
@@ -35,7 +35,7 @@ master.finalQueue.set(0, {
   },
 });
 const eventBusB = new EventBus(5, {
-  b: [{ name: "b", payload: {}, state: { absIndex: 0 }, uuid: "b" }],
+  b: [{ name: "b", payload: {}, state: { absIndex: 0 }, uuidStack: ["b"] }],
 });
 master.finalQueue.set(1, {
   name: "b",
@@ -53,7 +53,7 @@ master.finalQueue.set(1, {
   },
 });
 const eventBusC = new EventBus(5, {
-  c: [{ name: "c", payload: {}, state: { absIndex: 1 }, uuid: "c" }],
+  c: [{ name: "c", payload: {}, state: { absIndex: 1 }, uuidStack: ["c"] }],
 });
 master.finalQueue.set(2, {
   name: "c",
@@ -71,7 +71,7 @@ master.finalQueue.set(2, {
   },
 });
 const eventBusD = new EventBus(5, {
-  d: [{ name: "d", payload: {}, state: { absIndex: 2 }, uuid: "d" }],
+  d: [{ name: "d", payload: {}, state: { absIndex: 2 }, uuidStack: ["d"] }],
 });
 master.finalQueue.set(3, {
   name: "d",
@@ -90,7 +90,7 @@ master.finalQueue.set(3, {
 });
 
 const eventBusE = new EventBus(5, {
-  e: [{ name: "e", payload: {}, state: { absIndex: 3 }, uuid: "e" }],
+  e: [{ name: "e", payload: {}, state: { absIndex: 3 }, uuidStack: ["e"] }],
 });
 
 master.finalQueue.set(4, {

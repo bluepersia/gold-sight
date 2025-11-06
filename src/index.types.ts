@@ -24,6 +24,7 @@ type StateBase<TMaster> = {
   master?: TMaster;
   callStack: number[];
   branchCounter: Map<number, number>;
+  uuidStack: string[];
 };
 
 type AssertionChain<TState, TArgs, TResult> = {

@@ -201,6 +201,45 @@ const clonePropAssertionChain: AssertionChainForFunc<
         throw Error("unknown event");
       }
     }),
+  "should clone prop 2": (state, args, result) =>
+    withEventNames(
+      args,
+      [
+        "fluidPropCloned",
+        "expandedShorthand",
+        "specialPropCloned",
+        "propOmitted",
+      ],
+      (events) => {
+        const [, property, ctx] = args;
+        const { propsState } = ctx;
+        const masterRule = controller.findStyleRule(
+          state.master!.docClone,
+          state.styleRuleIndex - 1
+        );
+        if (events.fluidPropCloned) {
+          FLUID_PROP_EVENTS_ROUTER.fluidPropCloned(
+            result.style,
+            masterRule!.style,
+            property
+          );
+        } else if (events.expandedShorthand) {
+          FLUID_PROP_EVENTS_ROUTER.expandedShorthand(
+            result.style,
+            masterRule!.style,
+            property
+          );
+        } else if (events.specialPropCloned) {
+          expect(result.specialProps[property]).toBe(
+            masterRule!.specialProps[property]
+          );
+        } else if (events.propOmitted) {
+          expect(result).toBe(propsState);
+        } else {
+          throw Error("unknown event");
+        }
+      }
+    ),
 };
 
 const cloneFluidPropAssertionChain: AssertionChainForFunc<

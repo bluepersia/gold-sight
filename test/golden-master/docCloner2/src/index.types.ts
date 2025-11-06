@@ -13,6 +13,7 @@ type Features = {
 type EventContext = {
   event?: EventBus;
   eventUUID?: string;
+  eventUUIDs?: string[];
 };
 
 const STYLE_RULE_TYPE = 1;
