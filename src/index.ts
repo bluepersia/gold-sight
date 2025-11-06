@@ -309,23 +309,25 @@ abstract class AssertionMaster<
         postOp: () => {},
       } as AssertionBlueprint;
 
+      let originalResult = result;
       if (fn.constructor.name === "AsyncFunction") {
-        (result as Promise<any>).then(
-          (r) => (assertionData.result = processResult(r) as ReturnType<T>)
-        );
+        (result as Promise<any>).then((r) => {
+          originalResult = r;
+          assertionData.result = processResult(r) as ReturnType<T>;
+        });
       }
 
       assertionData.postOp = (state) => {
         assertionData.address = processors?.getAddress
-          ? processors.getAddress(state, args, result)
+          ? processors.getAddress(state, args, originalResult)
           : "";
 
         assertionData.snapshot = processors?.getSnapshot
-          ? processors.getSnapshot(state, args, result)
+          ? processors.getSnapshot(state, args, originalResult)
           : this._globalOptions?.getSnapshot
-          ? this._globalOptions.getSnapshot(state, args, result)
+          ? this._globalOptions.getSnapshot(state, args, originalResult)
           : undefined;
-        if (processors?.post) processors!.post(state, args, result);
+        if (processors?.post) processors!.post(state, args, originalResult);
       };
 
       assertionQueues[this.globalKey].set(queueIndex, assertionData);
