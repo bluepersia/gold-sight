@@ -1,3 +1,4 @@
+import prettyFormat from "pretty-format";
 import {
   AssertionBlueprint,
   AssertionChain,
@@ -136,7 +137,13 @@ abstract class AssertionMaster<
             }
           }
           if (address) {
-            prelog += `, ${address}`;
+            const formattedAddress =
+              typeof address === "object"
+                ? prettyFormat(address, {
+                    printBasicPrototype: false,
+                  })
+                : address;
+            prelog += `, ${formattedAddress}`;
           }
           if (prelog) {
             prelog += ", ";
@@ -223,7 +230,7 @@ abstract class AssertionMaster<
         state: TState,
         args: Parameters<T>,
         result: ReturnType<T>
-      ) => string;
+      ) => string | object;
       getSnapshot?: (
         state: TState,
         args: Parameters<T>,

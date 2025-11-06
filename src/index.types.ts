@@ -52,7 +52,7 @@ type AssertionForFunc<
 
 type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   name: string;
-  address?: string;
+  address?: string | object;
   funcIndex: number;
   result: TResult;
   args: TArgs;
@@ -140,7 +140,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
         state: TState,
         args: Parameters<T>,
         result: ReturnType<T>
-      ) => string;
+      ) => string | object;
 
       getSnapshot?: (
         state: TState,
@@ -174,7 +174,7 @@ declare abstract class AssertionMaster<TState, TMaster> {
         state: TState,
         args: Parameters<T>,
         result?: ReturnType<T>
-      ) => string;
+      ) => string | object;
 
       getSnapshot?: (
         state?: TState,
