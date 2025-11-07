@@ -26,7 +26,7 @@ master.finalQueue.set(0, {
   funcIndex: 0,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [],
+  args: [{}],
   state: {
     absIndex: 0,
     addAbsIndex: 0,
@@ -42,7 +42,7 @@ master.finalQueue.set(1, {
   funcIndex: 1,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [],
+  args: [[], {}],
   state: {
     absIndex: 0,
     addAbsIndex: 0,
@@ -58,7 +58,7 @@ master.finalQueue.set(2, {
   funcIndex: 2,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [],
+  args: [[3], {}],
   state: {
     absIndex: 1,
     addAbsIndex: 1,
@@ -74,7 +74,7 @@ master.finalQueue.set(3, {
   funcIndex: 3,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [],
+  args: [[3, 0], {}],
   state: {
     absIndex: 2,
     addAbsIndex: 1,
@@ -90,7 +90,7 @@ master.finalQueue.set(4, {
   funcIndex: 4,
   branchCount: 0,
   result: [3, 0, 4, 12],
-  args: [],
+  args: [[3, 0, 4], {}],
   state: {
     absIndex: 3,
     addAbsIndex: 2,

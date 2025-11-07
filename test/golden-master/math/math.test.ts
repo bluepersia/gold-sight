@@ -226,7 +226,7 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
         key,
         {
           ...value,
-          args: undefined,
+          args: stripEventContext(value.args),
           originalArgs: undefined,
           originalResult: undefined,
           requirement: undefined,
@@ -258,4 +258,11 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
     }
     return eventBus;
   }
+}
+
+function stripEventContext(args: any[]) {
+  for (const [index, arg] of args.entries()) {
+    if ("eventUUID" in arg) args[index] = {};
+  }
+  return args;
 }
