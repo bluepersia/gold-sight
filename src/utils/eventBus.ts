@@ -225,11 +225,13 @@ function getEvent(
   return event || null;
 }
 
+type FuncData = { funcName: string; funcIndex: number };
+
 function getEventByUUID(
   eventBus: EventBus,
   name: string,
   uuid: string,
-  funcData?: { funcName: string; funcIndex: number }
+  funcData?: FuncData
 ): IEvent | null {
   let events =
     name === "*"
@@ -240,33 +242,38 @@ function getEventByUUID(
   }
 
   if (funcData) {
-    const sameFuncEvents = events.filter(
-      (e) =>
-        e.funcData.funcName === funcData.funcName &&
-        e.funcData.funcIndex >= funcData.funcIndex
-    );
-
-    const nextLowestFuncIndex =
-      [
-        ...new Set(
-          sameFuncEvents.map((e) => e.funcData.funcIndex).sort((a, b) => a - b)
-        ),
-      ][1] || Infinity;
-
-    const nextEvents = sameFuncEvents.filter(
-      (e) => e.funcData.funcIndex === nextLowestFuncIndex
-    );
-
-    events = events.filter((e) => {
-      for (const nextEvent of nextEvents) {
-        if (e.uuidStack.includes(nextEvent.eventUUID))
-          return e.funcData.funcIndex < nextLowestFuncIndex;
-      }
-      return true;
-    });
+    events = filterRecursion(events, funcData);
   }
 
   return events.find((e) => e.uuidStack.includes(uuid)) || null;
+}
+
+function filterRecursion(events: IEvent[], funcData: FuncData): IEvent[] {
+  const sameFuncEvents = events.filter(
+    (e) =>
+      e.funcData.funcName === funcData.funcName &&
+      e.funcData.funcIndex >= funcData.funcIndex
+  );
+
+  const nextLowestFuncIndex =
+    [
+      ...new Set(
+        sameFuncEvents.map((e) => e.funcData.funcIndex).sort((a, b) => a - b)
+      ),
+    ][1] || Infinity;
+
+  const nextEvents = sameFuncEvents.filter(
+    (e) => e.funcData.funcIndex === nextLowestFuncIndex
+  );
+
+  events = events.filter((e) => {
+    for (const nextEvent of nextEvents) {
+      if (e.uuidStack.includes(nextEvent.eventUUID))
+        return e.funcData.funcIndex < nextLowestFuncIndex;
+    }
+    return true;
+  });
+  return events;
 }
 
 function filterEventsByState(
@@ -316,15 +323,19 @@ function filterEventsByPayload(
 function filterEventsByUUID(
   eventBus: EventBus,
   name: string,
-  uuid: string
+  uuid: string,
+  funcData?: FuncData
 ): IEvent[] {
-  const events =
+  let events =
     name === "*"
       ? Object.values(eventBus.events).flat()
       : eventBus.events[name];
   if (!events) {
     return [];
   }
+
+  if (funcData) events = filterRecursion(events, funcData);
+
   return events.filter((event: IEvent) => event.uuidStack.includes(uuid));
 }
 
@@ -442,4 +453,5 @@ export {
   withEventBus,
   withEvents,
   withEventNames,
+  getFuncData,
 };
