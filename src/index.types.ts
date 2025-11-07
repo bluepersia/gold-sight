@@ -79,6 +79,7 @@ type AssertOptions = {
   showAllErrors?: boolean;
   targetName?: string;
   logMasterName?: string;
+  verbose?: boolean;
 };
 
 type DeepCloneOptions = {

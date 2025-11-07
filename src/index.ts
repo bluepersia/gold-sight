@@ -93,6 +93,7 @@ abstract class AssertionMaster<
     options = {
       logMasterName: this._globalKey,
       errorAlgorithm: "firstOfDeepest",
+      verbose: true,
       ...(this._globalOptions?.assert || {}),
       ...(options || {}),
     };
@@ -198,8 +199,10 @@ abstract class AssertionMaster<
         for (const err of items) throw err.err;
       }
     }
-    for (const [key, count] of verifiedAssertions.entries()) {
-      console.log(`✅ ${key} - ✨${count} times`);
+    if (options.verbose) {
+      for (const [key, count] of verifiedAssertions.entries()) {
+        console.log(`✅ ${key} - ✨${count} times`);
+      }
     }
     console.groupEnd();
 

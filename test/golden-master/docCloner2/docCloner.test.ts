@@ -16,7 +16,7 @@ describe("cloneDoc", () => {
       eventUUID: "",
     });
 
-    docClonerAssertionMaster.assertQueue();
+    docClonerAssertionMaster.assertQueue({ verbose: false });
   });
 
   describe("should attempt to clone the doc and break", () => {

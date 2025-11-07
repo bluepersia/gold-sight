@@ -13,7 +13,7 @@ describe("serialiezDoc", () => {
       eventUUID: "",
     });
 
-    serializeDocAssertionMaster.assertQueue();
+    serializeDocAssertionMaster.assertQueue({ verbose: false });
   });
 
   describe("should attempt to serialize the doc and break", () => {
