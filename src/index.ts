@@ -1,4 +1,11 @@
 import prettyFormat from "pretty-format";
+let fs;
+let path;
+if (process.env.NODE_ENV === "test") {
+  fs = await import("fs");
+  path = await import("path");
+}
+
 import {
   AssertionBlueprint,
   AssertionChain,
@@ -33,6 +40,18 @@ import { AbsCounter } from "./utils/absCounter";
 
 const assertionQueues: AssertionQueues = {};
 
+let globalConfig: Config<any> | null = null;
+if (fs && path) {
+  const globalConfigFilePath = path.resolve(
+    process.cwd(),
+    "gold-sight.config.json"
+  );
+  if (fs.existsSync(globalConfigFilePath)) {
+    globalConfig = JSON.parse(
+      fs.readFileSync(globalConfigFilePath, { encoding: "utf-8" })
+    );
+  }
+}
 abstract class AssertionMaster<
   TState,
   TMaster extends { index: number; step?: number }
@@ -94,6 +113,7 @@ abstract class AssertionMaster<
       logMasterName: this._globalKey,
       errorAlgorithm: "firstOfDeepest",
       verbose: true,
+      ...(globalConfig?.assert || {}),
       ...(this._globalOptions?.assert || {}),
       ...(options || {}),
     };
@@ -252,6 +272,7 @@ abstract class AssertionMaster<
       const deepCloneOpts = {
         result: false,
         args: false,
+        ...(globalConfig?.deepClone || {}),
         ...(this._globalOptions?.deepClone || {}),
         ...(processors?.deepClone || {}),
       };
@@ -345,6 +366,8 @@ abstract class AssertionMaster<
           ? processors.getSnapshot(state, args, originalResult)
           : this._globalOptions?.getSnapshot
           ? this._globalOptions.getSnapshot(state, args, originalResult)
+          : globalConfig?.getSnapshot
+          ? globalConfig.getSnapshot
           : undefined;
         if (processors?.post) processors!.post(state, args, originalResult);
       };
