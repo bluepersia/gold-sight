@@ -13,7 +13,7 @@ import {
   filterEventsByName,
 } from "../src/utils/eventBus";
 
-let eventBus;
+let eventBus: EventBus;
 let args;
 
 describe("eventHelpers", () => {
@@ -110,6 +110,14 @@ describe("eventHelpers", () => {
     expect(events[0].name).toBe("b");
   });
 
+  test("filterEventsByName", () => {
+    const events = filterEventsByName(eventBus, "b");
+    expect(events.length).toBe(2);
+  });
+  test("filterEventsByName *", () => {
+    const events = filterEventsByName(eventBus, "*");
+    expect(events.length).toBe(5);
+  });
   test("withEventBus", () => {
     return withEventBus(args, (eventBusGot) => {
       expect(eventBusGot).toBe(eventBus);
@@ -139,23 +147,58 @@ describe("eventHelpers", () => {
   });
 });
 let ctx;
+let eventRef;
 
 describe("event bus methods", () => {
   beforeAll(() => {
     eventBus = new EventBus();
-    ctx = { eventBus, eventUUID: "test" };
+    ctx = { eventBus, eventUUID: "test", eventUUIDs: ["test1", "test"] };
   });
 
-  test("3 emits", () => {
-    const firstEvent = eventBus.emit("testFunc", ctx, { testValue: 42 });
-    eventBus.emit("testFunc2", ctx, { testValue: 42 });
-    eventBus.emit("testFunc3", ctx, { testValue: 42 });
+  describe("3 emits", () => {
+    beforeAll(() => {
+      eventBus.emit("testFunc", ctx, { testValue: 42 });
+      eventBus.emit("testFunc2", ctx, { testValue: 42 });
+      eventBus.emit("testFunc3", ctx, { testValue: 42 });
+    });
 
-    const allEvents = filterEventsByName(eventBus, "*");
-    expect(allEvents.length).toBe(3);
+    test("should have 3 events", () => {
+      const firstEvents = eventBus.events["testFunc"];
+      expect(firstEvents.length).toBe(1);
 
-    const firstEventRetrieved = filterEventsByName(eventBus, "testFunc");
-    expect(firstEventRetrieved.length).toBe(1);
-    expect(firstEventRetrieved[0]).toBe(firstEvent);
+      const secondEvents = eventBus.events["testFunc2"];
+      expect(secondEvents.length).toBe(1);
+
+      const thirdEvents = eventBus.events["testFunc3"];
+      expect(thirdEvents.length).toBe(1);
+      expect(Object.values(eventBus.events).length).toBe(3);
+    });
+  });
+
+  describe("3 emitOnce", () => {
+    beforeAll(() => {
+      eventBus = new EventBus();
+      eventBus.emitOnce("testFunc", ctx);
+      eventBus.emitOnce("testFunc", ctx);
+      eventBus.emitOnce("testFunc", ctx);
+    });
+
+    test("expect 1 event", () => {
+      expect(eventBus.events["testFunc"].length).toBe(1);
+    });
+  });
+  describe("3 emitOne", () => {
+    beforeAll(() => {
+      eventBus = new EventBus();
+      eventBus.emitOne("testFunc", ctx, { scopeKey: "red" });
+      eventBus.emitOne("testFunc2", ctx, { scopeKey: "red" });
+      eventRef = eventBus.emitOne("testFunc3", ctx, { scopeKey: "red" });
+    });
+
+    test("expect 1 event", () => {
+      const allEvents = filterEventsByName(eventBus, "*");
+      expect(allEvents.length).toBe(1);
+      expect(allEvents[0]).toBe(eventRef);
+    });
   });
 });

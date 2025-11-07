@@ -86,7 +86,7 @@ class EventBus implements IEventBus {
     }
     if (!payload) payload = {};
     payload = { ...payload, ...key };
-    this.emit(name, uuid, payload);
+    return this.emit(name, uuid, payload);
   }
 
   emitOnce(
