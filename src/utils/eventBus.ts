@@ -155,13 +155,7 @@ function getEventByState(
   name: string,
   state: any
 ): IEvent | null {
-  const events =
-    name === "*"
-      ? Object.values(eventBus.events).flat()
-      : eventBus.events[name];
-  if (!events) {
-    return null;
-  }
+  const events = filterEventsByName(eventBus, name);
   const event = events.find((e) => {
     for (const key in state) {
       if (state[key] !== e.state[key]) {
@@ -178,13 +172,7 @@ function getEventByPayload(
   name: string,
   payload: any
 ): IEvent | null {
-  const events =
-    name === "*"
-      ? Object.values(eventBus.events).flat()
-      : eventBus.events[name];
-  if (!events) {
-    return null;
-  }
+  const events = filterEventsByName(eventBus, name);
   const event = events.find((e) => {
     for (const key in payload) {
       if (payload[key] !== e.payload[key]) {
@@ -202,13 +190,7 @@ function getEvent(
   payload: any,
   state: any
 ): IEvent | null {
-  const events =
-    name === "*"
-      ? Object.values(eventBus.events).flat()
-      : eventBus.events[name];
-  if (!events) {
-    return null;
-  }
+  const events = filterEventsByName(eventBus, name);
   const event = events.find((e) => {
     for (const key in state) {
       if (state[key] !== e.state[key]) {
@@ -233,13 +215,7 @@ function getEventByUUID(
   uuid: string,
   funcData?: FuncData
 ): IEvent | null {
-  let events =
-    name === "*"
-      ? Object.values(eventBus.events).flat()
-      : eventBus.events[name];
-  if (!events) {
-    return null;
-  }
+  let events = filterEventsByName(eventBus, name);
 
   if (funcData) {
     events = filterRecursion(events, funcData);
@@ -281,13 +257,7 @@ function filterEventsByState(
   name: string,
   state: any
 ): IEvent[] {
-  const events =
-    name === "*"
-      ? Object.values(eventBus.events).flat()
-      : eventBus.events[name];
-  if (!events) {
-    return [];
-  }
+  const events = filterEventsByName(eventBus, name);
   return events.filter((event: IEvent) => {
     for (const key in state) {
       if (state[key] !== event.state[key]) {
@@ -303,13 +273,7 @@ function filterEventsByPayload(
   name: string,
   payload: any
 ): IEvent[] {
-  const events =
-    name === "*"
-      ? Object.values(eventBus.events).flat()
-      : eventBus.events[name];
-  if (!events) {
-    return [];
-  }
+  const events = filterEventsByName(eventBus, name);
   return events.filter((event: IEvent) => {
     for (const key in payload) {
       if (payload[key] !== event.payload[key]) {
@@ -326,13 +290,7 @@ function filterEventsByUUID(
   uuid: string,
   funcData?: FuncData
 ): IEvent[] {
-  let events =
-    name === "*"
-      ? Object.values(eventBus.events).flat()
-      : eventBus.events[name];
-  if (!events) {
-    return [];
-  }
+  let events = filterEventsByName(eventBus, name);
 
   if (funcData) events = filterRecursion(events, funcData);
 
@@ -345,13 +303,7 @@ function filterEvents(
   payload: any,
   state: any
 ): IEvent[] {
-  let events =
-    name === "*"
-      ? Object.values(eventBus.events).flat()
-      : eventBus.events[name];
-  if (!events) {
-    return [];
-  }
+  let events = filterEventsByName(eventBus, name);
   events = events.filter((event: IEvent) => {
     for (const key in payload) {
       if (payload[key] !== event.payload[key]) {
