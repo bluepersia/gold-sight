@@ -122,6 +122,7 @@ describe("eventHelpers", () => {
 
       expect(events.b).toBeDefined();
       expect(events.b).not.toBeNull();
+      expect(events.b.payload.test1).toBeDefined();
 
       expect(events.c).toBeDefined();
       expect(events.c).not.toBeNull();
