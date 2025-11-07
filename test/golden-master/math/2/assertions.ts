@@ -15,6 +15,7 @@ const aDefaultAssertions: AssertionChain<MathState, [], number[]> = {
       const eventUUID = getEventUUID(args)!;
       const event = getEventByUUID(eventBus, "b", eventUUID);
       expect(event).toBeDefined();
+      expect(event).not.toBeNull();
     }
     expect(result).toEqual(master.finalResults);
     return true;
@@ -27,6 +28,7 @@ const bDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
       const eventUUID = getEventUUID(args)!;
       const event = getEventByUUID(eventBus, "c", eventUUID);
       expect(event).toBeDefined();
+      expect(event).not.toBeNull();
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
@@ -42,7 +44,9 @@ const cDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
       const event1 = getEventByUUID(eventBus, "d", eventUUID);
       const event2 = getEventByUUID(eventBus, "f", eventUUID);
       expect(event1).toBeDefined();
+      expect(event1).not.toBeNull();
       expect(event2).toBeDefined();
+      expect(event2).not.toBeNull();
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.subResults[state.subAbsIndex]);
@@ -58,6 +62,7 @@ const dDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
       const eventUUID = getEventUUID(args)!;
       const event = getEventByUUID(eventBus, "e", eventUUID);
       expect(event).toBeDefined();
+      expect(event).not.toBeNull();
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);

@@ -33,14 +33,14 @@ let c2 = (results: number[], ctx: LogicContext) => {
 };
 
 let d = (results: number[], ctx: LogicContext) => {
-  ctx.eventBus?.emit("d", ctx, {});
+  ctx.eventBus?.emitOne("d", ctx, { scopeKey: "test" });
   let newResults = [...results, math.add(results[1], 4)]; //4
   newResults = e(newResults, ctx);
   return newResults;
 };
 
 let e = (results: number[], ctx: LogicContext) => {
-  ctx.eventBus?.emit("e", ctx, {});
+  ctx.eventBus?.emitOne("e", ctx, { scopeKey: "test" });
   let newResults = [...results, math.multiply(results[2], 3)]; //12
   return newResults;
 };

@@ -56,6 +56,7 @@ const cDefaultAssertions: AssertionChain<
         absIndex: state.absIndex,
       });
       expect(event).toBeDefined();
+      expect(event).not.toBeNull();
       expect(event?.state.absIndex).toBe(state.absIndex);
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
@@ -84,10 +85,7 @@ const dDefaultAssertions: AssertionChain<
     const eventBus = getEventBus(args);
     if (eventBus) {
       const event = getEventByState(eventBus, "d", {});
-      expect(event).toBeDefined();
-      expect(event).toBeDefined();
-
-      expect(event?.state.absIndex).toBe(state.absIndex);
+      expect(event).toBeNull();
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
@@ -105,6 +103,7 @@ const eDefaultAssertions: AssertionChain<
     if (eventBus) {
       const event = getEventByState(eventBus, "e", {});
       expect(event).toBeDefined();
+      expect(event).not.toBeNull();
 
       expect(event?.state.absIndex).toBe(state.absIndex);
     }
