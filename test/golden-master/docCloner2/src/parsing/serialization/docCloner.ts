@@ -49,6 +49,7 @@ let cloneStyleSheet = (
 };
 
 let cloneRules = (rules: CSSRuleList, ctx: CloneRulesContext): RuleClone[] => {
+  testFunc(ctx);
   return Array.from(rules)
     .map((rule) => cloneRule(rule, ctx))
     .filter((rule) => rule !== null);
@@ -244,6 +245,10 @@ let cloneMediaRule = (
   if (dev) event?.emit("mediaRuleOmitted", ctx, { why: "noMinWidth" });
   return null;
 };
+
+function testFunc(ctx: CloneRulesContext) {
+  ctx.event?.emit("testFunc", ctx, { why: "testFunc" });
+}
 
 let filterAccessibleSheets: (sheets: StyleSheetList) => CSSStyleSheet[] = (
   sheets: StyleSheetList

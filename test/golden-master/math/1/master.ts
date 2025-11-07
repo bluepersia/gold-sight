@@ -23,7 +23,16 @@ master.finalQueue.set(0, {
   result: [3, 0, 4, 12],
   args: [eventBusA],
   eventBus: new EventBus(1, {
-    a: [{ name: "a", payload: {}, state: { absIndex: 0 }, uuidStack: ["a"] }],
+    a: [
+      {
+        name: "a",
+        payload: {},
+        state: { absIndex: 0 },
+        uuidStack: ["a"],
+        funcData: { funcName: "a", funcIndex: 0 },
+        eventUUID: "a",
+      },
+    ],
   }),
   state: {
     absIndex: 0,
