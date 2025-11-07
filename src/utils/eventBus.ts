@@ -19,7 +19,7 @@ type IEventBus = {
   };
 
   isEventBus: boolean;
-  emit(name: string, payload: any): void;
+  emit(name: string, payload: any): IEvent;
   getEventsForUUID(uuid: string): IEvent[];
 };
 
@@ -436,6 +436,18 @@ function getFuncData(args: any[]): IFuncData | undefined {
     }
   }
 }
+
+function filterEventsByName(eventBus: EventBus, name: string) {
+  let events =
+    name === "*"
+      ? Object.values(eventBus.events).flat()
+      : eventBus.events[name];
+  if (!events) {
+    return [];
+  }
+
+  return events;
+}
 export {
   getEventBus,
   EventBus,
@@ -454,4 +466,5 @@ export {
   withEvents,
   withEventNames,
   getFuncData,
+  filterEventsByName,
 };
