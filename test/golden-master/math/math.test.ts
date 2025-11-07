@@ -86,10 +86,15 @@ describe("wrapped function call", () => {
       assertionMaster.state!.branchCounter = new Map([[0, 0]]);
       assertionMaster.state!.callStack = [0];
 
+      const eventBus = new EventBus();
       master.subfunc([], {
-        eventBus: new EventBus(),
+        eventBus,
         eventUUID: "",
       });
+
+      for (const [eventName, events] of Object.entries(eventBus.events)) {
+        expect(events.length).toBe(master.eventMap.get(eventName)!);
+      }
 
       let queue = new Map(getQueue(assertionMaster.globalKey));
 
@@ -123,10 +128,15 @@ describe("top level function", () => {
     vi.spyOn(assertionMaster, "runPostOps");
     vi.spyOn(assertionMaster, "resetState");
 
+    const eventBus = new EventBus();
     topFunc({
-      eventBus: new EventBus(),
+      eventBus,
       eventUUID: "",
     });
+
+    for (const [key, value] of master.eventMap.entries()) {
+      expect(eventBus.events[key].length).toBe(value);
+    }
 
     expect(assertionMaster.runPostOps).toHaveBeenCalledTimes(1);
     expect(assertionMaster.resetState).toHaveBeenCalledTimes(1);
@@ -237,4 +247,15 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
       ];
     })
   );
+
+  function emptyEventUUIDs(eventBus: EventBus | undefined) {
+    if (!eventBus) return undefined;
+    for (const [key, value] of Object.entries(eventBus.events)) {
+      for (const event of value) {
+        event.eventUUID = "";
+        event.uuidStack = [];
+      }
+    }
+    return eventBus;
+  }
 }

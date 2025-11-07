@@ -7,6 +7,7 @@ import * as logic from "./logic";
 import { Master, MathState } from "../index.types";
 import {
   EventBus,
+  filterEventsByState,
   getEventBus,
   getEventByState,
 } from "../../../../src/utils/eventBus";
@@ -14,8 +15,12 @@ import {
 const aDefaultAssertions: AssertionChain<MathState, [EventBus], number[]> = {
   a: (state, args, result) => {
     const eventBus = getEventBus(args)!;
-    const event = getEventByState(eventBus, "a", {});
-    expect(event?.state.absIndex).toBe(state.absIndex);
+    if (eventBus) {
+      const events = filterEventsByState(eventBus, "a", {});
+      expect(events.length).toBe(1);
+      const [event] = events;
+      expect(event?.state.absIndex).toBe(state.absIndex);
+    }
     expect(result).toEqual(master.finalResults);
     return true;
   },
@@ -28,10 +33,11 @@ const bDefaultAssertions: AssertionChain<
   b: (state, args, result) => {
     const eventBus = getEventBus(args);
     if (eventBus) {
-      const event = getEventByState(eventBus, "b", {
-        absIndex: state.absIndex,
-      });
-      expect(event?.state.absIndex).toBe(state.absIndex);
+      const events = filterEventsByState(eventBus, "b", {});
+      expect(events.length).toBe(2);
+      for (const event of events) {
+        expect(event.state.absIndex).toBe(state.absIndex);
+      }
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
@@ -49,6 +55,7 @@ const cDefaultAssertions: AssertionChain<
       const event = getEventByState(eventBus, "c", {
         absIndex: state.absIndex,
       });
+      expect(event).toBeDefined();
       expect(event?.state.absIndex).toBe(state.absIndex);
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
@@ -77,6 +84,9 @@ const dDefaultAssertions: AssertionChain<
     const eventBus = getEventBus(args);
     if (eventBus) {
       const event = getEventByState(eventBus, "d", {});
+      expect(event).toBeDefined();
+      expect(event).toBeDefined();
+
       expect(event?.state.absIndex).toBe(state.absIndex);
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
@@ -94,6 +104,8 @@ const eDefaultAssertions: AssertionChain<
     const eventBus = getEventBus(args);
     if (eventBus) {
       const event = getEventByState(eventBus, "e", {});
+      expect(event).toBeDefined();
+
       expect(event?.state.absIndex).toBe(state.absIndex);
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);

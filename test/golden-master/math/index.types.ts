@@ -22,6 +22,7 @@ type Master = {
   topFunc: Function;
   subfunc: Function;
   assertionMaster?: any;
+  eventMap: Map<string, number>;
 };
 
 type MathState = {

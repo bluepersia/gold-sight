@@ -39,7 +39,7 @@ class EventBus implements IEventBus {
 
   uninitialized: IEvent[] = [];
 
-  emitOnceEvents: {
+  private emitOnceEvents: {
     [name: string]: IEvent[];
   } = {};
 
