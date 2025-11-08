@@ -41,7 +41,7 @@ import { AbsCounter } from "./utils/absCounter";
 
 const assertionQueues: AssertionQueues = {};
 
-let globalConfig: Config<any> | null = null;
+let globalConfig: Config<any> = {};
 if (fs && path) {
   const globalConfigFilePath = path.resolve(
     process.cwd(),
@@ -474,6 +474,10 @@ function printMaster(master: any) {
   else return "";
 }
 
+function getGlobalConfig() {
+  return globalConfig;
+}
+
 export {
   getQueue,
   deepClone,
@@ -494,6 +498,7 @@ export {
   withEvents,
   withEventNames,
   makeEventContext,
+  getGlobalConfig,
 };
 
 export default AssertionMaster;

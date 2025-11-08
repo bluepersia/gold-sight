@@ -168,6 +168,10 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
   c2 = this.wrapFn(c2, "c2");
 
   d = this.wrapFn(d, "d", {
+    deepClone: {
+      args: true,
+      result: true,
+    },
     getSnapshot(state, args, result) {
       const snapshotResult = result.map((r) => r * 2);
       return snapshotResult;
