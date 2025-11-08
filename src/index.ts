@@ -239,6 +239,7 @@ abstract class AssertionMaster<
         );
       }
     }
+    return verifiedAssertions;
   };
 
   wrapFn<T extends (...args: any[]) => any>(
