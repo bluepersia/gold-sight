@@ -39,8 +39,12 @@ const bDefaultAssertions: AssertionChain<
         expect(event.state.absIndex).toBe(state.absIndex);
       }
     }
-    expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
-    expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
+    expect(result[state.absIndex]).toBe(
+      master.finalResults[state.absIndex] * 2
+    );
+    expect(result[state.absIndex]).toBe(
+      master.addResults[state.addAbsIndex] * 2
+    );
     return true;
   },
 };
@@ -142,6 +146,9 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
   a = this.wrapTopFn(a, "a") as () => number[];
 
   b = this.wrapFn(b, "b", {
+    resultConverter(result) {
+      return result.map((r) => r * 2);
+    },
     post: (state) => {
       state.absIndex++;
       state.addAbsIndex++;
@@ -149,6 +156,9 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
   });
 
   c = this.wrapFn(c, "c", {
+    argsConverter(args) {
+      return [args[0].map((r) => r * 2, args[1])];
+    },
     post: (state) => {
       state.absIndex++;
       state.subAbsIndex++;

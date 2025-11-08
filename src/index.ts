@@ -307,7 +307,7 @@ abstract class AssertionMaster<
         for (let i = 0; i < args.length; i++) {
           const arg = args[i];
           if (typeof arg === "object" && "eventUUID" in arg) {
-            args[i] = {
+            args[i] = argsClone[i] = {
               ...arg,
               eventUUID,
               eventUUIDs: [...this.state!.uuidStack],
