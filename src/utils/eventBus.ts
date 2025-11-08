@@ -1,3 +1,5 @@
+import { EventContext } from "../index.types";
+
 type IEvent = {
   name: string;
   payload?: any;
@@ -400,6 +402,15 @@ function filterEventsByName(eventBus: EventBus, name: string) {
 
   return events;
 }
+
+function makeEventContext() {
+  return {
+    event: new EventBus(),
+    eventUUID: "",
+    eventUUIDs: [],
+  } as EventContext;
+}
+
 export {
   getEventBus,
   EventBus,
@@ -419,4 +430,6 @@ export {
   withEventNames,
   getFuncData,
   filterEventsByName,
+  IFuncData,
+  makeEventContext,
 };

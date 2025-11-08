@@ -34,6 +34,7 @@ import {
   filterEventsByPayload,
   filterEventsByState,
   filterEvents,
+  makeEventContext,
 } from "./utils/eventBus";
 
 import { AbsCounter } from "./utils/absCounter";
@@ -491,6 +492,7 @@ export {
   withEventBus,
   withEvents,
   withEventNames,
+  makeEventContext,
 };
 
 export default AssertionMaster;

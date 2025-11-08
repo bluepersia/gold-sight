@@ -15,6 +15,8 @@ import {
   withEventBus,
   withEvents,
   withEventNames,
+  IFuncData,
+  makeEventContext,
 } from "./utils/eventBus";
 
 import { AbsCounter } from "./utils/absCounter";
@@ -210,6 +212,13 @@ type AssertionError = {
   branchCount: number;
 };
 
+type EventContext = {
+  event?: EventBus;
+  eventUUID?: string;
+  eventUUIDs?: string[];
+  funcData?: IFuncData;
+};
+
 export {
   deepClone,
   EventBus,
@@ -228,6 +237,7 @@ export {
   withEventBus,
   withEvents,
   withEventNames,
+  makeEventContext,
 };
 
 export type {
@@ -245,4 +255,5 @@ export type {
   AssertionForFunc,
   AssertionChainForFunc,
   AssertionError,
+  EventContext,
 };
