@@ -66,6 +66,10 @@ abstract class AssertionMaster<
   private _master?: TMaster;
   private _globalOptions: Config<TState> | undefined;
 
+  public get globalOptions() {
+    return { ...(this._globalOptions || {}) };
+  }
+
   constructor(
     assertionChains: {
       [funcKey: string]: AssertionChain<TState, any, any>;

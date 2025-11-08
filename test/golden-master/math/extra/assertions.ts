@@ -135,6 +135,9 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
         args: true,
         result: true,
       },
+      getSnapshot: () => {
+        return 42;
+      },
     });
   }
 
@@ -151,6 +154,9 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
   a = this.wrapTopFn(a, "a") as () => number[];
 
   b = this.wrapFn(b, "b", {
+    getAddress: (state, args, result) => {
+      return "b";
+    },
     post: (state) => {
       state.absIndex++;
       state.addAbsIndex++;
