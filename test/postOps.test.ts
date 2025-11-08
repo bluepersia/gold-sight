@@ -1,12 +1,12 @@
 import { vi, describe, test, expect } from "vitest";
-import { b } from "./golden-master/math/extra/logic";
+import { b } from "./golden-master/math/1WithLocalConfig/logic";
 import { b as b2 } from "./golden-master/math/2/logic";
-import { assertionMaster } from "./golden-master/math/extra/assertions";
+import { assertionMaster } from "./golden-master/math/1WithLocalConfig/assertions";
 import { assertionMaster as assertionMaster2 } from "./golden-master/math/2/assertions";
 import { LogicContext } from "./golden-master/math/index.types";
 import { getGlobalConfig } from "../src";
 
-test("should run all post ops on b extra", () => {
+test("should run all post ops on b with local config", () => {
   const postOpSpy = vi.spyOn(assertionMaster, "runPostOp");
   getGlobalConfig().getSnapshot = undefined;
   assertionMaster.reset();

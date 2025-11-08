@@ -2,7 +2,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { wrapAll as wrapAllMath1 } from "./golden-master/math/1/assertions";
 import { wrapAll as wrapAllMath2 } from "./golden-master/math/2/assertions";
-import { wrapAll as wrapAllMathExtra } from "./golden-master/math/extra/assertions";
+import { wrapAll as wrapAllMathExtra } from "./golden-master/math/1WithLocalConfig/assertions";
 import { wrapAll as wrapAllAsync } from "./golden-master/async/assertions";
 import { wrapAll as wrapAllDocCloner } from "./golden-master/docCloner/parsing/serialization/docClonerGoldSight";
 
