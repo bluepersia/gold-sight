@@ -364,18 +364,7 @@ abstract class AssertionMaster<
       }
 
       assertionData.postOp = (state) => {
-        assertionData.address = processors?.getAddress
-          ? processors.getAddress(state, args, originalResult)
-          : "";
-
-        assertionData.snapshot = processors?.getSnapshot
-          ? processors.getSnapshot(state, args, originalResult)
-          : this._globalOptions?.getSnapshot
-          ? this._globalOptions.getSnapshot(state, args, originalResult)
-          : globalConfig?.getSnapshot
-          ? globalConfig.getSnapshot(state, args, originalResult)
-          : undefined;
-        if (processors?.post) processors!.post(state, args, originalResult);
+        this.runPostOp(state, args, originalResult, processors, assertionData);
       };
 
       assertionQueues[this.globalKey].set(queueIndex, assertionData);
@@ -426,6 +415,27 @@ abstract class AssertionMaster<
 
       if (value.postOp) value.postOp(this.state, value.args, value.result);
     }
+  }
+
+  runPostOp(
+    state: TState,
+    args: any,
+    originalResult: any,
+    processors: any,
+    assertionData: AssertionBlueprint<TState, any, any>
+  ) {
+    assertionData.address = processors?.getAddress
+      ? processors.getAddress(state, args, originalResult)
+      : "";
+
+    assertionData.snapshot = processors?.getSnapshot
+      ? processors.getSnapshot(state, args, originalResult)
+      : this._globalOptions?.getSnapshot
+      ? this._globalOptions.getSnapshot(state, args, originalResult)
+      : globalConfig?.getSnapshot
+      ? globalConfig.getSnapshot(state, args, originalResult)
+      : undefined;
+    if (processors?.post) processors!.post(state, args, originalResult);
   }
 
   wrapTopFn<T extends (...args: any[]) => any>(

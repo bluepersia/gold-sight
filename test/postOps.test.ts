@@ -7,12 +7,16 @@ import { LogicContext } from "./golden-master/math/index.types";
 import { getGlobalConfig } from "../src";
 
 test("should run all post ops on b extra", () => {
+  const postOpSpy = vi.spyOn(assertionMaster, "runPostOp");
+  getGlobalConfig().getSnapshot = undefined;
   assertionMaster.reset();
   assertionMaster.resetState();
   const args: [number[], LogicContext] = [[], {}];
   b(...args);
 
   assertionMaster.runPostOps();
+
+  expect(postOpSpy).toHaveBeenCalled();
 
   const queue = assertionMaster.getQueue();
   queue.forEach((assertion) => {
