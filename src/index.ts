@@ -369,7 +369,7 @@ abstract class AssertionMaster<
           : this._globalOptions?.getSnapshot
           ? this._globalOptions.getSnapshot(state, args, originalResult)
           : globalConfig?.getSnapshot
-          ? globalConfig.getSnapshot
+          ? globalConfig.getSnapshot(state, args, originalResult)
           : undefined;
         if (processors?.post) processors!.post(state, args, originalResult);
       };
