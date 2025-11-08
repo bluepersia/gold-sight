@@ -33,7 +33,9 @@ describe("cloneDoc", () => {
         try {
           docClonerAssertionMaster.assertQueue();
         } catch (err) {
-          expect(err.message).includes(`.product-card/mediaWidth:baseline`);
+          expect(err.message).includes(
+            `"mediaWidth": "baseline",\n  "selector": ".product-card"`
+          );
         }
       }
     );
@@ -51,7 +53,9 @@ describe("cloneDoc", () => {
     try {
       docClonerAssertionMaster.assertQueue({ errorAlgorithm: "deepest" });
     } catch (err) {
-      expect(err.message).includes(`.product-card/mediaWidth:600`);
+      expect(err.message).includes(
+        '"mediaWidth": 600,\n  "selector": ".product-card"'
+      );
     }
   });
 
@@ -67,7 +71,7 @@ describe("cloneDoc", () => {
     try {
       docClonerAssertionMaster.assertQueue();
     } catch (err) {
-      expect(err.message).includes(`mediaText:(min-width: 375px)`);
+      expect(err.message).includes(`"mediaText": "(min-width: 375px)"`);
     }
   });
 });
