@@ -12,11 +12,14 @@ test("should run all post ops on b extra", () => {
   assertionMaster.reset();
   assertionMaster.resetState();
   const args: [number[], LogicContext] = [[], {}];
-  b(...args);
+  const result = b(...args);
 
   assertionMaster.runPostOps();
 
   expect(postOpSpy).toHaveBeenCalled();
+  expect(postOpSpy.mock.calls[0][0]).toBe(assertionMaster.state);
+  expect(postOpSpy.mock.calls[0][1]).toEqual(args);
+  expect(postOpSpy.mock.calls[0][2]).toEqual(result);
 
   const queue = assertionMaster.getQueue();
   queue.forEach((assertion) => {
