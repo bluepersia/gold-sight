@@ -420,22 +420,22 @@ abstract class AssertionMaster<
   runPostOp(
     state: TState,
     args: any,
-    originalResult: any,
+    result: any,
     processors: any,
     assertionData: AssertionBlueprint<TState, any, any>
   ) {
     assertionData.address = processors?.getAddress
-      ? processors.getAddress(state, args, originalResult)
+      ? processors.getAddress(state, args, result)
       : "";
 
     assertionData.snapshot = processors?.getSnapshot
-      ? processors.getSnapshot(state, args, originalResult)
+      ? processors.getSnapshot(state, args, result)
       : this._globalOptions?.getSnapshot
-      ? this._globalOptions.getSnapshot(state, args, originalResult)
+      ? this._globalOptions.getSnapshot(state, args, result)
       : globalConfig?.getSnapshot
-      ? globalConfig.getSnapshot(state, args, originalResult)
+      ? globalConfig.getSnapshot(state, args, result)
       : undefined;
-    if (processors?.post) processors!.post(state, args, originalResult);
+    if (processors?.post) processors!.post(state, args, result);
   }
 
   wrapTopFn<T extends (...args: any[]) => any>(
