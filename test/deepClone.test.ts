@@ -17,9 +17,6 @@ describe("no deep clone", () => {
   });
   test("should not deep clone args and result", () => {
     assertionMaster.resetState();
-    assertionMaster.state!.queueIndex = 1;
-    assertionMaster.state!.branchCounter = new Map([[0, 0]]);
-    assertionMaster.state!.callStack = [0];
     const spy = vi.spyOn(deepClone, "deepClone");
 
     const args: [number[], LogicContext] = [[], {}];
@@ -45,9 +42,6 @@ describe("global deep clone", () => {
 
   test("should deep clone args and result", () => {
     assertionMaster.resetState();
-    assertionMaster.state!.queueIndex = 1;
-    assertionMaster.state!.branchCounter = new Map([[0, 0]]);
-    assertionMaster.state!.callStack = [0];
     const spy = vi.spyOn(deepClone, "deepClone");
 
     const args: [number[], LogicContext] = [[], {}];
@@ -75,9 +69,6 @@ describe("func-based deep clone", () => {
 
   test("should deep clone args and result", () => {
     assertionMaster.resetState();
-    assertionMaster.state!.queueIndex = 1;
-    assertionMaster.state!.branchCounter = new Map([[0, 0]]);
-    assertionMaster.state!.callStack = [0];
     const spy = vi.spyOn(deepClone, "deepClone");
 
     const args: [number[], LogicContext] = [[], {}];
@@ -105,9 +96,6 @@ describe("local deep clone", () => {
 
   test("should deep clone args and result", () => {
     assertionMasterExtra.resetState();
-    assertionMasterExtra.state!.queueIndex = 1;
-    assertionMasterExtra.state!.branchCounter = new Map([[0, 0]]);
-    assertionMasterExtra.state!.callStack = [0];
 
     const spy = vi.spyOn(deepClone, "deepClone");
 
