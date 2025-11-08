@@ -96,6 +96,8 @@ describe("wrapped function call", () => {
         expect(events.length).toBe(master.eventMap.get(eventName)!);
       }
 
+      assertionMaster.runPostOps();
+
       let queue = new Map(getQueue(assertionMaster.globalKey));
 
       queue = stripQueue(queue);
@@ -105,15 +107,6 @@ describe("wrapped function call", () => {
 
       masterQueue = stripQueue(masterQueue);
 
-      for (const [key, value] of masterQueue.entries()) {
-        masterQueue.set(key, {
-          ...value,
-          state: {
-            ...assertionMaster.newState(),
-            master: undefined,
-          },
-        });
-      }
       expect(queue).toEqual(masterQueue);
     }
   );
@@ -231,7 +224,6 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
           originalResult: undefined,
           requirement: undefined,
           postOp: undefined,
-          snapshot: undefined,
           eventBus: undefined,
           eventUUID: undefined,
           address: undefined,
