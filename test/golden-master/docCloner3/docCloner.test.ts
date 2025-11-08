@@ -7,6 +7,7 @@ import { EventBus, makeEventContext } from "../../../src/utils/eventBus";
 import { makeDefaultGlobal } from "./src/utils/global";
 import { DocClone } from "../docCloner/src/parsing/docClone";
 import { MEDIA_RULE_TYPE, STYLE_RULE_TYPE } from "./src/index.types";
+import { FLUID_PROPERTY_NAMES } from "../docCloner/src/parsing/docSerializerConsts";
 
 function countSheets(doc: Document) {
   return doc.styleSheets.length;
@@ -60,6 +61,44 @@ function countMediaRule(doc: Document) {
   return count;
 }
 
+function countProp(doc: Document) {
+  let count = 0;
+  for (const sheet of doc.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (rule.type === STYLE_RULE_TYPE)
+        count += (rule as CSSStyleRule).style.length;
+      else if (rule.type === MEDIA_RULE_TYPE) {
+        for (const childRule of (rule as CSSMediaRule).cssRules)
+          count += (childRule as CSSStyleRule).style.length;
+      }
+    }
+  }
+  return count;
+}
+
+function countFluidProp(doc: Document) {
+  let count = 0;
+  for (const sheet of doc.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (rule.type === STYLE_RULE_TYPE)
+        count += countFluidPropForStyle((rule as CSSStyleRule).style);
+      else if (rule.type === MEDIA_RULE_TYPE) {
+        for (const childRule of (rule as CSSMediaRule).cssRules)
+          count += countFluidPropForStyle((childRule as CSSStyleRule).style);
+      }
+    }
+  }
+  return count;
+}
+
+function countFluidPropForStyle(style: CSSStyleDeclaration) {
+  let count = 0;
+  for (let i = 0; i < style.length; i++) {
+    if (FLUID_PROPERTY_NAMES.has(style[i])) count++;
+  }
+  return count;
+}
+
 describe("cloneDoc", () => {
   test.each(JSDOMDocs)("should clone the doc", ({ doc, index }) => {
     docClonerAssertionMaster.master = docClonerCollection[index];
@@ -85,6 +124,12 @@ describe("cloneDoc", () => {
 
     expect(verifiedAssertions.get("should clone media rule")).toEqual(
       countMediaRule(doc)
+    );
+
+    expect(verifiedAssertions.get("should clone prop")).toEqual(countProp(doc));
+
+    expect(verifiedAssertions.get("should clone fluid prop")).toEqual(
+      countFluidProp(doc)
     );
   });
 
