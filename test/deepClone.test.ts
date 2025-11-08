@@ -13,6 +13,7 @@ describe("no deep clone", () => {
       result: false,
       args: false,
     };
+    assertionMaster.reset();
   });
   test("should not deep clone args and result", () => {
     assertionMaster.resetState();
@@ -22,10 +23,14 @@ describe("no deep clone", () => {
     const spy = vi.spyOn(deepClone, "deepClone");
 
     const args: [number[], LogicContext] = [[], {}];
-    e(...args);
-    expect(spy).not.toHaveBeenCalled();
+    const result = e(...args);
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
+
+    const assertion = Array.from(assertionMaster.getQueue().values()).find(
+      (a) => a.name === "e"
+    )!;
+    expect(assertion.result).toBe(result);
   });
 });
 
@@ -35,6 +40,7 @@ describe("global deep clone", () => {
       result: true,
       args: true,
     };
+    assertionMaster.reset();
   });
 
   test("should deep clone args and result", () => {
@@ -49,6 +55,12 @@ describe("global deep clone", () => {
     expect(spy).toHaveBeenCalledWith(result);
     expect(spy).toHaveBeenCalledWith(args);
     spy.mockRestore();
+
+    const assertion = Array.from(assertionMaster.getQueue().values()).find(
+      (a) => a.name === "e"
+    )!;
+    expect(assertion.args).not.toBe(args);
+    expect(assertion.result).not.toBe(result);
   });
 });
 
@@ -58,6 +70,7 @@ describe("func-based deep clone", () => {
       result: false,
       args: false,
     };
+    assertionMaster.reset();
   });
 
   test("should deep clone args and result", () => {
@@ -72,6 +85,12 @@ describe("func-based deep clone", () => {
     expect(spy).toHaveBeenCalledWith(result);
     expect(spy).toHaveBeenCalledWith(args);
     spy.mockRestore();
+
+    const assertion = Array.from(assertionMaster.getQueue().values()).find(
+      (a) => a.name === "d"
+    )!;
+    expect(assertion.args).not.toBe(args);
+    expect(assertion.result).not.toBe(result);
   });
 });
 
@@ -81,6 +100,7 @@ describe("local deep clone", () => {
       result: false,
       args: false,
     };
+    assertionMaster.reset();
   });
 
   test("should deep clone args and result", () => {
@@ -96,5 +116,11 @@ describe("local deep clone", () => {
     expect(spy).toHaveBeenCalledWith(result);
     expect(spy).toHaveBeenCalledWith(args);
     spy.mockRestore();
+
+    const assertion = Array.from(assertionMasterExtra.getQueue().values()).find(
+      (a) => a.name === "d"
+    )!;
+    expect(assertion.args).not.toBe(args);
+    expect(assertion.result).not.toBe(result);
   });
 });
