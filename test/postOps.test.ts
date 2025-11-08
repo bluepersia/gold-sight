@@ -6,7 +6,7 @@ import { assertionMaster as assertionMaster2 } from "./golden-master/math/2/asse
 import { LogicContext } from "./golden-master/math/index.types";
 import { getGlobalConfig } from "../src";
 
-test("should run all post ops on b", () => {
+test("should run all post ops on b extra", () => {
   assertionMaster.reset();
   assertionMaster.resetState();
   const args: [number[], LogicContext] = [[], {}];
