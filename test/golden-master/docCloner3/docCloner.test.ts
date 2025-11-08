@@ -110,27 +110,41 @@ describe("cloneDoc", () => {
     });
 
     const verifiedAssertions = docClonerAssertionMaster.assertQueue();
-    expect(verifiedAssertions.get("should clone style sheet")).toEqual(
-      countSheets(doc)
+    const styleSheetsAssertionCount = verifiedAssertions.get(
+      "should clone style sheet"
     );
-    expect(verifiedAssertions.get("should clone rules")).toEqual(
-      countRules(doc)
-    );
-    expect(verifiedAssertions.get("should clone rule")).toEqual(countRule(doc));
+    expect(styleSheetsAssertionCount).toEqual(countSheets(doc));
+    expect(styleSheetsAssertionCount).toBeGreaterThan(0);
 
-    expect(verifiedAssertions.get("should clone style rule")).toEqual(
-      countStyleRule(doc)
-    );
+    const rulesAssertionCount = verifiedAssertions.get("should clone rules");
+    expect(rulesAssertionCount).toEqual(countRules(doc));
+    expect(rulesAssertionCount).toBeGreaterThan(0);
 
-    expect(verifiedAssertions.get("should clone media rule")).toEqual(
-      countMediaRule(doc)
-    );
+    const ruleAssertionCount = verifiedAssertions.get("should clone rule");
+    expect(ruleAssertionCount).toEqual(countRule(doc));
+    expect(rulesAssertionCount).toBeGreaterThan(0);
 
-    expect(verifiedAssertions.get("should clone prop")).toEqual(countProp(doc));
-
-    expect(verifiedAssertions.get("should clone fluid prop")).toEqual(
-      countFluidProp(doc)
+    const styleRuleAssertionCount = verifiedAssertions.get(
+      "should clone style rule"
     );
+    expect(styleRuleAssertionCount).toEqual(countStyleRule(doc));
+    expect(styleRuleAssertionCount).toBeGreaterThan(0);
+
+    const mediaRuleAssertionCount = verifiedAssertions.get(
+      "should clone media rule"
+    );
+    expect(mediaRuleAssertionCount).toEqual(countMediaRule(doc));
+    expect(mediaRuleAssertionCount).toBeGreaterThan(0);
+
+    const propAssertionCount = verifiedAssertions.get("should clone prop");
+    expect(propAssertionCount).toEqual(countProp(doc));
+    expect(propAssertionCount).toBeGreaterThan(0);
+
+    const fluidPropAssertionCount = verifiedAssertions.get(
+      "should clone fluid prop"
+    );
+    expect(fluidPropAssertionCount).toEqual(countFluidProp(doc));
+    expect(fluidPropAssertionCount).toBeGreaterThan(0);
   });
 
   describe("should attempt to clone the doc and break", () => {
