@@ -249,7 +249,7 @@ abstract class AssertionMaster<
       argsConverter?: (args: Parameters<T>) => any;
       resultConverter?: (result: ReturnType<T>, args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
-      post?: (state: TState, args: any[], result: any) => void;
+      post?: (state: TState, args: Parameters<T>, result: any) => void;
       deepClone?: DeepCloneOptions;
       getAddress?: (
         state: TState,
@@ -431,7 +431,11 @@ abstract class AssertionMaster<
       argsConverter?: (args: Parameters<T>) => any;
       resultConverter?: (result: ReturnType<T>, args: Parameters<T>) => any;
       pre?: (state: TState, args: Parameters<T>) => void;
-      post?: (state: TState, args: any[], result: any) => void;
+      post?: (
+        state: TState,
+        args: Parameters<T>,
+        result: ReturnType<T>
+      ) => void;
       args?: Parameters<T>;
       getSnapshot?: (
         state?: TState,
@@ -477,6 +481,9 @@ function printMaster(master: any) {
 function getGlobalConfig() {
   return globalConfig;
 }
+function setGlobalConfig(config: Config<any>) {
+  globalConfig = config;
+}
 
 export {
   getQueue,
@@ -499,6 +506,7 @@ export {
   withEventNames,
   makeEventContext,
   getGlobalConfig,
+  setGlobalConfig,
 };
 
 export default AssertionMaster;

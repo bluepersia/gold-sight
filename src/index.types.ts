@@ -61,7 +61,7 @@ type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   state: TState;
   branchCount: number;
   snapshot?: any;
-  postOp?: (state: any, args: any[], result: any) => void;
+  postOp?: (state: TState, args: TArgs, result: TResult) => void;
   eventBus?: EventBus;
   eventUUID?: string;
 };
