@@ -202,3 +202,14 @@ describe("event bus methods", () => {
     });
   });
 });
+
+describe("event bus errors", () => {
+  test("should throw error if event bus is not found", () => {
+    expect(() => withEventBus([], () => {})).toThrow("Event bus not found");
+  });
+  test("should throw error if event uuid is not found", () => {
+    expect(() => withEvents([{ event: new EventBus() }], () => {})).toThrow(
+      "Event UUID not found"
+    );
+  });
+});
