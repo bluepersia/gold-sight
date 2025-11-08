@@ -1,6 +1,6 @@
 ![Tool Logo](https://github.com/bluepersia/gold-sight/blob/master/assets/logo.png)
 
-Welcome to GoldSight, a minimalistic framework that makes it easy to test your code on realistic content.
+Welcome to GoldSight, a testing framework that makes it possible to test your code on singular realistic content.
 
 Top-level E2E functions can get thorough assertions on almost every sub-function.
 This merges realistic E2E + Integration + Unit tests in one chain.
