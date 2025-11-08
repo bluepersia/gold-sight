@@ -279,6 +279,8 @@ abstract class AssertionMaster<
         ...(processors?.deepClone || {}),
       };
 
+      if (this._globalOptions) console.log("deep clone opts", deepCloneOpts);
+
       const argsClone = deepCloneOpts.args
         ? deepClone(convertedArgs)
         : convertedArgs;
