@@ -1,14 +1,14 @@
-import { EventBus } from "../../../../src/utils/eventBus";
-type GlobalConfig = UserConfig &
-  Features & {
-    isBrowser: boolean;
-  };
+import type { EventBus } from "../../../../src/utils/eventBus";
 
-type UserConfig = {
+type Global = UserSettings & Features & {};
+
+type UserSettings = {
   autoForce: boolean;
 };
 
-type Features = {};
+type Features = {
+  isBrowser: boolean;
+};
 
 type EventContext = {
   event?: EventBus;
@@ -16,41 +16,7 @@ type EventContext = {
   eventUUIDs?: string[];
 };
 
-type FluidPropertyData = {
-  metaData: FluidPropertyMetaData;
-  forceValue?: string;
-  ranges?: FluidRange[];
-};
-
-type FluidPropertyMetaData = {
-  property: string;
-  orderID: number;
-};
-
-type FluidRange = {
-  minBp: number;
-  maxBp: number;
-  minValue: FluidValue[][];
-  maxValue: FluidValue[][];
-};
-
-type FluidValue = {
-  type: "single" | "string";
-};
-type FluidValueSingle = {
-  type: "single";
-  value: number;
-  unit: string;
-};
-
-export type {
-  EventContext,
-  GlobalConfig,
-  UserConfig,
-  Features,
-  FluidPropertyMetaData,
-  FluidRange,
-  FluidValue,
-  FluidValueSingle,
-  FluidPropertyData,
-};
+const STYLE_RULE_TYPE = 1;
+const MEDIA_RULE_TYPE = 4;
+export { STYLE_RULE_TYPE, MEDIA_RULE_TYPE };
+export type { Global, UserSettings, Features, EventContext };

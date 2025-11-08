@@ -2,19 +2,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { wrapAll as wrapAllMath1 } from "./golden-master/math/1/assertions";
 import { wrapAll as wrapAllMath2 } from "./golden-master/math/2/assertions";
-import { wrapAll as wrapAllDocCloner } from "./golden-master/docCloner/parsing/serializer/gold-sight";
-import { wrapAll as wrapAllDocCloner2 } from "./golden-master/docCloner2/parsing/docClonerGoldSight";
 import { wrapAll as wrapAllAsync } from "./golden-master/async/assertions";
-import { wrapAll as wrapAllDocCloner3 } from "./golden-master/docCloner3/parsing/serialization/docClonerGoldSight";
+import { wrapAll as wrapAllDocCloner } from "./golden-master/docCloner/parsing/serialization/docClonerGoldSight";
 
 import { PlaywrightBlueprint } from "./index.types";
-import { generateJSDOMDocument } from "./golden-master/docCloner/src/parsing/jsonBuilder";
+import { generateJSDOMDocument } from "./golden-master/docCloner/src/parsing/jsdom/jsonBuilder";
 
 wrapAllMath1();
 wrapAllMath2();
 wrapAllDocCloner();
-wrapAllDocCloner2();
-wrapAllDocCloner3();
 wrapAllAsync();
 
 const __filename = fileURLToPath(import.meta.url);

@@ -1,70 +1,205 @@
 import { describe, expect, test } from "vitest";
 import { JSDOMDocs } from "../../setup";
-import { serializeDoc } from "./src/parsing/docSerializer";
-import { serializeDocAssertionMaster } from "./parsing/serializer/gold-sight";
-import { collection } from "./parsing/serializer/collection";
-import { EventBus } from "../../../src/utils/eventBus";
-describe("serialiezDoc", () => {
-  test.each(JSDOMDocs)("should serialize the doc", ({ doc, index }) => {
-    serializeDocAssertionMaster.master = collection[index];
-    serializeDoc(doc, {
-      globalConfig: { isBrowser: false, autoForce: true },
-      event: new EventBus(),
-      eventUUID: "",
+import { cloneDoc } from "./src/parsing/serialization/docCloner";
+import { docClonerAssertionMaster } from "./parsing/serialization/docClonerGoldSight";
+import { docClonerCollection } from "./parsing/serialization/docClonerCollection";
+import { EventBus, makeEventContext } from "../../../src/utils/eventBus";
+import { makeDefaultGlobal } from "./src/utils/global";
+import { MEDIA_RULE_TYPE, STYLE_RULE_TYPE } from "./src/index.types";
+import { FLUID_PROPERTY_NAMES } from "./src/parsing/serialization/docClonerConsts";
+
+function countSheets(doc: Document) {
+  return doc.styleSheets.length;
+}
+
+function countRules(doc: Document) {
+  let count = 0;
+  for (const sheet of doc.styleSheets) {
+    count++;
+    for (const rule of sheet.cssRules) {
+      if (rule.type === MEDIA_RULE_TYPE) count++;
+    }
+  }
+  return count;
+}
+
+function countRule(doc: Document) {
+  let count = 0;
+  for (const sheet of doc.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      count++;
+      if (rule.type === MEDIA_RULE_TYPE) {
+        for (const childRule of (rule as CSSMediaRule).cssRules) count++;
+      }
+    }
+  }
+  return count;
+}
+
+function countStyleRule(doc: Document) {
+  let count = 0;
+  for (const sheet of doc.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (rule.type === STYLE_RULE_TYPE) count++;
+
+      if (rule.type === MEDIA_RULE_TYPE) {
+        for (const childRule of (rule as CSSMediaRule).cssRules) count++;
+      }
+    }
+  }
+  return count;
+}
+
+function countMediaRule(doc: Document) {
+  let count = 0;
+  for (const sheet of doc.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (rule.type === MEDIA_RULE_TYPE) count++;
+    }
+  }
+  return count;
+}
+
+function countProp(doc: Document) {
+  let count = 0;
+  for (const sheet of doc.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (rule.type === STYLE_RULE_TYPE)
+        count += (rule as CSSStyleRule).style.length;
+      else if (rule.type === MEDIA_RULE_TYPE) {
+        for (const childRule of (rule as CSSMediaRule).cssRules)
+          count += (childRule as CSSStyleRule).style.length;
+      }
+    }
+  }
+  return count;
+}
+
+function countFluidProp(doc: Document) {
+  let count = 0;
+  for (const sheet of doc.styleSheets) {
+    for (const rule of sheet.cssRules) {
+      if (rule.type === STYLE_RULE_TYPE)
+        count += countFluidPropForStyle((rule as CSSStyleRule).style);
+      else if (rule.type === MEDIA_RULE_TYPE) {
+        for (const childRule of (rule as CSSMediaRule).cssRules)
+          count += countFluidPropForStyle((childRule as CSSStyleRule).style);
+      }
+    }
+  }
+  return count;
+}
+
+function countFluidPropForStyle(style: CSSStyleDeclaration) {
+  let count = 0;
+  for (let i = 0; i < style.length; i++) {
+    if (FLUID_PROPERTY_NAMES.has(style[i])) count++;
+  }
+  return count;
+}
+
+describe("cloneDoc", () => {
+  test.each(JSDOMDocs)("should clone the doc", ({ doc, index }) => {
+    docClonerAssertionMaster.master = docClonerCollection[index];
+    cloneDoc(doc, {
+      ...makeDefaultGlobal(),
+      counter: { orderID: -1 },
+      isBrowser: false,
+      ...makeEventContext(),
     });
 
-    serializeDocAssertionMaster.assertQueue({ verbose: false });
+    const verifiedAssertions = docClonerAssertionMaster.assertQueue();
+    const styleSheetsAssertionCount = verifiedAssertions.get(
+      "should clone style sheet"
+    );
+    expect(styleSheetsAssertionCount).toEqual(countSheets(doc));
+    expect(styleSheetsAssertionCount).toBeGreaterThan(0);
+
+    const rulesAssertionCount = verifiedAssertions.get("should clone rules");
+    expect(rulesAssertionCount).toEqual(countRules(doc));
+    expect(rulesAssertionCount).toBeGreaterThan(0);
+
+    const ruleAssertionCount = verifiedAssertions.get("should clone rule");
+    expect(ruleAssertionCount).toEqual(countRule(doc));
+    expect(rulesAssertionCount).toBeGreaterThan(0);
+
+    const styleRuleAssertionCount = verifiedAssertions.get(
+      "should clone style rule"
+    );
+    expect(styleRuleAssertionCount).toEqual(countStyleRule(doc));
+    expect(styleRuleAssertionCount).toBeGreaterThan(0);
+
+    const mediaRuleAssertionCount = verifiedAssertions.get(
+      "should clone media rule"
+    );
+    expect(mediaRuleAssertionCount).toEqual(countMediaRule(doc));
+    expect(mediaRuleAssertionCount).toBeGreaterThan(0);
+
+    const propAssertionCount = verifiedAssertions.get("should clone prop");
+    expect(propAssertionCount).toEqual(countProp(doc));
+    expect(propAssertionCount).toBeGreaterThan(0);
+
+    const fluidPropAssertionCount = verifiedAssertions.get(
+      "should clone fluid prop"
+    );
+    expect(fluidPropAssertionCount).toEqual(countFluidProp(doc));
+    expect(fluidPropAssertionCount).toBeGreaterThan(0);
   });
 
-  describe("should attempt to serialize the doc and break", () => {
+  describe("should attempt to clone the doc and break", () => {
     test.each(JSDOMDocs)(
       "should break with firstOfDeepest",
       ({ doc, index }) => {
-        serializeDocAssertionMaster.master = collection[index];
-        serializeDoc(doc, {
-          break: [".product-card", ".product-card__title"],
-          globalConfig: { isBrowser: false, autoForce: true },
-          event: new EventBus(),
-          eventUUID: "",
+        docClonerAssertionMaster.master = docClonerCollection[index];
+        cloneDoc(doc, {
+          breakStyleRules: [".product-card", ".product-card__title"],
+          ...makeDefaultGlobal(),
+          counter: { orderID: -1 },
+          isBrowser: false,
+          ...makeEventContext(),
         });
         try {
-          serializeDocAssertionMaster.assertQueue();
+          docClonerAssertionMaster.assertQueue();
         } catch (err) {
-          expect(err.message).includes(`.product-card/baseline`);
+          expect(err.message).includes(
+            `"mediaWidth": "baseline",\n  "selector": ".product-card"`
+          );
         }
       }
     );
-    test.each(JSDOMDocs)("should break with deepest", ({ doc, index }) => {
-      serializeDocAssertionMaster.master = collection[index];
-      serializeDoc(doc, {
-        break: [".product-card", ".product-card__title"],
-        globalConfig: { isBrowser: false, autoForce: true },
-        event: new EventBus(),
-        eventUUID: "",
-      });
-      try {
-        serializeDocAssertionMaster.assertQueue({ errorAlgorithm: "deepest" });
-      } catch (err) {
-        expect(err.message).includes(`.product-card/600`);
-      }
-    });
+  });
 
-    test.each(JSDOMDocs)(
-      "should break with firstOfDeepest",
-      ({ doc, index }) => {
-        serializeDocAssertionMaster.master = collection[index];
-        serializeDoc(doc, {
-          breakMedia: 375,
-          globalConfig: { isBrowser: false, autoForce: true },
-          event: new EventBus(),
-          eventUUID: "",
-        });
-        try {
-          serializeDocAssertionMaster.assertQueue();
-        } catch (err) {
-          expect(err.message).includes(`(min-width: 375px)`);
-        }
-      }
-    );
+  test.each(JSDOMDocs)("should break with deepest", ({ doc, index }) => {
+    docClonerAssertionMaster.master = docClonerCollection[index];
+    cloneDoc(doc, {
+      breakStyleRules: [".product-card", ".product-card__title"],
+      ...makeDefaultGlobal(),
+      counter: { orderID: -1 },
+      isBrowser: false,
+      ...makeEventContext(),
+    });
+    try {
+      docClonerAssertionMaster.assertQueue({ errorAlgorithm: "deepest" });
+    } catch (err) {
+      expect(err.message).includes(
+        '"mediaWidth": 600,\n  "selector": ".product-card"'
+      );
+    }
+  });
+
+  test.each(JSDOMDocs)("should break with firstOfDeepest", ({ doc, index }) => {
+    docClonerAssertionMaster.master = docClonerCollection[index];
+    cloneDoc(doc, {
+      breakMedia: 375,
+      ...makeDefaultGlobal(),
+      counter: { orderID: -1 },
+      isBrowser: false,
+      ...makeEventContext(),
+    });
+    try {
+      docClonerAssertionMaster.assertQueue();
+    } catch (err) {
+      expect(err.message).includes(`"mediaText": "(min-width: 375px)"`);
+    }
   });
 });

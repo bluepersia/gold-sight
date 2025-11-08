@@ -1,12 +1,12 @@
-import { MEDIA_RULE_TYPE, STYLE_RULE_TYPE } from "../../index.types";
-import { splitBySpaces } from "../../utils/stringHelpers";
+import { MEDIA_RULE_TYPE, STYLE_RULE_TYPE } from "../../index.types.ts";
+import { splitBySpaces } from "../../utils/stringHelpers.ts";
 import {
   DocClone,
   MediaRuleClone,
   RuleClone,
   SheetClone,
   StyleRuleClone,
-} from "./docClone";
+} from "./docClone.ts";
 import type {
   CloneDocContext,
   CloneFluidPropContext,
@@ -15,12 +15,12 @@ import type {
   CloneRulesContext,
   CloneSheetContext,
   CloneSpecialPropContext,
-} from "./docCloner.types";
+} from "./docCloner.types.ts";
 import {
   FLUID_PROPERTY_NAMES,
   SHORTHAND_PROPERTIES,
   SPECIAL_PROPERTIES,
-} from "./docClonerConsts";
+} from "./docClonerConsts.ts";
 import "../../global.d.ts";
 
 let cloneDoc = (doc: Document, ctx: CloneDocContext): DocClone => {
