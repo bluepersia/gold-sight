@@ -1,4 +1,4 @@
-import prettyFormat from "pretty-format";
+import { prettyFormat } from "./utils/prettyFormat";
 let fs;
 let path;
 if (process.env.NODE_ENV === "test") {
