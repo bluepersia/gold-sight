@@ -32,8 +32,8 @@ npm install gold-sight
 
 ## Quick Start
 
-[See realistic GoldSight assertion setup example here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts)
-[See realistic source code event emissions here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts)
+[See realistic GoldSight assertion setup example here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts)<br>
+[See realistic source code event emissions here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts)<br>
 
 ```typescript
 import AssertionMaster, { AssertionChain } from "gold-sight";
