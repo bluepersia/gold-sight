@@ -158,13 +158,16 @@ describe("cloneDoc", () => {
           isBrowser: false,
           ...makeEventContext(),
         });
+        let err: Error | undefined;
         try {
           docClonerAssertionMaster.assertQueue();
-        } catch (err) {
-          expect(err.message).includes(
-            `"mediaWidth": "baseline",\n  "selector": ".product-card"`
-          );
+        } catch (e) {
+          err = e;
         }
+        expect(err).toBeDefined();
+        expect(err!.message).includes(
+          `"mediaWidth": "baseline",\n  "selector": ".product-card"`
+        );
       }
     );
   });
@@ -178,13 +181,16 @@ describe("cloneDoc", () => {
       isBrowser: false,
       ...makeEventContext(),
     });
+    let err: Error | undefined;
     try {
       docClonerAssertionMaster.assertQueue({ errorAlgorithm: "deepest" });
-    } catch (err) {
-      expect(err.message).includes(
-        '"mediaWidth": 600,\n  "selector": ".product-card"'
-      );
+    } catch (e) {
+      err = e;
     }
+    expect(err).toBeDefined();
+    expect(err!.message).includes(
+      '"mediaWidth": 600,\n  "selector": ".product-card"'
+    );
   });
 
   test.each(JSDOMDocs)("should break with firstOfDeepest", ({ doc, index }) => {
@@ -196,10 +202,13 @@ describe("cloneDoc", () => {
       isBrowser: false,
       ...makeEventContext(),
     });
+    let err: Error | undefined;
     try {
       docClonerAssertionMaster.assertQueue();
-    } catch (err) {
-      expect(err.message).includes(`"mediaText": "(min-width: 375px)"`);
+    } catch (e) {
+      err = e;
     }
+    expect(err).toBeDefined();
+    expect(err!.message).includes(`"mediaText": "(min-width: 375px)"`);
   });
 });
