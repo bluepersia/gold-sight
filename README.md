@@ -41,7 +41,7 @@ type State = {
 };
 
 // 2. Create assertion chains for each function
-const calculateTotalAssertions: AssertionChainForFunc<
+const calculateTotalAssertions: AssertionChain<
   State,
   Parameters<typeof calculateTotal>,
   number
