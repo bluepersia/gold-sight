@@ -14,16 +14,4 @@ class AbsCounter {
   }
 }
 
-class AbsIndex {
-  private _index: number = 0;
-  private _fullIndex: number = 0;
-
-  feed(value?: any) {
-    this._fullIndex++;
-
-    if (!value) return;
-
-    this._index++;
-  }
-}
-export { AbsCounter, AbsIndex };
+export { AbsCounter };
