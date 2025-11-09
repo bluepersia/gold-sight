@@ -37,7 +37,7 @@ import AssertionMaster, { AssertionChain } from "gold-sight";
 
 // 1. Define your state
 type State = {
-  master?: CalculatorMaster;
+  master?: PricingMaster;
   itemIndex: number;
 };
 
@@ -791,10 +791,11 @@ test("order checkout flow", async ({ page }) => {
 type State = {
   itemIndex: number;
   discountIndex: number;
+  master?: PricingMaster;
 };
 
 // Master
-const master = {
+const master: PricingMaster = {
   index: 0,
   cart: realWorldCart,
   expectedSubtotal: 1250.0,
@@ -806,13 +807,13 @@ const master = {
 // Assertions
 const calculateTotalAssertions: AssertionChain<State, any, number> = {
   "calculates correct total": (state, args, result) => {
-    expect(result).toBe(master.expectedTotal);
+    expect(result).toBe(state.master.expectedTotal);
   },
 };
 
 const calculateTaxAssertions: AssertionChain<State, any, number> = {
   "calculates tax for item": (state, args, result) => {
-    expect(result).toBe(master.expectedTax[state.itemIndex]);
+    expect(result).toBe(state.master.expectedTax[state.itemIndex]);
   },
 };
 
@@ -851,7 +852,7 @@ test("pricing calculation", () => {
 ### Example 2: Document Parser with Events
 
 ```typescript
-import { EventBus, makeEventContext, filterEventsByState } from "gold-sight";
+import { makeEventContext, filterEventsByState } from "gold-sight";
 
 // Track parsing events
 function parseDocument(doc: string, ctx: EventContext) {
