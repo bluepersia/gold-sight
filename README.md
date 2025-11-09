@@ -37,6 +37,7 @@ import AssertionMaster, { AssertionChain } from "gold-sight";
 
 // 1. Define your state
 type State = {
+  master?: CalculatorMaster;
   itemIndex: number;
 };
 
@@ -47,7 +48,7 @@ const calculateTotalAssertions: AssertionChain<
   number
 > = {
   "should calculate correct total": (state, args, result) => {
-    expect(result).toBe(master.expectedTotal);
+    expect(result).toBe(state.master.expectedTotal);
   },
 };
 
@@ -57,7 +58,7 @@ const calculateTaxAssertions: AssertionChain<
   number
 > = {
   "should calculate tax correctly": (state, args, result) => {
-    expect(result).toBe(master.expectedTax[state.itemIndex]);
+    expect(result).toBe(state.master.expectedTax[state.itemIndex]);
   },
 };
 //Alternatively, use AssertionChainForFunc<State, typeof function> for easily hooking into the function.
