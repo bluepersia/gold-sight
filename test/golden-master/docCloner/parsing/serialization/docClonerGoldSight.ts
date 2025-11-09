@@ -3,7 +3,10 @@ if (process.env.NODE_ENV === "test") {
   expect = (await import("vitest")).expect;
 }
 import AssertionMaster, { withEventNames } from "../../../../../src/index";
-import type { AssertionChainForFunc } from "../../../../../src/index.types";
+import type {
+  AssertionChainForFunc,
+  AssertionChain,
+} from "../../../../../src/index.types";
 import type { DocClonerMaster, GoldSightState } from "./index.types";
 import {
   cloneDoc,
