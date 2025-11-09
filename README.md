@@ -102,6 +102,8 @@ function wrap(
   calculateTotal = calculateTotalWrapped;
   calculateTax = calculateTax;
 }
+///IMPORTANT: Functions must be `let` declarations.
+
 export { wrap };
 
 // 5. Write your test
