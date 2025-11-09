@@ -3,6 +3,7 @@ import { masterCollection } from "./masterCollection";
 import { a } from "./1/logic";
 import { getQueue } from "../../../src";
 import { AssertionBlueprint } from "../../../src/index.types";
+import { EventBus } from "../../../src/utils/eventBus";
 
 describe("assert queue", () => {
   test.each(masterCollection)("set queue", (master) => {
@@ -85,7 +86,17 @@ describe("wrapped function call", () => {
       assertionMaster.state!.branchCounter = new Map([[0, 0]]);
       assertionMaster.state!.callStack = [0];
 
-      master.subfunc([]);
+      const eventBus = new EventBus();
+      master.subfunc([], {
+        eventBus,
+        eventUUID: "",
+      });
+
+      for (const [eventName, events] of Object.entries(eventBus.events)) {
+        expect(events.length).toBe(master.eventMap.get(eventName)!);
+      }
+
+      assertionMaster.runPostOps();
 
       let queue = new Map(getQueue(assertionMaster.globalKey));
 
@@ -96,15 +107,6 @@ describe("wrapped function call", () => {
 
       masterQueue = stripQueue(masterQueue);
 
-      for (const [key, value] of masterQueue.entries()) {
-        masterQueue.set(key, {
-          ...value,
-          state: {
-            ...assertionMaster.newState(),
-            master: undefined,
-          },
-        });
-      }
       expect(queue).toEqual(masterQueue);
     }
   );
@@ -119,12 +121,21 @@ describe("top level function", () => {
     vi.spyOn(assertionMaster, "runPostOps");
     vi.spyOn(assertionMaster, "resetState");
 
-    topFunc();
+    const eventBus = new EventBus();
+    topFunc({
+      eventBus,
+      eventUUID: "",
+    });
+
+    for (const [key, value] of master.eventMap.entries()) {
+      expect(eventBus.events[key].length).toBe(value);
+    }
 
     expect(assertionMaster.runPostOps).toHaveBeenCalledTimes(1);
     expect(assertionMaster.resetState).toHaveBeenCalledTimes(1);
 
     const queue = getQueue(assertionMaster.globalKey);
+    const allAssertions = Array.from(queue.values());
 
     expect(stripQueue(queue)).toEqual(stripQueue(master.finalQueue));
 
@@ -148,7 +159,12 @@ describe("top level function", () => {
 
       const assertions = master.assertionChains![name];
       for (const [key, assertion] of Object.entries(assertions)) {
-        expect(assertion).toHaveBeenCalledWith(state, args, result);
+        expect(assertion).toHaveBeenCalledWith(
+          state,
+          args,
+          result,
+          allAssertions
+        );
       }
     }
   });
@@ -158,9 +174,13 @@ describe("top level function", () => {
 
     assertionMaster.master = master;
 
-    topFunc();
+    topFunc({
+      eventBus: new EventBus(),
+      eventUUID: "",
+    });
 
     const queue = getQueue(assertionMaster.globalKey);
+    const allAssertions = Array.from(queue.values());
     const queueCopy = new Map(queue);
 
     const queueIndexes = Array.from(queue.keys()).sort((a, b) => a - b);
@@ -181,7 +201,12 @@ describe("top level function", () => {
 
       const assertions = master.assertionChains![name];
       for (const [key, assertion] of Object.entries(assertions)) {
-        expect(assertion).toHaveBeenCalledWith(state, args, result);
+        expect(assertion).toHaveBeenCalledWith(
+          state,
+          args,
+          result,
+          allAssertions
+        );
       }
     }
   });
@@ -194,16 +219,42 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
         key,
         {
           ...value,
+          args: stripEventContext(value.args),
+          originalArgs: undefined,
+          originalResult: undefined,
+          requirement: undefined,
           postOp: undefined,
+          eventBus: undefined,
+          eventUUID: undefined,
+          address: undefined,
           state: {
             ...value.state,
             master: undefined,
             callStack: undefined,
             branchCounter: undefined,
             queueIndex: undefined,
+            uuidStack: undefined,
           },
         },
       ];
     })
   );
+
+  function emptyEventUUIDs(eventBus: EventBus | undefined) {
+    if (!eventBus) return undefined;
+    for (const [key, value] of Object.entries(eventBus.events)) {
+      for (const event of value) {
+        event.eventUUID = "";
+        event.uuidStack = [];
+      }
+    }
+    return eventBus;
+  }
+}
+
+function stripEventContext(args: any[]) {
+  for (const [index, arg] of args.entries()) {
+    if ("eventUUID" in arg) args[index] = {};
+  }
+  return args;
 }

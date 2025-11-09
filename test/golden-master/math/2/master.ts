@@ -11,13 +11,22 @@ const master: Master = {
   subfunc: () => {},
   topFunc: () => {},
   assertionMaster: null,
+  eventMap: new Map<string, number>([
+    ["b", 1],
+    ["c", 1],
+    ["d", 1],
+    ["e", 1],
+    ["f", 1],
+  ]),
 };
 
 master.finalQueue.set(0, {
   name: "a",
   funcIndex: 0,
+  branchCount: 0,
+  snapshot: undefined,
   result: [5, 2, 4, 12, 6],
-  args: [],
+  args: [{}],
   state: {
     absIndex: 0,
     addAbsIndex: 0,
@@ -31,8 +40,10 @@ master.finalQueue.set(0, {
 master.finalQueue.set(1, {
   name: "b",
   funcIndex: 1,
+  branchCount: 0,
+  snapshot: undefined,
   result: [5, 2, 4, 12, 6],
-  args: [[]],
+  args: [[], {}],
   state: {
     absIndex: 0,
     addAbsIndex: 0,
@@ -46,8 +57,10 @@ master.finalQueue.set(1, {
 master.finalQueue.set(2, {
   name: "c",
   funcIndex: 2,
+  branchCount: 0,
+  snapshot: undefined,
   result: [5, 2, 4, 12, 6],
-  args: [[5]],
+  args: [[5], {}],
   state: {
     absIndex: 1,
     addAbsIndex: 1,
@@ -61,8 +74,10 @@ master.finalQueue.set(2, {
 master.finalQueue.set(3, {
   name: "d",
   funcIndex: 3,
+  branchCount: 0,
+  snapshot: undefined,
   result: [5, 2, 4, 12],
-  args: [[5, 2]],
+  args: [[5, 2], {}],
   state: {
     absIndex: 2,
     addAbsIndex: 1,
@@ -76,8 +91,10 @@ master.finalQueue.set(3, {
 master.finalQueue.set(4, {
   name: "e",
   funcIndex: 4,
+  branchCount: 0,
+  snapshot: undefined,
   result: [5, 2, 4, 12],
-  args: [[5, 2, 4]],
+  args: [[5, 2, 4], {}],
   state: {
     absIndex: 3,
     addAbsIndex: 2,
@@ -90,8 +107,10 @@ master.finalQueue.set(4, {
 master.finalQueue.set(5, {
   name: "f",
   funcIndex: 3,
+  branchCount: 1,
+  snapshot: undefined,
   result: [5, 2, 4, 12, 6],
-  args: [[5, 2, 4, 12]],
+  args: [[5, 2, 4, 12], {}],
   state: {
     absIndex: 4,
     addAbsIndex: 2,

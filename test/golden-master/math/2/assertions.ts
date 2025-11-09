@@ -1,39 +1,81 @@
 import { expect } from "vitest";
 import AssertionMaster from "../../../../src";
+import { getEventByUUID } from "../../../../src/utils/eventBus";
 import { master } from "./master";
 import { AssertionChain } from "../../../../src/index.types";
 import { a, b, c, d, e, f, wrap } from "./logic";
 import * as logic from "./logic";
 import { Master, MathState } from "../index.types";
+import { getEventBus, getEventUUID } from "../../../../src/utils/eventBus";
 
 const aDefaultAssertions: AssertionChain<MathState, [], number[]> = {
   a: (state, args, result) => {
+    const eventBus = getEventBus(args);
+    if (eventBus) {
+      const eventUUID = getEventUUID(args)!;
+      const event = getEventByUUID(eventBus, "b", eventUUID);
+      expect(event).toBeDefined();
+      expect(event).not.toBeNull();
+    }
     expect(result).toEqual(master.finalResults);
+    return true;
   },
 };
 const bDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   b: (state, args, result) => {
+    const eventBus = getEventBus(args);
+    if (eventBus) {
+      const eventUUID = getEventUUID(args)!;
+      const event = getEventByUUID(eventBus, "c", eventUUID);
+      expect(event).toBeDefined();
+      expect(event).not.toBeNull();
+    }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
+
+    return true;
   },
 };
 const cDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   c: (state, args, result) => {
+    const eventBus = getEventBus(args);
+    if (eventBus) {
+      const eventUUID = getEventUUID(args)!;
+      const event1 = getEventByUUID(eventBus, "d", eventUUID);
+      const event2 = getEventByUUID(eventBus, "f", eventUUID);
+      expect(event1).toBeDefined();
+      expect(event1).not.toBeNull();
+      expect(event2).toBeDefined();
+      expect(event2).not.toBeNull();
+    }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.subResults[state.subAbsIndex]);
+
+    return true;
   },
 };
 
 const dDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   d: (state, args, result) => {
+    const eventBus = getEventBus(args);
+    if (eventBus) {
+      const eventUUID = getEventUUID(args)!;
+      const event = getEventByUUID(eventBus, "e", eventUUID);
+      expect(event).toBeDefined();
+      expect(event).not.toBeNull();
+    }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
+
+    return true;
   },
 };
 const eDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
   e: (state, args, result) => {
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.multResults[state.multAbsIndex]);
+
+    return true;
   },
 };
 const fDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
@@ -46,6 +88,8 @@ const fDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
         divAbsIndex: state.divAbsIndex,
       })
     ).toBe(master.divResults[state.divAbsIndex]);
+
+    return true;
   },
 };
 const assertionChains = {
@@ -74,7 +118,7 @@ class Math2Assertions extends AssertionMaster<MathState, Master> {
     };
   }
 
-  a = this.wrapTopFn(a, "a");
+  a = this.wrapTopFn(a, "a") as () => number[];
 
   b = this.wrapFn(b, "b", {
     post: (state) => {

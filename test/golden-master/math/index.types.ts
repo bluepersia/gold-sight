@@ -1,4 +1,12 @@
-import { AssertionBlueprint, AssertionChain } from "../../../src/index.types";
+import {
+  AssertionBlueprint,
+  AssertionChain,
+  EventBus,
+} from "../../../src/index.types";
+
+type EventUUID = {
+  eventUUID: string;
+};
 
 type Master = {
   finalResults: number[];
@@ -14,6 +22,7 @@ type Master = {
   topFunc: Function;
   subfunc: Function;
   assertionMaster?: any;
+  eventMap: Map<string, number>;
 };
 
 type MathState = {
@@ -25,4 +34,10 @@ type MathState = {
   master?: Master;
 };
 
-export { Master, MathState };
+type LogicContext = {
+  eventBus?: EventBus;
+  eventUUID?: string;
+  eventUUIDs?: string[];
+};
+
+export { Master, MathState, EventUUID, LogicContext };
