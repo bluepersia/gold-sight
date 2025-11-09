@@ -87,11 +87,22 @@ class PricingAssertions extends AssertionMaster<State, typeof master> {
 
 const assertionMaster = new PricingAssertions();
 
-// 4. Set up wrapper in your production code
+// 4. Set up code that wraps your production code
+import { wrap } from "../../src/pricing";
+
 function wrapAll() {
-  calculateTotal = assertionMaster.calculateTotal;
-  calculateTax = assertionMaster.calculateTax;
+  wrap(assertionMaster.calculateTotal, assertionMaster.calculateTax);
 }
+
+//4b. Production:
+function wrap(
+  calculateTotalWrapped: typeof calculateTotal,
+  calculateTaxWrapped: typeof calculateTax
+) {
+  calculateTotal = calculateTotalWrapped;
+  calculateTax = calculateTax;
+}
+export { wrap };
 
 // 5. Write your test
 test("calculate pricing with realistic cart", () => {
