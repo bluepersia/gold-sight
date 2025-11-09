@@ -37,6 +37,7 @@ import AssertionMaster, { AssertionChain } from "gold-sight";
 
 // 1. Define your state
 type State = {
+  master?: PricingMaster;
   itemIndex: number;
 };
 
@@ -47,7 +48,7 @@ const calculateTotalAssertions: AssertionChain<
   number
 > = {
   "should calculate correct total": (state, args, result) => {
-    expect(result).toBe(master.expectedTotal);
+    expect(result).toBe(state.master.expectedTotal);
   },
 };
 
@@ -57,7 +58,7 @@ const calculateTaxAssertions: AssertionChain<
   number
 > = {
   "should calculate tax correctly": (state, args, result) => {
-    expect(result).toBe(master.expectedTax[state.itemIndex]);
+    expect(result).toBe(state.master.expectedTax[state.itemIndex]);
   },
 };
 //Alternatively, use AssertionChainForFunc<State, typeof function> for easily hooking into the function.
@@ -86,11 +87,24 @@ class PricingAssertions extends AssertionMaster<State, typeof master> {
 
 const assertionMaster = new PricingAssertions();
 
-// 4. Set up wrapper in your production code
+// 4. Set up code that wraps your production code
+import { wrap } from "../../src/pricing";
+
 function wrapAll() {
-  calculateTotal = assertionMaster.calculateTotal;
-  calculateTax = assertionMaster.calculateTax;
+  wrap(assertionMaster.calculateTotal, assertionMaster.calculateTax);
 }
+
+//4b. Production:
+function wrap(
+  calculateTotalWrapped: typeof calculateTotal,
+  calculateTaxWrapped: typeof calculateTax
+) {
+  calculateTotal = calculateTotalWrapped;
+  calculateTax = calculateTax;
+}
+///IMPORTANT: Functions must be `let` declarations.
+
+export { wrap };
 
 // 5. Write your test
 test("calculate pricing with realistic cart", () => {
@@ -790,10 +804,11 @@ test("order checkout flow", async ({ page }) => {
 type State = {
   itemIndex: number;
   discountIndex: number;
+  master?: PricingMaster;
 };
 
 // Master
-const master = {
+const master: PricingMaster = {
   index: 0,
   cart: realWorldCart,
   expectedSubtotal: 1250.0,
@@ -805,13 +820,13 @@ const master = {
 // Assertions
 const calculateTotalAssertions: AssertionChain<State, any, number> = {
   "calculates correct total": (state, args, result) => {
-    expect(result).toBe(master.expectedTotal);
+    expect(result).toBe(state.master.expectedTotal);
   },
 };
 
 const calculateTaxAssertions: AssertionChain<State, any, number> = {
   "calculates tax for item": (state, args, result) => {
-    expect(result).toBe(master.expectedTax[state.itemIndex]);
+    expect(result).toBe(state.master.expectedTax[state.itemIndex]);
   },
 };
 
@@ -850,7 +865,7 @@ test("pricing calculation", () => {
 ### Example 2: Document Parser with Events
 
 ```typescript
-import { EventBus, makeEventContext, filterEventsByState } from "gold-sight";
+import { makeEventContext, filterEventsByState } from "gold-sight";
 
 // Track parsing events
 function parseDocument(doc: string, ctx: EventContext) {
