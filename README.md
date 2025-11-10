@@ -367,12 +367,12 @@ Track side effects and state changes through your function chain.
 #### Creating Event Context
 
 ```typescript
-import { makeEventContext, type EventContext} from "gold-sight";
+import { makeEventContext, type EventContext } from "gold-sight";
 
 // Pass to your functions
 myFunction({
   ...makeEventContext(),
-}: EventContext);
+} as EventContext);
 ```
 
 #### Emitting Events
