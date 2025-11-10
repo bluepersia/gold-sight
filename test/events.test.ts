@@ -23,7 +23,7 @@ describe("eventHelpers", () => {
       a: [
         {
           name: "a",
-          payload: { test2: "test2" },
+          payload: { test1: "test1" },
           uuidStack: ["123", "456"],
           funcData: { funcName: "a", funcIndex: 1 },
           eventUUID: "456",
@@ -33,7 +33,7 @@ describe("eventHelpers", () => {
       b: [
         {
           name: "b",
-          payload: { test1: "test1" },
+          payload: { test2: "test2" },
           uuidStack: ["123", "456", "789"],
           funcData: { funcName: "b", funcIndex: 2 },
           eventUUID: "789",
@@ -41,7 +41,7 @@ describe("eventHelpers", () => {
         },
         {
           name: "b",
-          payload: { test4: "test4" },
+          payload: { test5: "test5" },
           uuidStack: ["123", "456", "789", "101112", "131415"],
           funcData: { funcName: "b", funcIndex: 4 },
           eventUUID: "131415",
@@ -105,7 +105,7 @@ describe("eventHelpers", () => {
     expect(events[0].name).toBe("b");
   });
   test("filterEventsByPayload", () => {
-    const events = filterEventsByPayload(eventBus, "b", { test1: "test1" });
+    const events = filterEventsByPayload(eventBus, "b", { test2: "test2" });
     expect(events.length).toBe(1);
     expect(events[0].name).toBe("b");
   });
@@ -136,7 +136,7 @@ describe("eventHelpers", () => {
 
       expect(events.b).toBeDefined();
       expect(events.b).not.toBeNull();
-      expect(events.b.payload.test1).toBeDefined();
+      expect(events.b.payload.test2).toBeDefined();
 
       expect(events.c).toBeDefined();
       expect(events.c).not.toBeNull();
