@@ -14,8 +14,8 @@ import {
 } from "../src/utils/eventBus";
 
 let eventBus: EventBus;
-let args;
-let args2;
+let bArgs;
+let aArgs;
 
 describe("eventHelpers", () => {
   beforeAll(() => {
@@ -71,7 +71,7 @@ describe("eventHelpers", () => {
         },
       ],
     };
-    args = [
+    bArgs = [
       0,
       {
         event: eventBus,
@@ -80,7 +80,7 @@ describe("eventHelpers", () => {
         funcData: { funcName: "b", funcIndex: 2 },
       },
     ];
-    args2 = [
+    aArgs = [
       0,
       {
         event: eventBus,
@@ -92,14 +92,14 @@ describe("eventHelpers", () => {
   });
 
   test("getEvent", () => {
-    const event = getEventBus(args);
+    const event = getEventBus(bArgs);
     expect(event).toBeDefined();
     expect(event).not.toBeNull();
-    const eventUUID = getEventUUID(args);
+    const eventUUID = getEventUUID(bArgs);
     expect(eventUUID).toBe("789");
   });
   test("getEventsForUUID", () => {
-    const events = filterEventsByUUID(eventBus, "b", "123", getFuncData(args));
+    const events = filterEventsByUUID(eventBus, "b", "123", getFuncData(bArgs));
     expect(events.length).toBe(1);
     expect(events[0].name).toBe("b");
     expect(events[0].state.absIndex).toBe(1);
@@ -107,7 +107,7 @@ describe("eventHelpers", () => {
   });
 
   test("getEventsForUUID", () => {
-    const events = filterEventsByUUID(eventBus, "c", "123", getFuncData(args2));
+    const events = filterEventsByUUID(eventBus, "c", "123", getFuncData(aArgs));
     expect(events.length).toBe(1);
     expect(events[0].name).toBe("c");
     expect(events[0].state.absIndex).toBe(2);
@@ -115,7 +115,7 @@ describe("eventHelpers", () => {
   });
 
   test("getAllEvents", () => {
-    const events = filterEventsByUUID(eventBus, "*", "123", getFuncData(args));
+    const events = filterEventsByUUID(eventBus, "*", "123", getFuncData(bArgs));
     expect(events.length).toBe(3);
   });
 
@@ -143,19 +143,19 @@ describe("eventHelpers", () => {
     expect(events.length).toBe(5);
   });
   test("withEventBus", () => {
-    return withEventBus(args, (eventBusGot) => {
+    return withEventBus(bArgs, (eventBusGot) => {
       expect(eventBusGot).toBe(eventBus);
     });
   });
 
   test("withEvents", () => {
-    return withEvents(args, (bus, uuid) => {
+    return withEvents(bArgs, (bus, uuid) => {
       expect(bus).toBe(eventBus);
       expect(uuid).toBe("789");
     });
   });
   test("withEventNames", () => {
-    return withEventNames(args, ["a", "b", "c", "d"], (events) => {
+    return withEventNames(bArgs, ["a", "b", "c", "d"], (events) => {
       expect(events.a).toBeUndefined();
 
       expect(events.b).toBeDefined();
