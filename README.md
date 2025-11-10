@@ -438,6 +438,26 @@ withEventNames(args, ["event1", "event2"], (events, eventBus, eventUUID) => {
 });
 ```
 
+#### Example Event-based Assertion
+
+```typescript
+const assertions: AssertionChain<State, Args, Result> = {
+  "should clone rule": (state, args, result) =>
+    withEventNames(args, ["ruleCloned", "ruleOmitted"], (events) => {
+      expect(Object.keys(events).length).toBe(1);
+      if (events.ruleCloned) {
+        expect(result).toEqual(
+          controller.findRule(state.master!.docClone, state.ruleIndex)
+        );
+      } else if (events.ruleOmitted) {
+        expect(result).toBeNull();
+      } else {
+        throw Error("unknown event");
+      }
+    }),
+};
+```
+
 #### Event Structure
 
 ```typescript
@@ -605,28 +625,6 @@ const assertions: AssertionChain = {
     const blueprint = allAssertions.find((a) => a.name === "myFunction");
     expect(blueprint.snapshot.timing).toBeLessThan(100);
   },
-};
-```
-
-### Conditional Assertions
-
-Skip assertions based on context:
-
-```typescript
-const assertions: AssertionChain<State, Args, Result> = {
-  "should clone rule": (state, args, result) =>
-    withEventNames(args, ["ruleCloned", "ruleOmitted"], (events) => {
-      expect(Object.keys(events).length).toBe(1);
-      if (events.ruleCloned) {
-        expect(result).toEqual(
-          controller.findRule(state.master!.docClone, state.ruleIndex)
-        );
-      } else if (events.ruleOmitted) {
-        expect(result).toBeNull();
-      } else {
-        throw Error("unknown event");
-      }
-    }),
 };
 ```
 
