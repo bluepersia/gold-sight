@@ -15,6 +15,7 @@ import {
 
 let eventBus: EventBus;
 let args;
+let args2;
 
 describe("eventHelpers", () => {
   beforeAll(() => {
@@ -79,6 +80,15 @@ describe("eventHelpers", () => {
         funcData: { funcName: "b", funcIndex: 2 },
       },
     ];
+    args2 = [
+      0,
+      {
+        event: eventBus,
+        eventUUID: "234",
+        eventUUIDs: ["123", "456"],
+        funcData: { funcName: "a", funcIndex: 1 },
+      },
+    ];
   });
 
   test("getEvent", () => {
@@ -94,6 +104,14 @@ describe("eventHelpers", () => {
     expect(events[0].name).toBe("b");
     expect(events[0].state.absIndex).toBe(1);
     expect(events[0].payload.test2).toBeDefined();
+  });
+
+  test("getEventsForUUID", () => {
+    const events = filterEventsByUUID(eventBus, "c", "123", getFuncData(args2));
+    expect(events.length).toBe(1);
+    expect(events[0].name).toBe("c");
+    expect(events[0].state.absIndex).toBe(2);
+    expect(events[0].payload.test3).toBeDefined();
   });
 
   test("getAllEvents", () => {
