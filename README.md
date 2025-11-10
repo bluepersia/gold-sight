@@ -380,13 +380,13 @@ myFunction({
 ```typescript
 function calculateTax(amount: number, ctx: EventContext) {
   // Emit event (can emit multiple times)
-  ctx.eventBus?.emit("tax_calculated", ctx, { amount, rate: 0.0825 });
+  ctx.event?.emit("tax_calculated", ctx, { amount, rate: 0.0825 });
 
   // Emit once (subsequent calls with same UUID ignored)
-  ctx.eventBus?.emitOnce("tax_lookup", ctx, { region: "CA" });
+  ctx.event?.emitOnce("tax_lookup", ctx, { region: "CA" });
 
   // Emit one (replace previous with same key)
-  ctx.eventBus?.emitOne("current_total", ctx, { total: amount });
+  ctx.event?.emitOne("current_total", ctx, { total: amount });
 
   return amount * 0.0825;
 }
