@@ -15,7 +15,11 @@
     "type": "git",
     "url": "git+https://github.com/bluepersia/gold-sight.git"
   },
-  "author": "Marco Enrique Zimmermann",
+  "author": {
+    "name": "Marco Zimmermann",
+    "email": "marcoenriquezimmermann@gmail.com",
+    "url": "https://github.com/bluepersia"
+  },
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/bluepersia/gold-sight/issues"

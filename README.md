@@ -111,9 +111,10 @@ function wrap(
 export { wrap };
 
 // 5. Write your test
-test("calculate pricing with realistic cart", () => {
-  wrapAll(); // Wrap functions
 
+wrapAll(); // Wrap functions in your global setup
+
+test("calculate pricing with realistic cart", () => {
   assertionMaster.master = {
     index: 0,
     expectedTotal: 1299.99,
