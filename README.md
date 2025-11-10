@@ -68,7 +68,7 @@ const calculateTaxAssertions: AssertionChain<
 //Alternatively, use AssertionChainForFunc<State, typeof function> for easily hooking into the function.
 
 // 3. Create your assertion master
-class PricingAssertions extends AssertionMaster<State, typeof master> {
+class PricingAssertions extends AssertionMaster<State, PricingMaster> {
   newState(): State {
     return { itemIndex: 0 };
   }
