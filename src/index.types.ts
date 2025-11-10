@@ -97,7 +97,10 @@ export interface Config<TState> {
 
 export declare function getQueue(globalKey: string): any;
 
-declare abstract class AssertionMaster<TState, TMaster> {
+declare abstract class AssertionMaster<
+  TState,
+  TMaster extends { index: number; step?: number }
+> {
   protected _state: (TState & StateBase<TMaster>) | undefined;
   private assertionChains: {
     [funcKey: string]: AssertionChain<TState, any, any>;
