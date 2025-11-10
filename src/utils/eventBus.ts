@@ -227,6 +227,20 @@ function getEventByUUID(
 }
 
 function filterRecursion(events: IEvent[], funcData: FuncData): IEvent[] {
+  const uniqueNames = [...new Set(events.map((e) => e.funcData.funcName))];
+  for (const name of uniqueNames) {
+    events = filterRecursionForName(events, {
+      funcName: name,
+      funcIndex: funcData.funcIndex,
+    });
+  }
+  return events;
+}
+
+function filterRecursionForName(
+  events: IEvent[],
+  funcData: FuncData
+): IEvent[] {
   const sameFuncEvents = events.filter(
     (e) =>
       e.funcData.funcName === funcData.funcName &&
