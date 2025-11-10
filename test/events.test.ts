@@ -92,6 +92,8 @@ describe("eventHelpers", () => {
     const events = filterEventsByUUID(eventBus, "b", "123", getFuncData(args));
     expect(events.length).toBe(1);
     expect(events[0].name).toBe("b");
+    expect(events[0].state.absIndex).toBe(1);
+    expect(events[0].payload.test2).toBeDefined();
   });
 
   test("getAllEvents", () => {
@@ -103,11 +105,15 @@ describe("eventHelpers", () => {
     const events = filterEventsByState(eventBus, "b", { absIndex: 1 });
     expect(events.length).toBe(1);
     expect(events[0].name).toBe("b");
+    expect(events[0].state.absIndex).toBe(1);
+    expect(events[0].payload.test2).toBeDefined();
   });
   test("filterEventsByPayload", () => {
     const events = filterEventsByPayload(eventBus, "b", { test2: "test2" });
     expect(events.length).toBe(1);
     expect(events[0].name).toBe("b");
+    expect(events[0].state.absIndex).toBe(1);
+    expect(events[0].payload.test2).toBeDefined();
   });
 
   test("filterEventsByName", () => {
