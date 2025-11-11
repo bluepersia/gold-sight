@@ -677,6 +677,8 @@ function toBeEqualDefined<T>(
 toBeEqualDefined(result, master.items[state.index], `Item at ${state.index}`);
 ```
 
+**IMPORTANT**: You should use this whenever both the result and master data are retrieved from an array, as both retrievals can be undefined!
+
 ### 3. Provide Rich Error Context
 
 ```typescript
