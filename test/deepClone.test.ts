@@ -3,8 +3,8 @@ import { d, e } from "./golden-master/math/1/logic";
 import { d as dExtra } from "./golden-master/math/1WithLocalConfig/logic";
 import * as deepClone from "../src/utils/deepClone";
 import { getGlobalConfig } from "../src";
-import { assertionMaster } from "./golden-master/math/1/assertions";
-import { assertionMaster as assertionMasterExtra } from "./golden-master/math/1WithLocalConfig/assertions";
+import { assertionMaster as math1AssertionMaster } from "./golden-master/math/1/assertions";
+import { assertionMaster as math1AssertionMasterWithLocalConfig } from "./golden-master/math/1WithLocalConfig/assertions";
 import { LogicContext } from "./golden-master/math/index.types";
 
 describe("no deep clone", () => {
@@ -13,10 +13,10 @@ describe("no deep clone", () => {
       result: false,
       args: false,
     };
-    assertionMaster.reset();
+    math1AssertionMaster.reset();
   });
   test("should not deep clone args and result", () => {
-    assertionMaster.resetState();
+    math1AssertionMaster.resetState();
     const spy = vi.spyOn(deepClone, "deepClone");
 
     const args: [number[], LogicContext] = [[], {}];
@@ -24,7 +24,7 @@ describe("no deep clone", () => {
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
 
-    const assertion = Array.from(assertionMaster.getQueue().values()).find(
+    const assertion = Array.from(math1AssertionMaster.getQueue().values()).find(
       (a) => a.name === "e"
     )!;
     expect(assertion.result).toBe(result);
@@ -37,11 +37,11 @@ describe("global deep clone", () => {
       result: true,
       args: true,
     };
-    assertionMaster.reset();
+    math1AssertionMaster.reset();
   });
 
   test("should deep clone args and result", () => {
-    assertionMaster.resetState();
+    math1AssertionMaster.resetState();
     const spy = vi.spyOn(deepClone, "deepClone");
 
     const args: [number[], LogicContext] = [[], {}];
@@ -50,7 +50,7 @@ describe("global deep clone", () => {
     expect(spy).toHaveBeenCalledWith(args);
     spy.mockRestore();
 
-    const assertion = Array.from(assertionMaster.getQueue().values()).find(
+    const assertion = Array.from(math1AssertionMaster.getQueue().values()).find(
       (a) => a.name === "e"
     )!;
     expect(assertion.args).not.toBe(args);
@@ -64,11 +64,11 @@ describe("func-based deep clone", () => {
       result: false,
       args: false,
     };
-    assertionMaster.reset();
+    math1AssertionMaster.reset();
   });
 
   test("should deep clone args and result", () => {
-    assertionMaster.resetState();
+    math1AssertionMaster.resetState();
     const spy = vi.spyOn(deepClone, "deepClone");
 
     const args: [number[], LogicContext] = [[], {}];
@@ -77,7 +77,7 @@ describe("func-based deep clone", () => {
     expect(spy).toHaveBeenCalledWith(args);
     spy.mockRestore();
 
-    const assertion = Array.from(assertionMaster.getQueue().values()).find(
+    const assertion = Array.from(math1AssertionMaster.getQueue().values()).find(
       (a) => a.name === "d"
     )!;
     expect(assertion.args).not.toBe(args);
@@ -91,11 +91,11 @@ describe("local deep clone", () => {
       result: false,
       args: false,
     };
-    assertionMaster.reset();
+    math1AssertionMaster.reset();
   });
 
   test("should deep clone args and result", () => {
-    assertionMasterExtra.resetState();
+    math1AssertionMasterWithLocalConfig.resetState();
 
     const spy = vi.spyOn(deepClone, "deepClone");
 
@@ -105,9 +105,9 @@ describe("local deep clone", () => {
     expect(spy).toHaveBeenCalledWith(args);
     spy.mockRestore();
 
-    const assertion = Array.from(assertionMasterExtra.getQueue().values()).find(
-      (a) => a.name === "d"
-    )!;
+    const assertion = Array.from(
+      math1AssertionMasterWithLocalConfig.getQueue().values()
+    ).find((a) => a.name === "d")!;
     expect(assertion.args).not.toBe(args);
     expect(assertion.result).not.toBe(result);
   });
