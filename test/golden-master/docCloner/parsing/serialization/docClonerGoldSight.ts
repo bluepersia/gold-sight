@@ -20,6 +20,7 @@ import {
   cloneProp,
   cloneFluidProp,
   cloneSpecialProp,
+  preCloneRule,
 } from "../../src/parsing/serialization/docCloner";
 import * as controller from "./docClonerController";
 import type { ExpectStatic } from "vitest";
@@ -63,6 +64,16 @@ const cloneRulesAssertionChain: AssertionChainForFunc<
       controller.findRules(state.master!.docClone, state.rulesIndex)
     );
   },
+};
+
+const preCloneRulesAssertionChain: AssertionChainForFunc<
+  GoldSightState,
+  typeof preCloneRule
+> = {
+  "should pre clone rules": (state, args, result) =>
+    withEventNames(args, ["ruleCloned", "ruleOmitted"], (events) => {
+      expect(Object.keys(events).length).toBe(1);
+    }),
 };
 
 const cloneRuleAssertionChain: AssertionChainForFunc<
@@ -252,6 +263,7 @@ const defaultAssertions = {
   filterAccessibleSheets: filterAccessibleSheetsAssertionChain,
   cloneStyleSheet: cloneStyleSheetAssertionChain,
   cloneRules: cloneRulesAssertionChain,
+  preCloneRule: preCloneRulesAssertionChain,
   cloneRule: cloneRuleAssertionChain,
   cloneStyleRule: cloneStyleRuleAssertionChain,
   cloneMediaRule: cloneMediaRuleAssertionChain,
@@ -305,6 +317,13 @@ class DocClonerAssertionMaster extends AssertionMaster<
     },
     post: (state) => {
       state.rulesIndex++;
+    },
+  });
+  preCloneRule = this.wrapFn(preCloneRule, "preCloneRule", {
+    getAddress: (state, args) => {
+      return {
+        ruleIndex: state.ruleIndex,
+      };
     },
   });
   cloneRule = this.wrapFn(cloneRule, "cloneRule", {
@@ -395,6 +414,7 @@ function wrapAll() {
     docClonerAssertionMaster.filterAccessibleSheets,
     docClonerAssertionMaster.cloneStyleSheet,
     docClonerAssertionMaster.cloneRules,
+    docClonerAssertionMaster.preCloneRule,
     docClonerAssertionMaster.cloneRule,
     docClonerAssertionMaster.cloneStyleRule,
     docClonerAssertionMaster.cloneMediaRule,

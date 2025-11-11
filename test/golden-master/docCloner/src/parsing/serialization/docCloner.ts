@@ -54,6 +54,13 @@ let cloneRules = (rules: CSSRuleList, ctx: CloneRulesContext): RuleClone[] => {
     .filter((rule) => rule !== null);
 };
 
+let preCloneRule = (
+  rule: CSSRule,
+  ctx: CloneRulesContext
+): RuleClone | null => {
+  return cloneRule(rule, ctx);
+};
+
 let cloneRule = (rule: CSSRule, ctx: CloneRulesContext): RuleClone | null => {
   const { event } = ctx;
   let result: RuleClone | null = null;
@@ -257,6 +264,7 @@ function wrap(
   filterAccessibleSheetsWrapped: typeof filterAccessibleSheets,
   cloneStyleSheetWrapped: typeof cloneStyleSheet,
   cloneRulesWrapped: typeof cloneRules,
+  preCloneRuleWrapped: typeof preCloneRule,
   cloneRuleWrapped: typeof cloneRule,
   cloneStyleRuleWrapped: typeof cloneStyleRule,
   cloneMediaRuleWrapped: typeof cloneMediaRule,
@@ -268,6 +276,7 @@ function wrap(
   filterAccessibleSheets = filterAccessibleSheetsWrapped;
   cloneStyleSheet = cloneStyleSheetWrapped;
   cloneRules = cloneRulesWrapped;
+  preCloneRule = preCloneRuleWrapped;
   cloneRule = cloneRuleWrapped;
   cloneStyleRule = cloneStyleRuleWrapped;
   cloneMediaRule = cloneMediaRuleWrapped;
@@ -288,4 +297,5 @@ export {
   cloneProp,
   cloneFluidProp,
   cloneSpecialProp,
+  preCloneRule,
 };
