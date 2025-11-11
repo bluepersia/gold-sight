@@ -7,6 +7,7 @@ import * as logic from "./logic";
 import { Master, MathState } from "../index.types";
 import {
   EventBus,
+  filterEventsByPayload,
   filterEventsByState,
   getEventBus,
   getEventByState,
@@ -35,8 +36,8 @@ const bDefaultAssertions: AssertionChain<
   b: (state, args, result) => {
     const eventBus = getEventBus(args);
     if (eventBus) {
-      const events = filterEventsByState(eventBus, "b", {
-        absIndex: state.absIndex,
+      const events = filterEventsByPayload(eventBus, "b", {
+        b: true,
       });
       expect(events.length).toBe(2);
       for (const event of events) {
