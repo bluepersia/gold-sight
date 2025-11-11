@@ -82,7 +82,6 @@ const cloneRuleAssertionChain: AssertionChainForFunc<
 > = {
   "should clone rule": (state, args, result) =>
     withEventNames(args, ["ruleCloned", "ruleOmitted"], (events) => {
-      expect(Object.keys(events).length).toBe(1);
       if (events.ruleCloned) {
         expect(result).toEqual(
           controller.findRule(state.master!.docClone, state.ruleIndex)

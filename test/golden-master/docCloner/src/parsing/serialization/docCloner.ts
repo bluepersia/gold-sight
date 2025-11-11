@@ -50,7 +50,7 @@ let cloneStyleSheet = (
 
 let cloneRules = (rules: CSSRuleList, ctx: CloneRulesContext): RuleClone[] => {
   return Array.from(rules)
-    .map((rule) => cloneRule(rule, ctx))
+    .map((rule) => preCloneRule(rule, ctx))
     .filter((rule) => rule !== null);
 };
 
