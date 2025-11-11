@@ -874,11 +874,11 @@ import { makeEventContext, filterEventsByState } from "gold-sight";
 
 // Track parsing events
 function parseDocument(doc: string, ctx: EventContext) {
-  ctx.eventBus?.emit("parse_start", ctx, { docLength: doc.length });
+  ctx.event?.emit("parse_start", ctx, { docLength: doc.length });
 
   const sections = parseSections(doc, ctx);
 
-  ctx.eventBus?.emit("parse_complete", ctx, {
+  ctx.event?.emit("parse_complete", ctx, {
     sectionCount: sections.length,
   });
 
