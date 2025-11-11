@@ -100,19 +100,26 @@ const cloneStyleRuleAssertionChain: AssertionChainForFunc<
   typeof cloneStyleRule
 > = {
   "should clone style rule": (state, args, result) =>
-    withEventNames(args, ["styleRuleCloned", "styleRuleOmitted"], (events) => {
-      expect(Object.keys(events).length).toBe(1);
+    withEventNames(
+      args,
+      ["styleRuleCloned", "styleRuleOmitted", "ruleOmitted", "ruleCloned"],
+      (events) => {
+        expect(Object.keys(events).length).toBe(1);
 
-      if (events.styleRuleCloned) {
-        expect(result).toEqual(
-          controller.findStyleRule(state.master!.docClone, state.styleRuleIndex)
-        );
-      } else if (events.styleRuleOmitted) {
-        expect(result).toBeNull();
-      } else {
-        throw Error("unknown event");
+        if (events.styleRuleCloned) {
+          expect(result).toEqual(
+            controller.findStyleRule(
+              state.master!.docClone,
+              state.styleRuleIndex
+            )
+          );
+        } else if (events.styleRuleOmitted) {
+          expect(result).toBeNull();
+        } else {
+          throw Error("unknown event");
+        }
       }
-    }),
+    ),
 };
 
 const cloneMediaRuleAssertionChain: AssertionChainForFunc<
