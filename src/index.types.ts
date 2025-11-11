@@ -175,6 +175,7 @@ declare abstract class AssertionMaster<
         args: Parameters<T>,
         result: ReturnType<T>
       ) => void;
+      deepClone?: DeepCloneOptions;
       args?: Parameters<T>;
       getAddress?: (
         state: TState,

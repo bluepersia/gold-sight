@@ -450,6 +450,7 @@ abstract class AssertionMaster<
         args: Parameters<T>,
         result: ReturnType<T>
       ) => void;
+      deepClone?: DeepCloneOptions;
       args?: Parameters<T>;
       getSnapshot?: (
         state?: TState,
