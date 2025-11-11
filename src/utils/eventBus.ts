@@ -328,7 +328,7 @@ function withEventBus(
 
 function withEvents(
   args: any[],
-  func: (eventBus: EventBus, eventUUID: string, funcData?: IFuncData) => any
+  func: (eventBus: EventBus, eventUUID: string, funcData: IFuncData) => any
 ): (...args: any[]) => any {
   const eventBus = getEventBus(args);
   const eventUUID = getEventUUID(args);
@@ -339,6 +339,9 @@ function withEvents(
   }
   if (!eventUUID) {
     throw new Error("Event UUID not found");
+  }
+  if (!funcData) {
+    throw new Error("Function data not found");
   }
   return func(eventBus, eventUUID, funcData);
 }

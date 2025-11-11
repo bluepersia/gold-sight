@@ -433,7 +433,7 @@ withEventBus(args, (eventBus) => {
   // Work with eventBus
 });
 
-withEvents(args, (eventBus, eventUUID) => {
+withEvents(args, (eventBus, eventUUID, funcData) => {
   // Work with eventBus and UUID
 });
 

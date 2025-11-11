@@ -290,4 +290,9 @@ describe("event bus errors", () => {
       "Event UUID not found"
     );
   });
+  test("withEvents should throw error if func data is not found", () => {
+    expect(() =>
+      withEvents([{ event: new EventBus(), eventUUID: "test" }], () => {})
+    ).toThrow("Function data not found");
+  });
 });
