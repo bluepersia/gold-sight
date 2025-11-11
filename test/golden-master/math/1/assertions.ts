@@ -16,7 +16,9 @@ const aDefaultAssertions: AssertionChain<MathState, [EventBus], number[]> = {
   a: (state, args, result) => {
     const eventBus = getEventBus(args)!;
     if (eventBus) {
-      const events = filterEventsByState(eventBus, "a", {});
+      const events = filterEventsByState(eventBus, "a", {
+        absIndex: state.absIndex,
+      });
       expect(events.length).toBe(1);
       const [event] = events;
       expect(event?.state.absIndex).toBe(state.absIndex);
@@ -33,7 +35,9 @@ const bDefaultAssertions: AssertionChain<
   b: (state, args, result) => {
     const eventBus = getEventBus(args);
     if (eventBus) {
-      const events = filterEventsByState(eventBus, "b", {});
+      const events = filterEventsByState(eventBus, "b", {
+        absIndex: state.absIndex,
+      });
       expect(events.length).toBe(2);
       for (const event of events) {
         expect(event.state.absIndex).toBe(state.absIndex);
