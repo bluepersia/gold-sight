@@ -107,6 +107,10 @@ describe("eventHelpers", () => {
     expect(event).not.toBeNull();
     const eventUUID = getEventUUID(bArgs);
     expect(eventUUID).toBe("789");
+    const funcData = getFuncData(bArgs);
+    expect(funcData).toBeDefined();
+    expect(funcData?.funcName).toBe("b");
+    expect(funcData?.funcIndex).toBe(2);
   });
   test("getEventsForUUID", () => {
     const events = filterEventsByUUID(
