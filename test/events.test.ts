@@ -151,7 +151,18 @@ describe("eventHelpers", () => {
       getEventUUID(bArgs)!,
       getFuncData(bArgs)
     );
+
     expect(events.length).toBe(3);
+  });
+
+  test("getAllEvents", () => {
+    const events = filterEventsByUUID(
+      eventBus,
+      "*",
+      getEventUUID(aArgs)!,
+      getFuncData(aArgs)
+    );
+    expect(events.length).toBe(4);
   });
 
   test("filterEventsByState", () => {
