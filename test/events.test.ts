@@ -199,9 +199,10 @@ describe("eventHelpers", () => {
   });
 
   test("withEvents", () => {
-    return withEvents(bArgs, (bus, uuid) => {
+    return withEvents(bArgs, (bus, uuid, funcData) => {
       expect(bus).toBe(eventBus);
       expect(uuid).toBe("789");
+      expect(funcData).toEqual({ funcName: "b", funcIndex: 2 });
     });
   });
   test("withEventNames", () => {

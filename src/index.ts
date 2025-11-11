@@ -35,6 +35,7 @@ import {
   filterEventsByState,
   filterEvents,
   makeEventContext,
+  getFuncData,
 } from "./utils/eventBus";
 
 import { AbsCounter } from "./utils/absCounter";
@@ -522,6 +523,7 @@ export {
   makeEventContext,
   getGlobalConfig,
   setGlobalConfig,
+  getFuncData,
 };
 
 export default AssertionMaster;
