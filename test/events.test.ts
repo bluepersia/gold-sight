@@ -145,7 +145,12 @@ describe("eventHelpers", () => {
   });
 
   test("getAllEvents", () => {
-    const events = filterEventsByUUID(eventBus, "*", "123", getFuncData(bArgs));
+    const events = filterEventsByUUID(
+      eventBus,
+      "*",
+      getEventUUID(bArgs)!,
+      getFuncData(bArgs)
+    );
     expect(events.length).toBe(3);
   });
 

@@ -227,45 +227,21 @@ function getEventByUUID(
 }
 
 function filterRecursion(events: IEvent[], funcData: FuncData): IEvent[] {
-  const uniqueNames = [...new Set(events.map((e) => e.funcData.funcName))];
-  for (const name of uniqueNames) {
-    events = filterRecursionForName(events, {
-      funcName: name,
-      funcIndex: funcData.funcIndex,
-    });
+  const lowestFuncIndexes: Map<string, number> = new Map();
+
+  for (const event of events) {
+    const currentLowestFuncIndex =
+      lowestFuncIndexes.get(event.funcData.funcName) || Infinity;
+    if (
+      event.funcData.funcIndex < currentLowestFuncIndex &&
+      event.funcData.funcIndex >= funcData.funcIndex
+    )
+      lowestFuncIndexes.set(event.funcData.funcName, event.funcData.funcIndex);
   }
-  return events;
-}
 
-function filterRecursionForName(
-  events: IEvent[],
-  funcData: FuncData
-): IEvent[] {
-  const sameFuncEvents = events.filter(
-    (e) =>
-      e.funcData.funcName === funcData.funcName &&
-      e.funcData.funcIndex >= funcData.funcIndex
-  );
-
-  const nextLowestFuncIndex =
-    [
-      ...new Set(
-        sameFuncEvents.map((e) => e.funcData.funcIndex).sort((a, b) => a - b)
-      ),
-    ][1] || Infinity;
-
-  const nextEvents = sameFuncEvents.filter(
-    (e) => e.funcData.funcIndex === nextLowestFuncIndex
-  );
-
-  events = events.filter((e) => {
-    for (const nextEvent of nextEvents) {
-      if (e.uuidStack.includes(nextEvent.eventUUID))
-        return e.funcData.funcIndex < nextLowestFuncIndex;
-    }
-    return true;
+  return events.filter((e) => {
+    return e.funcData.funcIndex <= lowestFuncIndexes.get(e.funcData.funcName)!;
   });
-  return events;
 }
 
 function filterEventsByState(
