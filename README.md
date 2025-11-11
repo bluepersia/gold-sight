@@ -729,7 +729,7 @@ test/
 
 ```typescript
 // Track important state changes
-ctx.eventBus?.emit("discount_applied", ctx, {
+ctx.event?.emit("discount_applied", ctx, {
   type: "COUPON",
   amount: 20,
 });
