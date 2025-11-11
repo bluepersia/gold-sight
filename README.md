@@ -220,6 +220,7 @@ calculateTotal = this.wrapTopFn(calculateTotal, "calculateTotal", {
   post: (state, args, result) => {
     /* cleanup */
   },
+  deepClone: { args: true, result: true },
   argsConverter: (args) => transformedArgs,
   resultConverter: (result, args) => transformedResult,
   getAddress: (state, args, result) => "path.to.data",
@@ -232,6 +233,7 @@ calculateTotal = this.wrapTopFn(calculateTotal, "calculateTotal", {
 
 - `pre` - Execute before function runs
 - `post` - Execute after function runs
+- `deepClone` - Clone args/result before storing (`{ args: boolean, result: boolean }`)
 - `argsConverter` - Transform arguments for assertions
 - `resultConverter` - Transform result for assertions
 - `getSnapshot` - Capture additional state data
@@ -281,6 +283,8 @@ assertionMaster.assertQueue({
   verbose: true,
 });
 ```
+
+**NOTE**: When you keep functions pure by 'cloning' args before mutating them, ensure that the cloning function has deepClone set to true on the result, as you will likely mutate the result.
 
 **Options:**
 
