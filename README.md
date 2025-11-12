@@ -24,6 +24,16 @@ Traditional testing forces you to choose:
 ✅ **Track state changes** - Built-in event system monitors flow through your code  
 ✅ **Debug faster** - Precise error reporting with full context
 
+### 📚 See It In Action
+
+Want to see GoldSight with real-world code? Check out these examples:
+
+- [**Complete assertion setup**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts) - See how assertions are structured
+- [**Production code with events**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts) - How to emit events in your code
+- [**Real test implementation**](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docCloner.test.ts) - Complete test file
+
+## Installatio
+
 ## Installation
 
 ```bash
@@ -123,10 +133,6 @@ test("calculate pricing with realistic cart", () => {
   assertionMaster.assertQueue();
 });
 ```
-
-[See realistic GoldSight assertion setup example here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts)<br>
-[See realistic source code event emissions here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts)<br>
-[See realistic test code here](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docCloner.test.ts)<br>
 
 ## Core Concepts
 
