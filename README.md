@@ -32,11 +32,6 @@ npm install gold-sight
 
 ## Quick Start
 
-[See realistic GoldSight assertion setup example here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts)<br>
-[See realistic source code event emissions here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts)<br>
-[See realistic test code here](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docCloner.test.ts)<br>
-[And remember to wrap your `let`-declared functions as here](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts)<br>
-
 ```typescript
 import AssertionMaster, { AssertionChain } from "gold-sight";
 
@@ -128,6 +123,11 @@ test("calculate pricing with realistic cart", () => {
   assertionMaster.assertQueue();
 });
 ```
+
+[See realistic GoldSight assertion setup example here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts)<br>
+[See realistic source code event emissions here](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts)<br>
+[See realistic test code here](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docCloner.test.ts)<br>
+[And remember to wrap your `let`-declared functions as here](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts)<br>
 
 ## Core Concepts
 
