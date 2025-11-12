@@ -34,6 +34,8 @@ Want to see GoldSight with real-world code? Check out these examples:
 - [**Master & State**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/index.types.ts)
 - [**Wrapping functions global setup**](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts)
 
+**IMPORTANT NOTE:** child assertions must refer to parent indexes using `-1`. E.g. `processRule` -> `processStyleRule`. The first one will finish running `post` ops before reaching 2nd. Therefore, in the assertions for `processStyleRule`, you must refer to `ruleIndex -1`... or `styleRuleIndex`.
+
 ## Installation
 
 ```bash
