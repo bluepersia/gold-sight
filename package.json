@@ -1,6 +1,6 @@
 {
   "name": "gold-sight",
-  "version": "0.0.187-alpha",
+  "version": "0.0.188-alpha",
   "description": "Test your code on realistic content, precisely",
   "main": "dist/index.js",
   "types": "dist/index.types.d.ts",
