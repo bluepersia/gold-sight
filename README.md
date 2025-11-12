@@ -32,7 +32,7 @@ Want to see GoldSight with real-world code? Check out these examples:
 - [**Production code with events**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts) - How to emit events in your code
 - [**Real test implementation**](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docCloner.test.ts) - Complete test file
 - [**Master & State**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/index.types.ts) - See the types for master and state
-- [**Wrapping functions global setup**](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts)
+- [**Wrapping functions global setup**](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts) - Global test setup wrapping the production code
 
 ## Installation
 
