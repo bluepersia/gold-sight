@@ -54,6 +54,214 @@ if (fs && path) {
     );
   }
 }
+
+// ============================================================================
+// Pure Helper Functions for wrapFn (extracted for SRP and testability)
+// ============================================================================
+
+/**
+ * Merges deep clone options from multiple sources with proper precedence
+ * @pure
+ */
+function mergeDeepCloneOptions(
+  globalConfig: Config<any> | undefined,
+  instanceOptions: Config<any> | undefined,
+  processorOptions: DeepCloneOptions | undefined
+): DeepCloneOptions {
+  return {
+    result: false,
+    args: false,
+    ...(globalConfig?.deepClone || {}),
+    ...(instanceOptions?.deepClone || {}),
+    ...(processorOptions || {}),
+  };
+}
+
+/**
+ * Processes and optionally clones arguments
+ * @pure
+ */
+function processAndCloneArgs<T>(
+  args: T,
+  argsConverter: ((args: T) => any) | undefined,
+  shouldClone: boolean | undefined
+): any {
+  const convertedArgs = argsConverter ? argsConverter(args) : args;
+  return shouldClone ? deepClone(convertedArgs) : convertedArgs;
+}
+
+/**
+ * Calculates the parent ID from the call stack
+ * @pure
+ */
+function getParentId(callStack: number[]): number {
+  return callStack[callStack.length - 1] ?? -1;
+}
+
+/**
+ * Determines if a function is async
+ * @pure
+ */
+function isAsyncFunction(fn: Function): boolean {
+  return fn.constructor.name === "AsyncFunction";
+}
+
+/**
+ * Enriches an argument object with event metadata
+ * @pure
+ */
+function enrichArgumentWithEventData(
+  arg: any,
+  eventUUID: string,
+  uuidStack: string[],
+  funcName: string,
+  funcIndex: number
+): any {
+  return {
+    ...arg,
+    eventUUID,
+    eventUUIDs: [...uuidStack],
+    funcData: { funcName, funcIndex },
+  };
+}
+
+/**
+ * Creates a result processor function
+ * @pure
+ */
+function createResultProcessor<T>(
+  resultConverter: ((result: any, args: any) => any) | undefined,
+  shouldClone: boolean | undefined
+): (result: T, args: any) => any {
+  return (result: T, args: any) => {
+    const converted = resultConverter ? resultConverter(result, args) : result;
+    return shouldClone ? deepClone(converted) : converted;
+  };
+}
+
+/**
+ * Pushes function metadata to the call stack and returns indices
+ * Side-effect: Mutates state
+ */
+function pushToCallStack(
+  state: StateBase<any>,
+  parentId: number
+): { funcIndex: number; queueIndex: number } {
+  const funcIndex = parentId + 1;
+  const queueIndex = state.queueIndex;
+  state.queueIndex++;
+  state.callStack.push(funcIndex);
+  return { funcIndex, queueIndex };
+}
+
+/**
+ * Increments the branch counter for a parent function
+ * Side-effect: Mutates state
+ */
+function incrementBranchCounter(
+  state: StateBase<any>,
+  parentId: number
+): number {
+  const branchCount = state.branchCounter.get(parentId) || 0;
+  state.branchCounter.set(parentId, branchCount + 1);
+  return branchCount;
+}
+
+/**
+ * Creates and registers event context if event bus is present
+ * Side-effect: Mutates state, args, and argsClone
+ */
+function createEventContext(
+  state: StateBase<any>,
+  eventBus: IEventBus | undefined | null,
+  args: any[],
+  argsClone: any[],
+  name: string,
+  funcIndex: number
+): string | undefined {
+  if (!eventBus) return undefined;
+
+  const eventUUID = crypto.randomUUID().toString();
+  state.uuidStack.push(eventUUID);
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (typeof arg === "object" && "eventUUID" in arg) {
+      const enrichedArg = enrichArgumentWithEventData(
+        arg,
+        eventUUID,
+        state.uuidStack,
+        name,
+        funcIndex
+      );
+      args[i] = argsClone[i] = enrichedArg;
+      break;
+    }
+  }
+
+  return eventUUID;
+}
+
+/**
+ * Cleans up call stack and UUID stack after function execution
+ * Side-effect: Mutates state
+ */
+function cleanupCallStack(
+  state: StateBase<any>,
+  eventUUID: string | undefined
+): void {
+  state.callStack.pop();
+  if (eventUUID) state.uuidStack.pop();
+}
+
+/**
+ * Builds the assertion data object
+ * @pure (except for the postOp function placeholder)
+ */
+function buildAssertionData<TState>(
+  state: TState & StateBase<any>,
+  funcIndex: number,
+  result: any,
+  name: string,
+  branchCount: number,
+  args: any[],
+  eventBus: IEventBus | undefined | null,
+  eventUUID: string | undefined
+): AssertionBlueprint<TState, any, any> {
+  return {
+    state,
+    funcIndex,
+    result,
+    name,
+    branchCount,
+    args,
+    eventBus: eventBus ?? undefined,
+    eventUUID,
+    postOp: () => {},
+  } as AssertionBlueprint<TState, any, any>;
+}
+
+/**
+ * Handles async result processing
+ * Side-effect: Mutates assertionData when promise resolves
+ */
+function handleAsyncResult(
+  resultPromise: Promise<any>,
+  processResult: (r: any) => any,
+  assertionData: AssertionBlueprint<any, any, any>
+): { originalResult: any } {
+  const resultRef = { originalResult: undefined as any };
+  resultPromise.then((r) => {
+    resultRef.originalResult = r;
+    assertionData.result = processResult(r);
+  });
+  return resultRef;
+}
+
+// ============================================================================
+// End of Helper Functions
+// ============================================================================
+
 abstract class AssertionMaster<
   TState,
   TMaster extends { index: number; step?: number }
@@ -269,107 +477,97 @@ abstract class AssertionMaster<
     }
   ): T {
     return ((...args: Parameters<T>) => {
+      // Step 1: Get event bus and process arguments
       const eventBus = getEventBus(args);
-
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
         : args;
+
+      // Step 2: Run pre-processor hook
       if (processors?.pre) processors.pre(this.state!, convertedArgs);
 
-      const deepCloneOpts = {
-        result: false,
-        args: false,
-        ...(globalConfig?.deepClone || {}),
-        ...(this._globalOptions?.deepClone || {}),
-        ...(processors?.deepClone || {}),
-      };
+      // Step 3: Merge deep clone options and clone arguments
+      const deepCloneOpts = mergeDeepCloneOptions(
+        globalConfig,
+        this._globalOptions,
+        processors?.deepClone
+      );
+      const argsClone = processAndCloneArgs(
+        convertedArgs,
+        undefined,
+        deepCloneOpts.args
+      );
 
-      const argsClone = deepCloneOpts.args
-        ? deepClone(convertedArgs)
-        : convertedArgs;
-
+      // Step 4: Validate state
       if (!this.state)
         throw new Error(
           "State is not initialized. The top function wrapper may not be executing"
         );
 
-      const parentId =
-        this.state!.callStack[this.state!.callStack.length - 1] ?? -1;
+      // Step 5: Manage call stack and counters
+      const parentId = getParentId(this.state!.callStack);
+      const { funcIndex, queueIndex } = pushToCallStack(this.state!, parentId);
+      const branchCount = incrementBranchCounter(this.state!, parentId);
 
-      let funcIndex = parentId + 1;
-      const queueIndex = this.state!.queueIndex;
-      this.state!.queueIndex++;
+      // Step 6: Create event context if needed
+      const eventUUID = createEventContext(
+        this.state!,
+        eventBus,
+        args,
+        argsClone,
+        name,
+        funcIndex
+      );
 
-      this.state!.callStack.push(funcIndex);
-
-      const branchCount = this.state!.branchCounter.get(parentId) || 0;
-      this.state!.branchCounter.set(parentId, branchCount + 1);
-
-      let eventUUID: string | undefined;
-      if (eventBus) {
-        eventUUID = crypto.randomUUID().toString();
-        this.state!.uuidStack.push(eventUUID);
-        for (let i = 0; i < args.length; i++) {
-          const arg = args[i];
-          if (typeof arg === "object" && "eventUUID" in arg) {
-            args[i] = argsClone[i] = {
-              ...arg,
-              eventUUID,
-              eventUUIDs: [...this.state!.uuidStack],
-              funcData: { funcName: name, funcIndex: funcIndex },
-            };
-            break;
-          }
-        }
-      }
-
+      // Step 7: Execute the wrapped function
       const result = fn(...args);
 
-      this.state!.callStack.pop();
+      // Step 8: Cleanup call stack
+      cleanupCallStack(this.state!, eventUUID);
 
-      if (eventUUID) this.state!.uuidStack.pop();
+      // Step 9: Process result
+      const processResult = createResultProcessor<ReturnType<T>>(
+        processors?.resultConverter,
+        deepCloneOpts.result
+      );
+      const isAsync = isAsyncFunction(fn);
+      const finalResult = isAsync ? result : processResult(result, args);
 
-      function processResult(result: ReturnType<T>) {
-        const convertedResult = processors?.resultConverter
-          ? processors.resultConverter(result, args)
-          : result;
-
-        const resultClone = deepCloneOpts.result
-          ? deepClone(convertedResult)
-          : convertedResult;
-
-        return resultClone;
-      }
-
-      const isAsync = fn.constructor.name === "AsyncFunction";
-      const finalResult = isAsync ? result : processResult(result);
-
-      const assertionData = {
-        state: this.state,
+      // Step 10: Build assertion data
+      const assertionData = buildAssertionData<TState>(
+        this.state!,
         funcIndex,
-        result: finalResult,
+        finalResult,
         name,
         branchCount,
-        args: argsClone,
+        argsClone,
         eventBus,
-        eventUUID,
-        postOp: () => {},
-      } as AssertionBlueprint;
+        eventUUID
+      );
 
+      // Step 11: Handle async results
       let originalResult = result;
-      if (fn.constructor.name === "AsyncFunction") {
+      if (isAsync) {
+        handleAsyncResult(
+          result as Promise<any>,
+          (r) => processResult(r, args),
+          assertionData
+        );
+        // Update originalResult reference when promise resolves
         (result as Promise<any>).then((r) => {
           originalResult = r;
-          assertionData.result = processResult(r) as ReturnType<T>;
         });
       }
 
+      // Step 12: Set up post-operation callback
       assertionData.postOp = (state) => {
         this.runPostOp(state, args, originalResult, processors, assertionData);
       };
 
+      // Step 13: Store assertion data in queue
       assertionQueues[this.globalKey].set(queueIndex, assertionData);
 
+      // Step 14: Return result
       return isAsync ? (result as Promise<any>) : result;
     }) as T;
   }
