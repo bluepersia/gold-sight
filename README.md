@@ -128,11 +128,11 @@ test("calculate pricing with realistic cart", () => {
 
 Want to see GoldSight with real-world code? Check out these examples:
 
-- [**Complete assertion setup**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts)
-- [**Production code with events**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts)
+- [**Master & State**](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/index.types.ts)
+- [**Complete assertion setup**](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docClonerGoldSight.ts)
+- [**Production code with events**](https://github.com/bluepersia/fluid-scale-/blob/master/src/parsing/serialization/docCloner.ts)
 - [**Real test implementation**](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docCloner.test.ts)
-- [**Master & State**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/index.types.ts)
-- [**Wrapping functions global setup**](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts)
+- [**Wrapping functions global setup**](https://github.com/bluepersia/fluid-scale-/blob/master/test/setup.ts)
 
 ## Core Concepts
 
