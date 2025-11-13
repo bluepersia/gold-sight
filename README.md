@@ -466,6 +466,10 @@ withEventNames(args, ["event1", "event2"], (events, eventBus, eventUUID) => {
 });
 ```
 
+When querying for events by UUID (or `withEventNames` helper), events bubble up the function chain.
+Higher-level functions have access to lower-level events.
+Lower-level functions do not have access to higher-level events.
+
 #### Example Event-based Assertion
 
 ```typescript
