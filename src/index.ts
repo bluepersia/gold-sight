@@ -155,7 +155,7 @@ function sortByHighestIndex(
 
 function sortErrorsInGroup(
   items: AssertionError[],
-  errorAlgorithm: "firstOfDeepest" | "lastOfDeepest"
+  errorAlgorithm: "firstOfDeepest" | "deepest"
 ): AssertionError[] {
   return [...items].sort((a, b) => {
     if (a.funcIndex === b.funcIndex) {
@@ -230,7 +230,7 @@ function runAllAssertions(
 function throwFirstError(
   groupedByName: { [name: string]: AssertionError[] },
   sortedNames: Array<{ name: string; highestIndex: number }>,
-  errorAlgorithm: "firstOfDeepest" | "lastOfDeepest"
+  errorAlgorithm: "firstOfDeepest" | "deepest"
 ): void {
   for (const { name } of sortedNames) {
     const sortedItems = sortErrorsInGroup(groupedByName[name], errorAlgorithm);
@@ -341,7 +341,7 @@ abstract class AssertionMaster<
       throwFirstError(
         groupedByName,
         sortedNames,
-        options.errorAlgorithm as "firstOfDeepest" | "lastOfDeepest"
+        options.errorAlgorithm as "firstOfDeepest" | "deepest"
       );
     }
 
