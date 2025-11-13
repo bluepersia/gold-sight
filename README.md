@@ -34,8 +34,6 @@ Want to see GoldSight with real-world code? Check out these examples:
 - [**Master & State**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/index.types.ts)
 - [**Wrapping functions global setup**](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts)
 
-**IMPORTANT NOTE:** child assertions must refer to parent indexes using `-1`. E.g. `processStyleRule` has `post` op: `state.styleRuleIndex++`. For deeper assertions, such as `processStyleProperty`, they must refer to `styleRuleIndex - 1`. The `post` ops run before the next assertion in the chain, incrementing it BEFORE reaching deeper assertion.
-
 ## Installation
 
 ```bash
@@ -189,6 +187,14 @@ subFunction = this.wrapFn(subFunction, "subFunction", {
   },
 });
 ```
+
+⚠️ Important Note on Nested Assertions
+
+When using nested assertions, remember that post operations run before the next assertion in the chain.
+
+This means if a parent function increments an index in its post operation (e.g. state.styleRuleIndex++), deeper child assertions (like processStyleProperty) must reference that parent index with -1, e.g. styleRuleIndex - 1.
+
+In other words, always refer to the parent’s previous index when writing nested assertions.
 
 ## API Reference
 
