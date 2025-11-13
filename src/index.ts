@@ -54,6 +54,192 @@ if (fs && path) {
     );
   }
 }
+
+// Pure helper functions for assertQueue
+function mergeAssertOptions<TState>(
+  globalKey: string,
+  globalConfig: Config<any>,
+  globalOptions: Config<TState> | undefined,
+  options?: AssertOptions
+): AssertOptions {
+  return {
+    logMasterName: globalKey,
+    errorAlgorithm: "firstOfDeepest",
+    verbose: true,
+    ...(globalConfig?.assert || {}),
+    ...(globalOptions?.assert || {}),
+    ...(options || {}),
+  };
+}
+
+function formatErrorMessage(
+  error: Error,
+  master: { index: number; step?: number } | undefined,
+  address: any
+): Error {
+  let prelog = "";
+  if (master) {
+    prelog = `Master:${master.index}`;
+    if (master.step) {
+      prelog += `, Step:${master.step}`;
+    }
+  }
+  if (address) {
+    const formattedAddress =
+      typeof address === "object"
+        ? prettyFormat(address, { printBasicPrototype: false })
+        : address;
+    prelog += `, ${formattedAddress}`;
+  }
+  if (prelog) {
+    prelog += ", ";
+    error.message = `${prelog}${error.message}`;
+  }
+  return error;
+}
+
+function executeAssertion(
+  assertion: any,
+  state: any,
+  args: any,
+  result: any,
+  allAssertions: any[]
+): { didRun: boolean; error?: Error } {
+  try {
+    const didRun = assertion(state, args, result, allAssertions);
+    return { didRun };
+  } catch (e) {
+    return { didRun: false, error: e as Error };
+  }
+}
+
+function groupErrorsByName(errors: AssertionError[]): {
+  [name: string]: AssertionError[];
+} {
+  const grouped: { [name: string]: AssertionError[] } = {};
+  for (const error of errors) {
+    if (!grouped[error.name]) {
+      grouped[error.name] = [];
+    }
+    grouped[error.name].push(error);
+  }
+  return grouped;
+}
+
+function filterByTargetName(
+  grouped: { [name: string]: AssertionError[] },
+  targetName?: string
+): { [name: string]: AssertionError[] } {
+  if (!targetName || !grouped.hasOwnProperty(targetName)) {
+    return grouped;
+  }
+  return { [targetName]: grouped[targetName] };
+}
+
+function calculateHighestIndices(grouped: {
+  [name: string]: AssertionError[];
+}): Array<{ name: string; highestIndex: number }> {
+  return Object.entries(grouped).map(([name, items]) => ({
+    name,
+    highestIndex: Math.max(...items.map((i) => i.funcIndex)),
+  }));
+}
+
+function sortByHighestIndex(
+  nameWithHighestIndex: Array<{ name: string; highestIndex: number }>
+): Array<{ name: string; highestIndex: number }> {
+  return [...nameWithHighestIndex].sort(
+    (a, b) => b.highestIndex - a.highestIndex
+  );
+}
+
+function sortErrorsInGroup(
+  items: AssertionError[],
+  errorAlgorithm: "firstOfDeepest" | "lastOfDeepest"
+): AssertionError[] {
+  return [...items].sort((a, b) => {
+    if (a.funcIndex === b.funcIndex) {
+      return a.branchCount - b.branchCount;
+    }
+    if (errorAlgorithm === "firstOfDeepest") {
+      return a.funcIndex - b.funcIndex;
+    } else {
+      return b.funcIndex - a.funcIndex;
+    }
+  });
+}
+
+function formatAggregatedErrorMessage(errors: AssertionError[]): string {
+  return errors
+    .map((e) => `${e.name}:${e.funcIndex}:${e.branchCount}${e.err.message}`)
+    .join("\n");
+}
+
+function logVerifiedAssertions(
+  verifiedAssertions: Map<string, number>,
+  verbose: boolean
+): void {
+  if (verbose) {
+    for (const [key, count] of verifiedAssertions.entries()) {
+      console.log(`✅ ${key} - ✨${count} times`);
+    }
+  }
+}
+
+function runAllAssertions(
+  assertionQueue: Map<number, any>,
+  assertionChains: { [funcKey: string]: AssertionChain<any, any, any> },
+  allAssertions: any[],
+  master: { index: number; step?: number } | undefined
+): { errors: AssertionError[]; verifiedAssertions: Map<string, number> } {
+  const errors: AssertionError[] = [];
+  const verifiedAssertions = new Map<string, number>();
+
+  for (const [, item] of assertionQueue.entries()) {
+    const { state, args, result, address, name } = item;
+
+    const assertions = assertionChains[name];
+    if (!assertions)
+      throw Error(
+        `Assertion chain for ${name} not found. Are you setting up the default assertion chains?`
+      );
+
+    for (const [key, assertion] of Object.entries(assertions)) {
+      const { error } = executeAssertion(
+        assertion,
+        state,
+        args,
+        result,
+        allAssertions
+      );
+
+      if (error) {
+        const formattedError = formatErrorMessage(error, master, address);
+        errors.push({ err: formattedError, ...item });
+      }
+
+      let count = verifiedAssertions.get(key) || 0;
+      count++;
+      verifiedAssertions.set(key, count);
+    }
+  }
+
+  return { errors, verifiedAssertions };
+}
+
+function throwFirstError(
+  groupedByName: { [name: string]: AssertionError[] },
+  sortedNames: Array<{ name: string; highestIndex: number }>,
+  errorAlgorithm: "firstOfDeepest" | "lastOfDeepest"
+): void {
+  for (const { name } of sortedNames) {
+    const sortedItems = sortErrorsInGroup(groupedByName[name], errorAlgorithm);
+    if (sortedItems.length > 0) {
+      throw sortedItems[0].err;
+    }
+  }
+}
+
 abstract class AssertionMaster<
   TState,
   TMaster extends { index: number; step?: number }
@@ -115,20 +301,16 @@ abstract class AssertionMaster<
   };
 
   assertQueue = (options?: AssertOptions) => {
-    options = {
-      logMasterName: this._globalKey,
-      errorAlgorithm: "firstOfDeepest",
-      verbose: true,
-      ...(globalConfig?.assert || {}),
-      ...(this._globalOptions?.assert || {}),
-      ...(options || {}),
-    };
+    // Merge options
+    options = mergeAssertOptions(
+      this._globalKey,
+      globalConfig,
+      this._globalOptions,
+      options
+    );
 
     const assertionQueue = assertionQueues[this.globalKey];
-
     const allAssertions = Array.from(assertionQueue.values());
-
-    const verifiedAssertions = new Map<string, number>();
 
     if (!this.state?.master && options?.master === undefined)
       console.error(`No master indexes set. Provide it via options.`);
@@ -138,112 +320,42 @@ abstract class AssertionMaster<
       `✅ ${options.logMasterName} - ✨${printMaster(options.master)}`
     );
 
-    const errors: AssertionError[] = [];
+    // Run all assertions and collect errors
+    const { errors, verifiedAssertions } = runAllAssertions(
+      assertionQueue,
+      this.assertionChains,
+      allAssertions,
+      master
+    );
 
-    // Step 1: Group items by function name
-    let groupedByName: { [name: string]: AssertionError[] } = {};
-    for (const [, item] of assertionQueue.entries()) {
-      const { state, args, result, address, name } = item;
+    // Group errors by name and filter by target if specified
+    let groupedByName = groupErrorsByName(errors);
+    groupedByName = filterByTargetName(groupedByName, options.targetName);
 
-      const assertions = this.assertionChains[name];
-      if (!assertions)
-        throw Error(
-          `Assertion chain for ${name} not found. Are you setting up the default assertion chains?`
-        );
-      for (const [key, assertion] of Object.entries(assertions)) {
-        let didRun = false;
-        try {
-          didRun = (assertion as any)(state, args, result, allAssertions);
-        } catch (e) {
-          const err = e as Error;
-          let prelog = "";
-          if (master) {
-            prelog = `Master:${master.index}`;
-            if (master.step) {
-              prelog += `, Step:${master.step}`;
-            }
-          }
-          if (address) {
-            const formattedAddress =
-              typeof address === "object"
-                ? prettyFormat(address, {
-                    printBasicPrototype: false,
-                  })
-                : address;
-            prelog += `, ${formattedAddress}`;
-          }
-          if (prelog) {
-            prelog += ", ";
-            err.message = `${prelog}${err.message}`;
-          }
-          errors.push({ err, ...item });
-        }
-        didRun = didRun;
-        // if (didRun) {
-        let count = verifiedAssertions.get(key) || 0;
-        count++;
-        verifiedAssertions.set(key, count);
-        //}
-      }
+    // Calculate and sort by highest indices
+    const nameWithHighestIndex = calculateHighestIndices(groupedByName);
+    const sortedNames = sortByHighestIndex(nameWithHighestIndex);
 
-      if (!groupedByName[item.name]) groupedByName[item.name] = [];
-      groupedByName[item.name].push(
-        ...errors.filter((err) => err.name === item.name)
+    // Throw first error if not showing all
+    if (!options.showAllErrors) {
+      throwFirstError(
+        groupedByName,
+        sortedNames,
+        options.errorAlgorithm as "firstOfDeepest" | "lastOfDeepest"
       );
     }
 
-    if (options.targetName) {
-      if (groupedByName.hasOwnProperty(options.targetName))
-        groupedByName = {
-          [options.targetName]: groupedByName[options.targetName],
-        };
-    }
-
-    // Step 2: Determine the highest funcIndex for each name
-    const nameWithHighestIndex = Object.entries(groupedByName).map(
-      ([name, items]) => ({
-        name,
-        highestIndex: Math.max(...items.map((i) => i.funcIndex)),
-      })
-    );
-
-    // Step 3: Sort names based on their highest funcIndex
-    nameWithHighestIndex.sort((a, b) => {
-      return b.highestIndex - a.highestIndex;
-    });
-
-    outer: for (const { name } of nameWithHighestIndex) {
-      const items = groupedByName[name].sort((a, b) => {
-        if (a.funcIndex === b.funcIndex) {
-          return a.branchCount - b.branchCount;
-        }
-        if (options?.errorAlgorithm === "firstOfDeepest")
-          return a.funcIndex - b.funcIndex;
-        else return b.funcIndex - a.funcIndex;
-      });
-      if (!options.showAllErrors) {
-        for (const err of items) throw err.err;
-      }
-    }
-    if (options.verbose) {
-      for (const [key, count] of verifiedAssertions.entries()) {
-        console.log(`✅ ${key} - ✨${count} times`);
-      }
-    }
+    // Log verified assertions
+    logVerifiedAssertions(verifiedAssertions, options.verbose ?? true);
     console.groupEnd();
 
     this.reset();
-    if (errors.length) {
-      if (options.showAllErrors) {
-        throw new Error(
-          errors
-            .map(
-              (e) => `${e.name}:${e.funcIndex}:${e.branchCount}${e.err.message}`
-            )
-            .join("\n")
-        );
-      }
+
+    // Throw aggregated error if showing all errors
+    if (errors.length && options.showAllErrors) {
+      throw new Error(formatAggregatedErrorMessage(errors));
     }
+
     return verifiedAssertions;
   };
 
