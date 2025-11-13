@@ -24,16 +24,6 @@ Traditional testing forces you to choose:
 ✅ **Track state changes** - Built-in event system monitors flow through your code  
 ✅ **Debug faster** - Precise error reporting with full context
 
-### 📚 See It In Action
-
-Want to see GoldSight with real-world code? Check out these examples:
-
-- [**Complete assertion setup**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts)
-- [**Production code with events**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts)
-- [**Real test implementation**](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docCloner.test.ts)
-- [**Master & State**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/index.types.ts)
-- [**Wrapping functions global setup**](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts)
-
 ## Installation
 
 ```bash
@@ -133,6 +123,16 @@ test("calculate pricing with realistic cart", () => {
   assertionMaster.assertQueue();
 });
 ```
+
+## 📚 See It In Action
+
+Want to see GoldSight with real-world code? Check out these examples:
+
+- [**Complete assertion setup**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/docClonerGoldSight.ts)
+- [**Production code with events**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/src/parsing/serialization/docCloner.ts)
+- [**Real test implementation**](https://github.com/bluepersia/fluid-scale-/blob/master/test/parsing/serialization/docCloner.test.ts)
+- [**Master & State**](https://github.com/bluepersia/gold-sight/blob/new-assertion-order-2/test/golden-master/docCloner/parsing/serialization/index.types.ts)
+- [**Wrapping functions global setup**](https://github.com/bluepersia/gold-sight/blob/master/test/setup.ts)
 
 ## Core Concepts
 
