@@ -222,7 +222,10 @@ abstract class AssertionMaster<
         else return b.funcIndex - a.funcIndex;
       });
       if (!options.showAllErrors) {
-        for (const err of items) throw err.err;
+        for (const err of items) {
+          this.reset();
+          throw err.err;
+        }
       }
     }
     if (options.verbose) {
