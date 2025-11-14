@@ -328,6 +328,7 @@ Set assertion queue manually (useful for cross-context testing like Playwright).
 ```typescript
 // Get queue from browser context
 const queue = await page.evaluate(() => {
+  const assertionMaster = (window as any).assertionMaster;
   return Array.from(assertionMaster.getQueue().entries());
 });
 
@@ -609,11 +610,15 @@ Test functions running in browser context:
 ```typescript
 test("browser function", async ({ page }) => {
   // Execute in browser
-  const queue = await page.evaluate(async (master) => {
-    (window as any).assertionMaster.master = master;
-    const result = (window as any).topFunc(/*args*/);
-    return Array.from(assertionMaster.getQueue().entries());
-  }, master);
+  const queue: [number, AssertionBlueprint][] = await page.evaluate(
+    async (master) => {
+      const assertionMaster = (window as any).assertionMaster;
+      assertionMaster.master = master;
+      const result = (window as any).topFunc(/*args*/);
+      return Array.from(assertionMaster.getQueue().entries());
+    },
+    master
+  );
 
   // Assert in Node.js
   assertionMaster.setQueueFromArray(queue);
