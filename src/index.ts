@@ -146,10 +146,12 @@ abstract class AssertionMaster<
       const { state, args, result, address, name } = item;
 
       const assertions = this.assertionChains[name];
-      if (!assertions)
+      if (!assertions) {
+        this.reset();
         throw Error(
           `Assertion chain for ${name} not found. Are you setting up the default assertion chains?`
         );
+      }
       for (const [key, assertion] of Object.entries(assertions)) {
         let didRun = false;
         try {
