@@ -218,21 +218,19 @@ function getEventByUUID(
   funcData?: FuncData
 ): IEvent | null {
   let events = filterEventsByName(eventBus, name);
-
+  events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
   if (funcData) {
     events = filterRecursion(events, funcData);
   }
 
-  return events.find((e) => e.uuidStack.includes(uuid)) || null;
+  return events[0] || null;
 }
 
 function filterRecursion(events: IEvent[], funcData: FuncData): IEvent[] {
   const names = new Set<string>([...events.map((e) => e.funcData.funcName)]);
 
   events = events.filter((e) => {
-    if (e.funcData.funcName === funcData.funcName)
-      return e.funcData.funcIndex >= funcData.funcIndex;
-    else return e.funcData.funcIndex > funcData.funcIndex;
+    return e.funcData.funcIndex >= funcData.funcIndex;
   });
 
   let newEvents: IEvent[] = [];
@@ -295,16 +293,14 @@ function filterEventsByPayload(
 }
 
 function filterEventsByUUID(
-  eventBus: EventBus,
-  name: string,
+  events: IEvent[],
   uuid: string,
   funcData?: FuncData
 ): IEvent[] {
-  let events = filterEventsByName(eventBus, name);
-
+  events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
   if (funcData) events = filterRecursion(events, funcData);
 
-  return events.filter((event: IEvent) => event.uuidStack.includes(uuid));
+  return events;
 }
 
 function filterEvents(
@@ -384,16 +380,18 @@ function withEventNames(
 
   const funcData = getFuncData(args);
 
-  // Fetch all events into a record keyed by their name
-  const events: Record<string, IEvent> = {};
-  for (const name of eventNames) {
-    const event = getEventByUUID(eventBus, name, eventUUID, funcData);
-    if (event) {
-      events[name] = event;
-    }
+  const events: IEvent[] = [];
+  for (const eventName of eventNames) {
+    events.push(...filterEventsByName(eventBus, eventName));
   }
+  // Fetch all events into a record keyed by their name
+  const eventsMap: Record<string, IEvent> = {};
+  const filteredEvents = filterEventsByUUID(events, eventUUID, funcData);
 
-  return func(events, eventBus, eventUUID);
+  for (const event of filteredEvents) {
+    eventsMap[event.name] = event;
+  }
+  return func(eventsMap, eventBus, eventUUID);
 }
 
 function getFuncData(args: any[]): IFuncData | undefined {

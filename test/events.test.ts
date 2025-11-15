@@ -113,9 +113,9 @@ describe("eventHelpers", () => {
     expect(funcData?.funcIndex).toBe(2);
   });
   test("getEventsForUUID", () => {
+    const eventsByName = filterEventsByName(eventBus, "b");
     const events = filterEventsByUUID(
-      eventBus,
-      "b",
+      eventsByName,
       getEventUUID(aArgs)!,
       getFuncData(aArgs)
     );
@@ -126,9 +126,9 @@ describe("eventHelpers", () => {
   });
 
   test("getEventsForUUID", () => {
+    const eventsByName = filterEventsByName(eventBus, "c");
     const events = filterEventsByUUID(
-      eventBus,
-      "c",
+      eventsByName,
       getEventUUID(aArgs)!,
       getFuncData(aArgs)
     );
@@ -139,9 +139,9 @@ describe("eventHelpers", () => {
   });
 
   test("getEventsForUUID", () => {
+    const eventsByName = filterEventsByName(eventBus, "a");
     const events = filterEventsByUUID(
-      eventBus,
-      "a",
+      eventsByName,
       getEventUUID(cArgs)!,
       getFuncData(cArgs)
     );
@@ -149,9 +149,9 @@ describe("eventHelpers", () => {
   });
 
   test("getAllEvents", () => {
+    const eventsByName = filterEventsByName(eventBus, "*");
     const events = filterEventsByUUID(
-      eventBus,
-      "*",
+      eventsByName,
       getEventUUID(bArgs)!,
       getFuncData(bArgs)
     );
@@ -160,9 +160,9 @@ describe("eventHelpers", () => {
   });
 
   test("getAllEvents", () => {
+    const eventsByName = filterEventsByName(eventBus, "*");
     const events = filterEventsByUUID(
-      eventBus,
-      "*",
+      eventsByName,
       getEventUUID(aArgs)!,
       getFuncData(aArgs)
     );

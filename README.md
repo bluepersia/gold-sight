@@ -435,8 +435,7 @@ const event = getEventByPayload(eventBus, "tax_calculated", { rate: 0.0825 });
 
 // Filter by UUID (for specific execution path)
 const scopedEvents = filterEventsByUUID(
-  eventBus,
-  "tax_calculated",
+  events, //Array of IEvent
   uuid,
   funcData //See funcData in next section
 );
