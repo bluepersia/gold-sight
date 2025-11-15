@@ -11,6 +11,7 @@ import {
   withEventNames,
   getFuncData,
   filterEventsByName,
+  getEventByUUID,
 } from "../src/utils/eventBus";
 
 let eventBus: EventBus;
@@ -164,6 +165,18 @@ describe("eventHelpers", () => {
       getFuncData(cArgs)
     );
     expect(events.length).toBe(1);
+  });
+
+  test("getParallelEventByUUID", () => {
+    const event = getEventByUUID(
+      eventBus,
+      "d",
+      getEventUUID(cArgs)!,
+      getFuncData(cArgs)
+    );
+    expect(event).toBeDefined();
+    expect(event).not.toBeNull();
+    expect(event?.name).toBe("d");
   });
 
   test("getAllEvents", () => {
