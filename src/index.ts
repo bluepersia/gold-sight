@@ -214,6 +214,12 @@ abstract class AssertionMaster<
       return b.highestIndex - a.highestIndex;
     });
 
+    if (options.verbose) {
+      for (const [key, count] of verifiedAssertions.entries()) {
+        console.log(`✅ ${key} - ✨${count} times`);
+      }
+    }
+
     outer: for (const { name } of nameWithHighestIndex) {
       const items = groupedByName[name].sort((a, b) => {
         if (a.funcIndex === b.funcIndex) {
@@ -230,11 +236,7 @@ abstract class AssertionMaster<
         }
       }
     }
-    if (options.verbose) {
-      for (const [key, count] of verifiedAssertions.entries()) {
-        console.log(`✅ ${key} - ✨${count} times`);
-      }
-    }
+
     console.groupEnd();
 
     this.reset();
