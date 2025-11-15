@@ -218,11 +218,11 @@ function getEventByUUID(
   funcData?: FuncData
 ): IEvent | null {
   let events = filterEventsByName(eventBus, name);
+
   events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
   if (funcData) {
     events = filterRecursion(events, funcData);
   }
-
   return events[0] || null;
 }
 
@@ -299,7 +299,6 @@ function filterEventsByUUID(
 ): IEvent[] {
   events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
   if (funcData) events = filterRecursion(events, funcData);
-
   return events;
 }
 

@@ -65,6 +65,14 @@ describe("eventHelpers", () => {
         {
           name: "d",
           payload: { test4: "test4" },
+          uuidStack: ["123", "456", "789", "101112b"],
+          funcData: { funcName: "d", funcIndex: 3 },
+          eventUUID: "101112b",
+          state: { absIndex: 3 },
+        },
+        {
+          name: "d",
+          payload: { test4: "test4" },
           uuidStack: ["123", "456", "789", "101112", "131415"],
           funcData: { funcName: "d", funcIndex: 4 },
           eventUUID: "131415",
@@ -148,6 +156,16 @@ describe("eventHelpers", () => {
     expect(events.length).toBe(0);
   });
 
+  test("getParallelEventsByUUID", () => {
+    const eventsByName = filterEventsByName(eventBus, "d");
+    const events = filterEventsByUUID(
+      eventsByName,
+      getEventUUID(cArgs)!,
+      getFuncData(cArgs)
+    );
+    expect(events.length).toBe(1);
+  });
+
   test("getAllEvents", () => {
     const eventsByName = filterEventsByName(eventBus, "*");
     const events = filterEventsByUUID(
@@ -190,7 +208,7 @@ describe("eventHelpers", () => {
   });
   test("filterEventsByName *", () => {
     const events = filterEventsByName(eventBus, "*");
-    expect(events.length).toBe(5);
+    expect(events.length).toBe(6);
   });
   test("withEventBus", () => {
     return withEventBus(bArgs, (eventBusGot) => {
