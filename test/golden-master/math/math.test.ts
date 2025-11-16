@@ -10,7 +10,7 @@ describe("assert queue", () => {
     const { assertionMaster } = master;
 
     assertionMaster.master = master;
-
+    assertionMaster.reset();
     assertionMaster.resetState();
     assertionMaster.setQueue(new Map(master.finalQueue));
 
@@ -29,8 +29,9 @@ describe("assert queue", () => {
       )) {
         expect(assertion).toHaveBeenCalledWith(
           value.state,
+          value.args,
           value.result,
-          value.args
+          Array.from(assertionQueue.values())
         );
       }
     }

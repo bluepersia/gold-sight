@@ -447,6 +447,8 @@ const event = getEventByUUID(
   uuid,
   funcData /*See funcData in next section*/
 );
+
+//Use * for ALL names
 ```
 
 #### Helper Functions

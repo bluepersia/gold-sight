@@ -39,6 +39,7 @@ import {
 } from "./utils/eventBus";
 
 import { AbsCounter } from "./utils/absCounter";
+import { eventNames } from "process";
 
 const assertionQueues: AssertionQueues = {};
 
@@ -147,7 +148,6 @@ abstract class AssertionMaster<
 
       const assertions = this.assertionChains[name];
       if (!assertions) {
-        this.reset();
         throw Error(
           `Assertion chain for ${name} not found. Are you setting up the default assertion chains?`
         );
@@ -231,7 +231,6 @@ abstract class AssertionMaster<
       });
       if (!options.showAllErrors) {
         for (const err of items) {
-          this.reset();
           throw err.err;
         }
       }
@@ -239,7 +238,6 @@ abstract class AssertionMaster<
 
     console.groupEnd();
 
-    this.reset();
     if (errors.length) {
       if (options.showAllErrors) {
         throw new Error(
@@ -418,6 +416,7 @@ abstract class AssertionMaster<
         const events = value.eventBus.getEventsForUUID(value.eventUUID);
         for (const event of events) {
           event.state = value.state;
+          event.state._overwritten = event.payload._overwritten;
         }
       }
 
@@ -468,6 +467,7 @@ abstract class AssertionMaster<
     }
   ): (...args: Parameters<T>) => ReturnType<T> {
     return (...args) => {
+      this.reset();
       this.resetState();
       const wrappedFn = this.wrapFn(fn, name, options);
       const result = wrappedFn(...args);
