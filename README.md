@@ -423,9 +423,16 @@ const matchingEvents = filterEventsByState(eventBus, "tax_calculated", {
 });
 
 // Filter by payload
-const taxEvents = filterEventsByPayload(eventBus, "tax_calculated", {
-  rate: 0.0825,
-});
+const taxEvents = filterEventsByPayload(
+  eventBus,
+  "tax_calculated",
+  {
+    rate: 0.0825,
+  },
+  {
+    includeOverwritten: true, //Include events overwritten with `emitOne`
+  }
+);
 
 // Get single event by state
 const event = getEventByState(eventBus, "tax_calculated", { itemIndex: 5 });
