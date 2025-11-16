@@ -306,6 +306,13 @@ describe("event bus methods", () => {
       expect(allEvents.length).toBe(1);
       expect(allEvents[0]).toBe(eventRef);
     });
+
+    test("expect 3 events with includeOverwritten", () => {
+      const allEvents = filterEventsByName(eventBus, "*", {
+        includeOverwritten: true,
+      });
+      expect(allEvents.length).toBe(3);
+    });
   });
 });
 
