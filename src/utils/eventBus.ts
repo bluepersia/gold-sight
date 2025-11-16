@@ -1,5 +1,9 @@
 import { EventContext } from "../index.types";
 
+type FilterOptions = {
+  includeOverwritten?: boolean;
+};
+
 type IEvent = {
   name: string;
   payload?: any;
@@ -36,6 +40,10 @@ class EventBus implements IEventBus {
     this.events = events;
   }
   events: {
+    [name: string]: IEvent[];
+  } = {};
+
+  overwrittenEvents: {
     [name: string]: IEvent[];
   } = {};
 
@@ -85,6 +93,12 @@ class EventBus implements IEventBus {
       this.events[name] = events.filter(
         (event) => !exisitingEvents.includes(event)
       );
+    }
+    for (const event of exisitingEvents) {
+      if (!this.overwrittenEvents[event.name]) {
+        this.overwrittenEvents[event.name] = [];
+      }
+      this.overwrittenEvents[event.name].push(event);
     }
     if (!payload) payload = {};
     payload = { ...payload, ...key };
@@ -155,9 +169,10 @@ function getEventUUID(args: any[]): string | undefined {
 function getEventByState(
   eventBus: EventBus,
   name: string,
-  state: any
+  state: any,
+  options?: FilterOptions
 ): IEvent | null {
-  const events = filterEventsByName(eventBus, name);
+  const events = filterEventsByName(eventBus, name, options);
   const event = events.find((e) => {
     for (const key in state) {
       if (state[key] !== e.state[key]) {
@@ -172,9 +187,10 @@ function getEventByState(
 function getEventByPayload(
   eventBus: EventBus,
   name: string,
-  payload: any
+  payload: any,
+  options?: FilterOptions
 ): IEvent | null {
-  const events = filterEventsByName(eventBus, name);
+  const events = filterEventsByName(eventBus, name, options);
   const event = events.find((e) => {
     for (const key in payload) {
       if (payload[key] !== e.payload[key]) {
@@ -190,9 +206,10 @@ function getEvent(
   eventBus: EventBus,
   name: string,
   payload: any,
-  state: any
+  state: any,
+  options?: FilterOptions
 ): IEvent | null {
-  const events = filterEventsByName(eventBus, name);
+  const events = filterEventsByName(eventBus, name, options);
   const event = events.find((e) => {
     for (const key in state) {
       if (state[key] !== e.state[key]) {
@@ -215,9 +232,10 @@ function getEventByUUID(
   eventBus: EventBus,
   name: string,
   uuid: string,
-  funcData?: FuncData
+  funcData?: FuncData,
+  options?: FilterOptions
 ): IEvent | null {
-  let events = filterEventsByName(eventBus, name);
+  let events = filterEventsByName(eventBus, name, options);
 
   events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
   if (funcData) {
@@ -263,9 +281,11 @@ function filterRecursionForName(events: IEvent[], name: string): IEvent[] {
 function filterEventsByState(
   eventBus: EventBus,
   name: string,
-  state: any
+  state: any,
+  options?: FilterOptions
 ): IEvent[] {
-  const events = filterEventsByName(eventBus, name);
+  const events = filterEventsByName(eventBus, name, options);
+
   return events.filter((event: IEvent) => {
     for (const key in state) {
       if (state[key] !== event.state[key]) {
@@ -279,9 +299,10 @@ function filterEventsByState(
 function filterEventsByPayload(
   eventBus: EventBus,
   name: string,
-  payload: any
+  payload: any,
+  options?: FilterOptions
 ): IEvent[] {
-  const events = filterEventsByName(eventBus, name);
+  const events = filterEventsByName(eventBus, name, options);
   return events.filter((event: IEvent) => {
     for (const key in payload) {
       if (payload[key] !== event.payload[key]) {
@@ -298,6 +319,7 @@ function filterEventsByUUID(
   funcData?: FuncData
 ): IEvent[] {
   events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
+
   if (funcData) events = filterRecursion(events, funcData);
   return events;
 }
@@ -306,9 +328,10 @@ function filterEvents(
   eventBus: EventBus,
   name: string,
   payload: any,
-  state: any
+  state: any,
+  options?: FilterOptions
 ): IEvent[] {
-  let events = filterEventsByName(eventBus, name);
+  let events = filterEventsByName(eventBus, name, options);
   events = events.filter((event: IEvent) => {
     for (const key in payload) {
       if (payload[key] !== event.payload[key]) {
@@ -365,7 +388,8 @@ function withEventNames(
     events: Record<string, IEvent>,
     eventBus: EventBus,
     eventUUID: string
-  ) => any
+  ) => any,
+  options?: FilterOptions
 ): (...args: any[]) => any {
   const eventBus = getEventBus(args);
   const eventUUID = getEventUUID(args);
@@ -381,7 +405,7 @@ function withEventNames(
 
   const events: IEvent[] = [];
   for (const eventName of eventNames) {
-    events.push(...filterEventsByName(eventBus, eventName));
+    events.push(...filterEventsByName(eventBus, eventName, options));
   }
   // Fetch all events into a record keyed by their name
   const eventsMap: Record<string, IEvent> = {};
@@ -401,11 +425,21 @@ function getFuncData(args: any[]): IFuncData | undefined {
   }
 }
 
-function filterEventsByName(eventBus: EventBus, name: string) {
+function filterEventsByName(
+  eventBus: EventBus,
+  name: string,
+  options?: FilterOptions
+) {
   let events =
     name === "*"
       ? Object.values(eventBus.events).flat()
       : eventBus.events[name];
+
+  if (options?.includeOverwritten) {
+    if (name === "*")
+      events = events.concat(Object.values(eventBus.overwrittenEvents).flat());
+    else events = events.concat(eventBus.overwrittenEvents[name] || []);
+  }
   if (!events) {
     return [];
   }
