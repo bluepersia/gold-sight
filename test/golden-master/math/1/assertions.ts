@@ -114,6 +114,7 @@ const dDefaultAssertions: AssertionChain<
       const event = getEventByState(eventBus, "d", {});
       expect(event).toBeNull();
     }
+
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
 
@@ -203,13 +204,12 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
   c2 = this.wrapFn(c2, "c2");
 
   d = this.wrapFn(d, "d", {
-    catchError: true,
     deepClone: {
       args: true,
       result: true,
     },
     getSnapshot(state, args, result) {
-      const snapshotResult = result.map((r) => r * 2);
+      const snapshotResult = result?.map((r) => r * 2);
       return snapshotResult;
     },
     post: (state) => {

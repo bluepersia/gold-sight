@@ -242,6 +242,7 @@ calculateTotal = this.wrapTopFn(calculateTotal, "calculateTotal", {
   getAddress: (state, args, result) => "path.to.data",
   getAddress: (state, args, result) => {} // object pretty-formatted
   getSnapshot: (state, args, result) => snapshotData,
+  catchError?:boolean
 });
 ```
 
@@ -254,6 +255,7 @@ calculateTotal = this.wrapTopFn(calculateTotal, "calculateTotal", {
 - `resultConverter` - Transform result for assertions
 - `getSnapshot` - Capture additional state data
 - `getAddress` - Provide context path for error messages
+- `catchError` - catch errors for spying inspection
 
 ##### `wrapFn<T>(fn, name, options?)`
 
@@ -272,6 +274,7 @@ calculateTax = this.wrapFn(calculateTax, "calculateTax", {
   resultConverter: (result, args) => result * 2,
   getAddress: (state, args, result) => ({ itemIndex: state.itemIndex }),
   getSnapshot: (state, args, result) => ({ ...state, result }),
+  catchError?:boolean;
 });
 ```
 
@@ -284,6 +287,7 @@ calculateTax = this.wrapFn(calculateTax, "calculateTax", {
 - `resultConverter` - Transform result for assertions
 - `getAddress` - Provide context for errors (string or object)
 - `getSnapshot` - Capture state snapshot
+- `catchError` - Catch error for spying
 
 ##### `assertQueue(options?)`
 
