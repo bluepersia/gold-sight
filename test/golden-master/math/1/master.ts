@@ -112,4 +112,22 @@ master.finalQueue.set(4, {
   },
 });
 
+master.finalQueue.set(5, {
+  name: "f",
+  funcIndex: 4,
+  branchCount: 1,
+  result: undefined,
+  args: [],
+  funcSpies: {},
+  snapshot: undefined,
+  state: {
+    absIndex: 4,
+    addAbsIndex: 2,
+    multAbsIndex: 1,
+    subAbsIndex: 1,
+    divAbsIndex: 0,
+    master,
+  },
+});
+
 export { master };

@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import AssertionMaster from "../../../../src";
 import { master } from "./master";
 import { AssertionChain } from "../../../../src/index.types";
-import { a, b, c, d, e, wrap, c2 } from "./logic";
+import { a, b, c, d, e, wrap, c2, f } from "./logic";
 import * as logic from "./logic";
 import { Master, MathState } from "../index.types";
 import {
@@ -117,6 +117,11 @@ const dDefaultAssertions: AssertionChain<
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
 
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.f.calls.length).toBe(1);
+      expect(state.funcSpies!.f.calls[0].error).toBeDefined();
+      expect(state.funcSpies!.f.calls[0].error?.message).toBe("test");
+    }
     return true;
   },
 };
@@ -141,12 +146,19 @@ const eDefaultAssertions: AssertionChain<
   },
 };
 
+const fDefaultAssertions: AssertionChain<MathState, [], any> = {
+  f: (state, args, result) => {
+    expect(result).toBeUndefined();
+    return true;
+  },
+};
 const assertionChains = {
   a: aDefaultAssertions,
   b: bDefaultAssertions,
   c: cDefaultAssertions,
   d: dDefaultAssertions,
   e: eDefaultAssertions,
+  f: fDefaultAssertions,
 };
 
 master.assertionChains = assertionChains;
@@ -191,6 +203,7 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
   c2 = this.wrapFn(c2, "c2");
 
   d = this.wrapFn(d, "d", {
+    catchError: true,
     deepClone: {
       args: true,
       result: true,
@@ -211,6 +224,10 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
       state.multAbsIndex++;
     },
   });
+
+  f = this.wrapFn(f, "f", {
+    catchError: true,
+  });
 }
 
 const assertionMaster = new Math1Assertions();
@@ -224,7 +241,8 @@ function wrapAll() {
     assertionMaster.c,
     assertionMaster.c2,
     assertionMaster.d,
-    assertionMaster.e
+    assertionMaster.e,
+    assertionMaster.f
   );
   master.topFunc = logic.a;
   master.subfunc = logic.b;

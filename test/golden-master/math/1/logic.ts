@@ -36,6 +36,7 @@ let d = (results: number[], ctx: LogicContext) => {
   ctx.eventBus?.emitOne("d", ctx, { scopeKey: "test" });
   let newResults = [...results, math.add(results[1], 4)]; //4
   newResults = e(newResults, ctx);
+  f();
   return newResults;
 };
 
@@ -45,13 +46,18 @@ let e = (results: number[], ctx: LogicContext) => {
   return newResults;
 };
 
+let f = () => {
+  throw new Error("test");
+};
+
 function wrap(
   aWrapped: (ctx: LogicContext) => number[],
   bWrapped: (results: number[], ctx: LogicContext) => number[],
   cWrapped: (results: number[], ctx: LogicContext) => number[],
   c2Wrapped: (results: number[], ctx: LogicContext) => number[],
   dWrapped: (results: number[], ctx: LogicContext) => number[],
-  eWrapped: (results: number[], ctx: LogicContext) => number[]
+  eWrapped: (results: number[], ctx: LogicContext) => number[],
+  fWrapped: () => never
 ) {
   a = aWrapped;
   b = bWrapped;
@@ -59,6 +65,7 @@ function wrap(
   c2 = c2Wrapped;
   d = dWrapped;
   e = eWrapped;
+  f = fWrapped;
 }
 
-export { a, b, c, d, e, wrap, c2 };
+export { a, b, c, d, e, f, wrap, c2 };

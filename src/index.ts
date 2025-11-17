@@ -278,6 +278,7 @@ abstract class AssertionMaster<
         args: Parameters<T>,
         result: ReturnType<T>
       ) => any;
+      catchError?: boolean;
     }
   ): T {
     return ((...args: Parameters<T>) => {
@@ -347,14 +348,26 @@ abstract class AssertionMaster<
         }
       }
 
-      const result = fn(...args);
+      let result;
+      let error = null;
+      if (processors?.catchError) {
+        try {
+          result = fn(...args);
+        } catch (e) {
+          error = e as Error;
+        }
+      } else {
+        result = fn(...args);
+      }
 
       // Now record the call details (we have the result now)
-      this.state!.funcSpies[name].calls.push({
+      const spyData = {
         args,
         result,
         index: queueIndex,
-      });
+        error,
+      };
+      this.state!.funcSpies[name].calls.push(spyData);
 
       this.state!.callStack.pop();
 
@@ -425,10 +438,18 @@ abstract class AssertionMaster<
 
       let originalResult = result;
       if (fn.constructor.name === "AsyncFunction") {
-        (result as Promise<any>).then((r) => {
-          originalResult = r;
-          assertionData.result = processResult(r) as ReturnType<T>;
-        });
+        (result as Promise<any>)
+          .then((r) => {
+            originalResult = r;
+            assertionData.result = processResult(r) as ReturnType<T>;
+          })
+          .catch((e) => {
+            if (processors?.catchError) {
+              spyData.error = e as Error;
+            } else {
+              throw e;
+            }
+          });
       }
 
       assertionData.postOp = (state) => {
@@ -525,6 +546,7 @@ abstract class AssertionMaster<
         args?: Parameters<T>,
         result?: ReturnType<T>
       ) => any;
+      catchError?: boolean;
     }
   ): (...args: Parameters<T>) => ReturnType<T> {
     return (...args) => {

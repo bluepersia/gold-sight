@@ -74,6 +74,7 @@ type FuncSpy = {
     index: number;
     args: any[];
     result: any;
+    error: Error | null;
   }[];
 };
 
@@ -164,6 +165,7 @@ declare abstract class AssertionMaster<
         args: Parameters<T>,
         result: ReturnType<T>
       ) => any;
+      catchError?: boolean;
     }
   ): T;
 
@@ -199,6 +201,7 @@ declare abstract class AssertionMaster<
         args?: Parameters<T>,
         result?: ReturnType<T>
       ) => any;
+      catchError?: boolean;
     }
   ): (...args: Parameters<T>) => ReturnType<T>;
 }
