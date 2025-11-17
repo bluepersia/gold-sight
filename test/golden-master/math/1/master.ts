@@ -28,12 +28,14 @@ master.finalQueue.set(0, {
   snapshot: undefined,
   result: [3, 0, 4, 12],
   args: [{}],
+  funcSpies: {},
   state: {
     absIndex: 0,
     addAbsIndex: 0,
     multAbsIndex: 0,
     subAbsIndex: 0,
     divAbsIndex: 0,
+    funcSpies: undefined,
     master,
   },
 });
@@ -45,6 +47,7 @@ master.finalQueue.set(1, {
   snapshot: undefined,
   result: [6, 0, 8, 24],
   args: [[], {}],
+  funcSpies: {},
   state: {
     absIndex: 0,
     addAbsIndex: 0,
@@ -62,6 +65,7 @@ master.finalQueue.set(2, {
   snapshot: undefined,
   result: [3, 0, 4, 12],
   args: [[6], {}],
+  funcSpies: {},
   state: {
     absIndex: 1,
     addAbsIndex: 1,
@@ -79,6 +83,7 @@ master.finalQueue.set(3, {
   result: [3, 0, 4, 12],
   args: [[3, 0], {}],
   snapshot: [6, 0, 8, 24],
+  funcSpies: {},
   state: {
     absIndex: 2,
     addAbsIndex: 1,
@@ -96,6 +101,7 @@ master.finalQueue.set(4, {
   snapshot: undefined,
   result: [3, 0, 4, 12],
   args: [[3, 0, 4], {}],
+  funcSpies: {},
   state: {
     absIndex: 3,
     addAbsIndex: 2,

@@ -6,6 +6,8 @@
 
 GoldSight is a testing framework that enables you to test deeply nested function chains with comprehensive assertions at every level—using realistic, real-world data. Run one test and verify every sub-function, capturing regressions that simple unit tests miss.
 
+**Featured update: Spy on sub functions. See more below**
+
 ## Why GoldSight?
 
 Traditional testing forces you to choose:
@@ -544,6 +546,25 @@ Deep clone objects (uses lodash.clonedeep):
 import { deepClone } from "gold-sight";
 
 const cloned = deepClone(original);
+```
+
+### Spying on sub functions
+
+```typescript
+type State = {
+  master?: DocParserMaster;
+  styleRuleIndex: number;
+  mediaRuleIndex: number;
+  sheetIndex: number;
+  funcSpies?: Record<string, FuncSpy>; //<-- must be included
+};
+```
+
+...Then, in your assertion:
+
+```typescript
+const calls = state.funcSpies.processProperty.calls;
+const args = call[0].args;
 ```
 
 ## Advanced Usage

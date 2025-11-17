@@ -228,6 +228,7 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
           eventBus: undefined,
           eventUUID: undefined,
           address: undefined,
+          funcSpies: {},
           state: {
             ...value.state,
             master: undefined,
@@ -235,6 +236,7 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
             branchCounter: undefined,
             queueIndex: undefined,
             uuidStack: undefined,
+            funcSpies: undefined,
           },
         },
       ];

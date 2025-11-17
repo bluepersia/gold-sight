@@ -27,6 +27,7 @@ type StateBase<TMaster> = {
   callStack: number[];
   branchCounter: Map<number, number>;
   uuidStack: string[];
+  funcSpies: Record<string, FuncSpy>;
 };
 
 type AssertionChain<TState, TArgs, TResult> = {
@@ -64,6 +65,16 @@ type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   postOp?: (state: TState, args: TArgs, result: TResult) => void;
   eventBus?: EventBus;
   eventUUID?: string;
+  funcSpies: Record<string, FuncSpy>;
+};
+
+type FuncSpy = {
+  name: string;
+  calls: {
+    index: number;
+    args: any[];
+    result: any;
+  }[];
 };
 
 type AssertionBlueprintForFunc<
@@ -260,4 +271,5 @@ export type {
   AssertionChainForFunc,
   AssertionError,
   EventContext,
+  FuncSpy,
 };

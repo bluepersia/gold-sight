@@ -111,6 +111,7 @@ abstract class AssertionMaster<
       branchCounter: new Map(),
       queueIndex: 0,
       uuidStack: [],
+      funcSpies: {},
     };
   };
 
@@ -125,6 +126,13 @@ abstract class AssertionMaster<
     };
 
     const assertionQueue = assertionQueues[this.globalKey];
+
+    // Merge funcSpies snapshots into state for all queue items if not already present
+    for (const item of assertionQueue.values()) {
+      if (!item.state.funcSpies) {
+        item.state = { ...item.state, funcSpies: item.funcSpies };
+      }
+    }
 
     const allAssertions = Array.from(assertionQueue.values());
 
@@ -327,7 +335,19 @@ abstract class AssertionMaster<
         }
       }
 
-      const result = fn(...args);
+      let result = fn(...args);
+
+      if (!this.state!.funcSpies[name]) {
+        this.state!.funcSpies[name] = {
+          name,
+          calls: [],
+        };
+      }
+      this.state!.funcSpies[name].calls.push({
+        args,
+        result,
+        index: queueIndex,
+      });
 
       this.state!.callStack.pop();
 
@@ -358,6 +378,7 @@ abstract class AssertionMaster<
         eventBus,
         eventUUID,
         postOp: () => {},
+        funcSpies: { ...this.state!.funcSpies },
       } as AssertionBlueprint;
 
       let originalResult = result;
@@ -409,13 +430,12 @@ abstract class AssertionMaster<
     assertionQueues[this.globalKey] = assertionQueue;
 
     for (const value of assertionQueue.values()) {
-      value.state = { ...value.state };
+      value.state = { ...value.state, funcSpies: value.funcSpies };
 
       if (value.eventBus && value.eventUUID) {
         const events = value.eventBus.getEventsForUUID(value.eventUUID);
         for (const event of events) {
           event.state = value.state;
-          event.state._overwritten = event.payload._overwritten;
         }
       }
 

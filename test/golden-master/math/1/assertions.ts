@@ -25,6 +25,15 @@ const aDefaultAssertions: AssertionChain<MathState, [EventBus], number[]> = {
       expect(event?.state.absIndex).toBe(state.absIndex);
     }
     expect(result).toEqual(master.finalResults);
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.b.calls.length).toBe(1);
+      expect(state.funcSpies!.b.calls[0].args[0]).toEqual([]);
+      expect(state.funcSpies!.b.calls[0].result).toEqual([3, 0, 4, 12]);
+      expect(state.funcSpies!.b.calls[0].index).toBeGreaterThan(
+        state.funcSpies!.a.calls[0].index
+      );
+      expect(state.funcSpies!.c.calls.length).toBe(1);
+    }
     return true;
   },
 };
@@ -50,6 +59,15 @@ const bDefaultAssertions: AssertionChain<
     expect(result[state.absIndex]).toBe(
       master.addResults[state.addAbsIndex] * 2
     );
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.a).toBeUndefined();
+      expect(state.funcSpies!.e.calls.length).toBe(1);
+      expect(state.funcSpies!.e.calls[0].args[0]).toEqual([3, 0, 4]);
+      expect(state.funcSpies!.e.calls[0].result).toEqual([3, 0, 4, 12]);
+      expect(state.funcSpies!.e.calls[0].index).toBeGreaterThan(
+        state.funcSpies!.b.calls[0].index
+      );
+    }
     return true;
   },
 };
