@@ -5,7 +5,8 @@ import { wrapAll as wrapAllMath2 } from "./golden-master/math/2/assertions";
 import { wrapAll as wrapAllMath1WithLocalConfig } from "./golden-master/math/1WithLocalConfig/assertions";
 import { wrapAll as wrapAllAsync } from "./golden-master/async/assertions";
 import { wrapAll as wrapAllDocCloner } from "./golden-master/docCloner/parsing/serialization/docClonerGoldSight";
-
+import { wrapAll as wrapAllFluidScaleParser } from "./golden-master/fluid-scale/parsing/parser/docParser/goldSight";
+import { wrapAll as wrapAllFluidScaleSerialization } from "./golden-master/fluid-scale/parsing/serialization/docCloner/goldSight";
 import { PlaywrightBlueprint } from "./index.types";
 import { generateJSDOMDocument } from "./golden-master/docCloner/src/parsing/jsdom/jsonBuilder";
 
@@ -14,6 +15,8 @@ wrapAllMath2();
 wrapAllMath1WithLocalConfig();
 wrapAllDocCloner();
 wrapAllAsync();
+wrapAllFluidScaleParser();
+wrapAllFluidScaleSerialization();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +25,7 @@ const __dirname = path.dirname(__filename);
 
 const realProjectsData: PlaywrightBlueprint[] = [
   {
-    htmlFilePath: "./golden-master/docCloner/0",
+    htmlFilePath: "./golden-master/fluid-scale/0",
     addCss: ["css/global.css", "css/utils.css", "css/product-card.css"],
     useServer: false,
   },
