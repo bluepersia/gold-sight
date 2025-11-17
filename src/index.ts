@@ -415,7 +415,6 @@ abstract class AssertionMaster<
         const events = value.eventBus.getEventsForUUID(value.eventUUID);
         for (const event of events) {
           event.state = value.state;
-          event.state._overwritten = event.payload._overwritten;
         }
       }
 
