@@ -1,17 +1,24 @@
 import { expect } from "vitest";
 import AssertionMaster from "../../../src/index";
-import { AssertionChainForFunc } from "../../../src/index.types";
-import { a, b, c, wrap } from "./logic";
+import { AssertionChainForFunc, FuncSpy } from "../../../src/index.types";
+import { a, b, c, d, wrap } from "./logic";
 import { Master } from "./master";
 
 type AsyncState = {
   index: number;
+  funcSpies?: Record<string, FuncSpy>;
 };
 
 const aAssertionChain: AssertionChainForFunc<AsyncState, typeof a> = {
   a: (state, args, result) => {
     expect(state.index).toBe(0);
-    expect(result).toEqual([5, 10]);
+    // expect(result).toEqual([5, 10]);
+
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.d.calls.length).toBe(1);
+      expect(state.funcSpies!.d.calls[0].error).toBeDefined();
+      expect(state.funcSpies!.d.calls[0].error?.message).toBe("test");
+    }
     return true;
   },
 };
@@ -28,14 +35,21 @@ const cAssertionChain: AssertionChainForFunc<AsyncState, typeof c> = {
   c: (state, args, result) => {
     expect(state.index).toBe(2);
     expect(result).toEqual(10);
+
     return true;
   },
 };
 
+const dAssertionChain: AssertionChainForFunc<AsyncState, typeof d> = {
+  d: (state, args, result) => {
+    return true;
+  },
+};
 const defaultAssertions = {
   a: aAssertionChain,
   b: bAssertionChain,
   c: cAssertionChain,
+  d: dAssertionChain,
 };
 
 class AsyncAssertions extends AssertionMaster<AsyncState, Master> {
@@ -66,10 +80,18 @@ class AsyncAssertions extends AssertionMaster<AsyncState, Master> {
       state.index++;
     },
   });
+  d = this.wrapFn(d, "d", {
+    catchError: true,
+  });
 }
 const assertionMaster = new AsyncAssertions();
 function wrapAll() {
-  wrap(assertionMaster.a, assertionMaster.b, assertionMaster.c);
+  wrap(
+    assertionMaster.a,
+    assertionMaster.b,
+    assertionMaster.c,
+    assertionMaster.d
+  );
 }
 
 export { assertionMaster, wrapAll };

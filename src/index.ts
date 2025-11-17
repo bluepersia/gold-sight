@@ -388,15 +388,17 @@ abstract class AssertionMaster<
       const isAsync = fn.constructor.name === "AsyncFunction";
       const finalResult = isAsync ? result : processResult(result);
 
-      // Deep clone funcSpies for the snapshot to avoid reference issues
-      const funcSpiesSnapshot: Record<string, any> = {};
-      for (const [funcName, funcData] of Object.entries(
-        this.state!.funcSpies
-      )) {
-        funcSpiesSnapshot[funcName] = {
-          name: funcData.name,
-          calls: [...funcData.calls],
-        };
+      // For sync functions, take snapshot now. For async, we'll take it in the .then() handler
+      let funcSpiesSnapshot: Record<string, any> = {};
+      if (!isAsync) {
+        for (const [funcName, funcData] of Object.entries(
+          this.state!.funcSpies
+        )) {
+          funcSpiesSnapshot[funcName] = {
+            name: funcData.name,
+            calls: [...funcData.calls],
+          };
+        }
       }
 
       const assertionData = {
@@ -438,14 +440,48 @@ abstract class AssertionMaster<
 
       let originalResult = result;
       if (fn.constructor.name === "AsyncFunction") {
-        (result as Promise<any>)
+        result = (result as Promise<any>)
           .then((r) => {
             originalResult = r;
             assertionData.result = processResult(r) as ReturnType<T>;
+
+            // Take funcSpies snapshot AFTER async function completes
+            for (const [funcName, funcData] of Object.entries(
+              this.state!.funcSpies
+            )) {
+              assertionData.funcSpies[funcName] = {
+                name: funcData.name,
+                calls: [...funcData.calls],
+              };
+            }
           })
           .catch((e) => {
             if (processors?.catchError) {
+              // Update error in the spyData that's been merged into parent's funcSpies
               spyData.error = e as Error;
+
+              // Also update in the current state's funcSpies (parent context)
+              const funcInState = this.state!.funcSpies[name];
+              if (funcInState) {
+                const callInState = funcInState.calls.find(
+                  (c: any) => c.index === queueIndex
+                );
+                if (callInState) {
+                  callInState.error = e as Error;
+                }
+              }
+
+              // Take funcSpies snapshot even when there's an error
+              for (const [funcName, funcData] of Object.entries(
+                this.state!.funcSpies
+              )) {
+                assertionData.funcSpies[funcName] = {
+                  name: funcData.name,
+                  calls: [...funcData.calls],
+                };
+              }
+
+              return undefined;
             } else {
               throw e;
             }
