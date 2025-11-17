@@ -6,6 +6,8 @@
 
 GoldSight is a testing framework that enables you to test deeply nested function chains with comprehensive assertions at every level—using realistic, real-world data. Run one test and verify every sub-function, capturing regressions that simple unit tests miss.
 
+**Featured update: Spy on sub functions. See more below**
+
 ## Why GoldSight?
 
 Traditional testing forces you to choose:
@@ -240,6 +242,7 @@ calculateTotal = this.wrapTopFn(calculateTotal, "calculateTotal", {
   getAddress: (state, args, result) => "path.to.data",
   getAddress: (state, args, result) => {} // object pretty-formatted
   getSnapshot: (state, args, result) => snapshotData,
+  catchError?:boolean
 });
 ```
 
@@ -252,6 +255,7 @@ calculateTotal = this.wrapTopFn(calculateTotal, "calculateTotal", {
 - `resultConverter` - Transform result for assertions
 - `getSnapshot` - Capture additional state data
 - `getAddress` - Provide context path for error messages
+- `catchError` - catch errors for spying inspection
 
 ##### `wrapFn<T>(fn, name, options?)`
 
@@ -270,6 +274,7 @@ calculateTax = this.wrapFn(calculateTax, "calculateTax", {
   resultConverter: (result, args) => result * 2,
   getAddress: (state, args, result) => ({ itemIndex: state.itemIndex }),
   getSnapshot: (state, args, result) => ({ ...state, result }),
+  catchError?:boolean;
 });
 ```
 
@@ -282,6 +287,7 @@ calculateTax = this.wrapFn(calculateTax, "calculateTax", {
 - `resultConverter` - Transform result for assertions
 - `getAddress` - Provide context for errors (string or object)
 - `getSnapshot` - Capture state snapshot
+- `catchError` - Catch error for spying
 
 ##### `assertQueue(options?)`
 
@@ -544,6 +550,25 @@ Deep clone objects (uses lodash.clonedeep):
 import { deepClone } from "gold-sight";
 
 const cloned = deepClone(original);
+```
+
+### Spying on sub functions
+
+```typescript
+type State = {
+  master?: DocParserMaster;
+  styleRuleIndex: number;
+  mediaRuleIndex: number;
+  sheetIndex: number;
+  funcSpies?: Record<string, FuncSpy>; //<-- must be included
+};
+```
+
+...Then, in your assertion:
+
+```typescript
+const calls = state.funcSpies.processProperty.calls;
+const args = call[0].args;
 ```
 
 ## Advanced Usage

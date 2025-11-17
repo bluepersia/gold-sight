@@ -2,7 +2,7 @@ import { expect } from "vitest";
 import AssertionMaster from "../../../../src";
 import { master } from "./master";
 import { AssertionChain } from "../../../../src/index.types";
-import { a, b, c, d, e, wrap, c2 } from "./logic";
+import { a, b, c, d, e, wrap, c2, f } from "./logic";
 import * as logic from "./logic";
 import { Master, MathState } from "../index.types";
 import {
@@ -25,6 +25,15 @@ const aDefaultAssertions: AssertionChain<MathState, [EventBus], number[]> = {
       expect(event?.state.absIndex).toBe(state.absIndex);
     }
     expect(result).toEqual(master.finalResults);
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.b.calls.length).toBe(1);
+      expect(state.funcSpies!.b.calls[0].args[0]).toEqual([]);
+      expect(state.funcSpies!.b.calls[0].result).toEqual([3, 0, 4, 12]);
+      expect(state.funcSpies!.b.calls[0].index).toBeGreaterThan(
+        state.funcSpies!.a.calls[0].index
+      );
+      expect(state.funcSpies!.c.calls.length).toBe(1);
+    }
     return true;
   },
 };
@@ -50,6 +59,15 @@ const bDefaultAssertions: AssertionChain<
     expect(result[state.absIndex]).toBe(
       master.addResults[state.addAbsIndex] * 2
     );
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.a).toBeUndefined();
+      expect(state.funcSpies!.e.calls.length).toBe(1);
+      expect(state.funcSpies!.e.calls[0].args[0]).toEqual([3, 0, 4]);
+      expect(state.funcSpies!.e.calls[0].result).toEqual([3, 0, 4, 12]);
+      expect(state.funcSpies!.e.calls[0].index).toBeGreaterThan(
+        state.funcSpies!.b.calls[0].index
+      );
+    }
     return true;
   },
 };
@@ -96,9 +114,15 @@ const dDefaultAssertions: AssertionChain<
       const event = getEventByState(eventBus, "d", {});
       expect(event).toBeNull();
     }
+
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
 
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.f.calls.length).toBe(1);
+      expect(state.funcSpies!.f.calls[0].error).toBeDefined();
+      expect(state.funcSpies!.f.calls[0].error?.message).toBe("test");
+    }
     return true;
   },
 };
@@ -123,12 +147,19 @@ const eDefaultAssertions: AssertionChain<
   },
 };
 
+const fDefaultAssertions: AssertionChain<MathState, [], any> = {
+  f: (state, args, result) => {
+    expect(result).toBeUndefined();
+    return true;
+  },
+};
 const assertionChains = {
   a: aDefaultAssertions,
   b: bDefaultAssertions,
   c: cDefaultAssertions,
   d: dDefaultAssertions,
   e: eDefaultAssertions,
+  f: fDefaultAssertions,
 };
 
 master.assertionChains = assertionChains;
@@ -178,7 +209,7 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
       result: true,
     },
     getSnapshot(state, args, result) {
-      const snapshotResult = result.map((r) => r * 2);
+      const snapshotResult = result?.map((r) => r * 2);
       return snapshotResult;
     },
     post: (state) => {
@@ -193,6 +224,10 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
       state.multAbsIndex++;
     },
   });
+
+  f = this.wrapFn(f, "f", {
+    catchError: true,
+  });
 }
 
 const assertionMaster = new Math1Assertions();
@@ -206,7 +241,8 @@ function wrapAll() {
     assertionMaster.c,
     assertionMaster.c2,
     assertionMaster.d,
-    assertionMaster.e
+    assertionMaster.e,
+    assertionMaster.f
   );
   master.topFunc = logic.a;
   master.subfunc = logic.b;

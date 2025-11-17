@@ -111,6 +111,7 @@ abstract class AssertionMaster<
       branchCounter: new Map(),
       queueIndex: 0,
       uuidStack: [],
+      funcSpies: {},
     };
   };
 
@@ -125,6 +126,13 @@ abstract class AssertionMaster<
     };
 
     const assertionQueue = assertionQueues[this.globalKey];
+
+    // Merge funcSpies snapshots into state for all queue items if not already present
+    for (const item of assertionQueue.values()) {
+      if (!item.state.funcSpies) {
+        item.state = { ...item.state, funcSpies: item.funcSpies };
+      }
+    }
 
     const allAssertions = Array.from(assertionQueue.values());
 
@@ -270,10 +278,15 @@ abstract class AssertionMaster<
         args: Parameters<T>,
         result: ReturnType<T>
       ) => any;
+      catchError?: boolean;
     }
   ): T {
     return ((...args: Parameters<T>) => {
       const eventBus = getEventBus(args);
+
+      // Save parent's funcSpies context before resetting
+      const parentFuncSpies = this.state!.funcSpies;
+      this.state!.funcSpies = {};
 
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
@@ -309,6 +322,14 @@ abstract class AssertionMaster<
       const branchCount = this.state!.branchCounter.get(parentId) || 0;
       this.state!.branchCounter.set(parentId, branchCount + 1);
 
+      // Add current function to funcSpies BEFORE executing (so it appears first)
+      if (!this.state!.funcSpies[name]) {
+        this.state!.funcSpies[name] = {
+          name,
+          calls: [],
+        };
+      }
+
       let eventUUID: string | undefined;
       if (eventBus) {
         eventUUID = crypto.randomUUID().toString();
@@ -327,7 +348,26 @@ abstract class AssertionMaster<
         }
       }
 
-      const result = fn(...args);
+      let result;
+      let error = null;
+      if (processors?.catchError) {
+        try {
+          result = fn(...args);
+        } catch (e) {
+          error = e as Error;
+        }
+      } else {
+        result = fn(...args);
+      }
+
+      // Now record the call details (we have the result now)
+      const spyData = {
+        args,
+        result,
+        index: queueIndex,
+        error,
+      };
+      this.state!.funcSpies[name].calls.push(spyData);
 
       this.state!.callStack.pop();
 
@@ -348,6 +388,19 @@ abstract class AssertionMaster<
       const isAsync = fn.constructor.name === "AsyncFunction";
       const finalResult = isAsync ? result : processResult(result);
 
+      // For sync functions, take snapshot now. For async, we'll take it in the .then() handler
+      let funcSpiesSnapshot: Record<string, any> = {};
+      if (!isAsync) {
+        for (const [funcName, funcData] of Object.entries(
+          this.state!.funcSpies
+        )) {
+          funcSpiesSnapshot[funcName] = {
+            name: funcData.name,
+            calls: [...funcData.calls],
+          };
+        }
+      }
+
       const assertionData = {
         state: this.state,
         funcIndex,
@@ -358,14 +411,84 @@ abstract class AssertionMaster<
         eventBus,
         eventUUID,
         postOp: () => {},
+        funcSpies: funcSpiesSnapshot,
       } as AssertionBlueprint;
+
+      // Restore parent's funcSpies and merge ALL functions (current + descendants) into it
+      const currentFuncSpies = this.state!.funcSpies;
+
+      // Deep copy parent funcSpies to avoid reference issues
+      const restoredFuncSpies: Record<string, any> = {};
+      for (const [funcName, funcData] of Object.entries(parentFuncSpies)) {
+        restoredFuncSpies[funcName] = {
+          name: funcData.name,
+          calls: [...funcData.calls],
+        };
+      }
+      this.state!.funcSpies = restoredFuncSpies;
+
+      // Merge all functions from current context into parent
+      for (const [funcName, funcData] of Object.entries(currentFuncSpies)) {
+        if (!this.state!.funcSpies[funcName]) {
+          this.state!.funcSpies[funcName] = {
+            name: funcName,
+            calls: [],
+          };
+        }
+        this.state!.funcSpies[funcName].calls.push(...funcData.calls);
+      }
 
       let originalResult = result;
       if (fn.constructor.name === "AsyncFunction") {
-        (result as Promise<any>).then((r) => {
-          originalResult = r;
-          assertionData.result = processResult(r) as ReturnType<T>;
-        });
+        result = (result as Promise<any>)
+          .then((r) => {
+            originalResult = r;
+            assertionData.result = processResult(r) as ReturnType<T>;
+
+            // Take funcSpies snapshot AFTER async function completes
+            for (const [funcName, funcData] of Object.entries(
+              this.state!.funcSpies
+            )) {
+              assertionData.funcSpies[funcName] = {
+                name: funcData.name,
+                calls: [...funcData.calls],
+              };
+            }
+
+            // CRITICAL: Return the resolved value to propagate it through the promise chain
+            return r;
+          })
+          .catch((e) => {
+            if (processors?.catchError) {
+              // Update error in the spyData that's been merged into parent's funcSpies
+              spyData.error = e as Error;
+
+              // Also update in the current state's funcSpies (parent context)
+              const funcInState = this.state!.funcSpies[name];
+              if (funcInState) {
+                const callInState = funcInState.calls.find(
+                  (c: any) => c.index === queueIndex
+                );
+                if (callInState) {
+                  callInState.error = e as Error;
+                }
+              }
+
+              // Take funcSpies snapshot even when there's an error
+              for (const [funcName, funcData] of Object.entries(
+                this.state!.funcSpies
+              )) {
+                assertionData.funcSpies[funcName] = {
+                  name: funcData.name,
+                  calls: [...funcData.calls],
+                };
+              }
+
+              return undefined;
+            } else {
+              throw e;
+            }
+          });
       }
 
       assertionData.postOp = (state) => {
@@ -409,7 +532,7 @@ abstract class AssertionMaster<
     assertionQueues[this.globalKey] = assertionQueue;
 
     for (const value of assertionQueue.values()) {
-      value.state = { ...value.state };
+      value.state = { ...value.state, funcSpies: value.funcSpies };
 
       if (value.eventBus && value.eventUUID) {
         const events = value.eventBus.getEventsForUUID(value.eventUUID);
@@ -462,6 +585,7 @@ abstract class AssertionMaster<
         args?: Parameters<T>,
         result?: ReturnType<T>
       ) => any;
+      catchError?: boolean;
     }
   ): (...args: Parameters<T>) => ReturnType<T> {
     return (...args) => {

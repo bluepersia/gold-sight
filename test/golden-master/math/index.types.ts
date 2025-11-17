@@ -2,6 +2,7 @@ import {
   AssertionBlueprint,
   AssertionChain,
   EventBus,
+  FuncSpy,
 } from "../../../src/index.types";
 
 type EventUUID = {
@@ -31,6 +32,7 @@ type MathState = {
   multAbsIndex: number;
   subAbsIndex: number;
   divAbsIndex: number;
+  funcSpies?: Record<string, FuncSpy>;
   master?: Master;
 };
 
