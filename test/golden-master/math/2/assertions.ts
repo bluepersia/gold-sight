@@ -66,7 +66,10 @@ const dDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
     }
     expect(result[state.absIndex]).toBe(master.finalResults[state.absIndex]);
     expect(result[state.absIndex]).toBe(master.addResults[state.addAbsIndex]);
-
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.e.calls.length).toBe(1);
+      expect(state.funcSpies!.f).toBeUndefined();
+    }
     return true;
   },
 };

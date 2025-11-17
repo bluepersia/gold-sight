@@ -283,6 +283,10 @@ abstract class AssertionMaster<
     return ((...args: Parameters<T>) => {
       const eventBus = getEventBus(args);
 
+      // Save parent's funcSpies context before resetting
+      const parentFuncSpies = this.state!.funcSpies;
+      this.state!.funcSpies = {};
+
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
         : args;
@@ -317,6 +321,14 @@ abstract class AssertionMaster<
       const branchCount = this.state!.branchCounter.get(parentId) || 0;
       this.state!.branchCounter.set(parentId, branchCount + 1);
 
+      // Add current function to funcSpies BEFORE executing (so it appears first)
+      if (!this.state!.funcSpies[name]) {
+        this.state!.funcSpies[name] = {
+          name,
+          calls: [],
+        };
+      }
+
       let eventUUID: string | undefined;
       if (eventBus) {
         eventUUID = crypto.randomUUID().toString();
@@ -335,14 +347,9 @@ abstract class AssertionMaster<
         }
       }
 
-      let result = fn(...args);
+      const result = fn(...args);
 
-      if (!this.state!.funcSpies[name]) {
-        this.state!.funcSpies[name] = {
-          name,
-          calls: [],
-        };
-      }
+      // Now record the call details (we have the result now)
       this.state!.funcSpies[name].calls.push({
         args,
         result,
@@ -368,6 +375,17 @@ abstract class AssertionMaster<
       const isAsync = fn.constructor.name === "AsyncFunction";
       const finalResult = isAsync ? result : processResult(result);
 
+      // Deep clone funcSpies for the snapshot to avoid reference issues
+      const funcSpiesSnapshot: Record<string, any> = {};
+      for (const [funcName, funcData] of Object.entries(
+        this.state!.funcSpies
+      )) {
+        funcSpiesSnapshot[funcName] = {
+          name: funcData.name,
+          calls: [...funcData.calls],
+        };
+      }
+
       const assertionData = {
         state: this.state,
         funcIndex,
@@ -378,8 +396,32 @@ abstract class AssertionMaster<
         eventBus,
         eventUUID,
         postOp: () => {},
-        funcSpies: { ...this.state!.funcSpies },
+        funcSpies: funcSpiesSnapshot,
       } as AssertionBlueprint;
+
+      // Restore parent's funcSpies and merge ALL functions (current + descendants) into it
+      const currentFuncSpies = this.state!.funcSpies;
+
+      // Deep copy parent funcSpies to avoid reference issues
+      const restoredFuncSpies: Record<string, any> = {};
+      for (const [funcName, funcData] of Object.entries(parentFuncSpies)) {
+        restoredFuncSpies[funcName] = {
+          name: funcData.name,
+          calls: [...funcData.calls],
+        };
+      }
+      this.state!.funcSpies = restoredFuncSpies;
+
+      // Merge all functions from current context into parent
+      for (const [funcName, funcData] of Object.entries(currentFuncSpies)) {
+        if (!this.state!.funcSpies[funcName]) {
+          this.state!.funcSpies[funcName] = {
+            name: funcName,
+            calls: [],
+          };
+        }
+        this.state!.funcSpies[funcName].calls.push(...funcData.calls);
+      }
 
       let originalResult = result;
       if (fn.constructor.name === "AsyncFunction") {
