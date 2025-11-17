@@ -454,6 +454,9 @@ abstract class AssertionMaster<
                 calls: [...funcData.calls],
               };
             }
+
+            // CRITICAL: Return the resolved value to propagate it through the promise chain
+            return r;
           })
           .catch((e) => {
             if (processors?.catchError) {
