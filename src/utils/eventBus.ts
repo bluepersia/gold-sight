@@ -416,7 +416,44 @@ function withEventNames(
   }
   return func(eventsMap, eventBus, eventUUID);
 }
+function withEventNamesList(
+  args: any[],
+  eventNames: string[],
+  func: (
+    events: Record<string, IEvent[]>,
+    eventBus: EventBus,
+    eventUUID: string
+  ) => any,
+  options?: FilterOptions
+): (...args: any[]) => any {
+  const eventBus = getEventBus(args);
+  const eventUUID = getEventUUID(args);
 
+  if (!eventBus) {
+    throw new Error("Event bus not found");
+  }
+  if (!eventUUID) {
+    throw new Error("Event UUID not found");
+  }
+
+  const funcData = getFuncData(args);
+
+  const events: IEvent[] = [];
+  for (const eventName of eventNames) {
+    events.push(...filterEventsByName(eventBus, eventName, options));
+  }
+  // Fetch all events into a record keyed by their name
+  const eventsMap: Record<string, IEvent[]> = {};
+  const filteredEvents = filterEventsByUUID(events, eventUUID, funcData);
+
+  for (const event of filteredEvents) {
+    if (!eventsMap[event.name]) {
+      eventsMap[event.name] = [];
+    }
+    eventsMap[event.name].push(event);
+  }
+  return func(eventsMap, eventBus, eventUUID);
+}
 function getFuncData(args: any[]): IFuncData | undefined {
   for (const arg of args) {
     if (typeof arg === "object" && "funcData" in arg) {
