@@ -92,6 +92,11 @@ const fDefaultAssertions: AssertionChain<MathState, number[], number[]> = {
       })
     ).toBe(master.divResults[state.divAbsIndex]);
 
+    if (Object.keys(state.funcSpies!).length > 0) {
+      expect(state.funcSpies!.d).toBeUndefined();
+      expect(state.funcSpies!.e).toBeUndefined();
+    }
+
     return true;
   },
 };
