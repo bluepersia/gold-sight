@@ -473,6 +473,14 @@ withEvents(args, (eventBus, eventUUID, funcData) => {
 withEventNames(args, ["event1", "event2"], (events, eventBus, eventUUID) => {
   // events is Record<string, IEvent> with requested events
 });
+
+withEventNamesList(
+  args,
+  ["event1", "event2"],
+  (events, eventBus, eventUUID) => {
+    //events is Record<string, IEvent[]>
+  }
+);
 ```
 
 When querying for events by UUID (or `withEventNames` helper), events bubble up the function chain.
