@@ -2,6 +2,7 @@ import { EventContext } from "../index.types";
 
 type FilterOptions = {
   includeOverwritten?: boolean;
+  includeRecursive?: boolean;
 };
 
 type IEvent = {
@@ -238,7 +239,7 @@ function getEventByUUID(
   let events = filterEventsByName(eventBus, name, options);
 
   events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
-  if (funcData) {
+  if (funcData && !options?.includeRecursive) {
     events = filterRecursion(events, funcData);
   }
   return events[0] || null;
@@ -322,11 +323,13 @@ function filterEventsByPayload(
 function filterEventsByUUID(
   events: IEvent[],
   uuid: string,
-  funcData?: FuncData
+  funcData?: FuncData,
+  options?: FilterOptions
 ): IEvent[] {
   events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
 
-  if (funcData) events = filterRecursion(events, funcData);
+  if (funcData && !options?.includeRecursive)
+    events = filterRecursion(events, funcData);
   return events;
 }
 
@@ -415,7 +418,12 @@ function withEventNames(
   }
   // Fetch all events into a record keyed by their name
   const eventsMap: Record<string, IEvent> = {};
-  const filteredEvents = filterEventsByUUID(events, eventUUID, funcData);
+  const filteredEvents = filterEventsByUUID(
+    events,
+    eventUUID,
+    funcData,
+    options
+  );
 
   for (const event of filteredEvents) {
     eventsMap[event.name] = event;

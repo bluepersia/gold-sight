@@ -423,16 +423,9 @@ const matchingEvents = filterEventsByState(eventBus, "tax_calculated", {
 });
 
 // Filter by payload
-const taxEvents = filterEventsByPayload(
-  eventBus,
-  "tax_calculated",
-  {
-    rate: 0.0825,
-  },
-  {
-    includeOverwritten: true, //Include events overwritten with `emitOne`
-  }
-);
+const taxEvents = filterEventsByPayload(eventBus, "tax_calculated", {
+  rate: 0.0825,
+});
 
 // Get single event by state
 const event = getEventByState(eventBus, "tax_calculated", { itemIndex: 5 });
@@ -486,6 +479,11 @@ withEventNamesList(
 When querying for events by UUID (or `withEventNames` helper), events bubble up the function chain.
 Higher-level functions have access to lower-level events.
 Lower-level functions do not have access to higher-level events.
+
+**Event Filter Options:**
+
+- `includeOverwritten` - include events overwritten by `emitOne`.
+- `includeRecursive` - include events emitted in recursive code.
 
 #### Example Event-based Assertion
 
