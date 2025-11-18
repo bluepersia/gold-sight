@@ -252,6 +252,7 @@ describe("eventHelpers", () => {
       expect(events.d).not.toBeNull();
     });
   });
+
   test("withEventNamesList", () => {
     return withEventNamesList(aArgs, ["a", "b", "c", "d"], (events) => {
       expect(events.a.length).toBe(1);
@@ -259,6 +260,19 @@ describe("eventHelpers", () => {
       expect(events.c.length).toBe(1);
       expect(events.d.length).toBe(2);
     });
+  });
+  test("withEventNamesList", () => {
+    return withEventNamesList(
+      aArgs,
+      ["a", "b", "c", "d"],
+      (events) => {
+        expect(events.a.length).toBe(1);
+        expect(events.b.length).toBe(2);
+        expect(events.c.length).toBe(1);
+        expect(events.d.length).toBe(2);
+      },
+      { includeRecursive: true }
+    );
   });
 });
 let ctx;

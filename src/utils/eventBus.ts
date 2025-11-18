@@ -458,7 +458,12 @@ function withEventNamesList(
     eventsMap[eventName] = [];
     events.push(...filterEventsByName(eventBus, eventName, options));
   }
-  const filteredEvents = filterEventsByUUID(events, eventUUID, funcData);
+  const filteredEvents = filterEventsByUUID(
+    events,
+    eventUUID,
+    funcData,
+    options
+  );
 
   for (const event of filteredEvents) {
     eventsMap[event.name].push(event);
