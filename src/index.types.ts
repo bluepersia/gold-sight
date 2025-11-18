@@ -15,6 +15,7 @@ import {
   withEventBus,
   withEvents,
   withEventNames,
+  withEventNamesList,
   IFuncData,
   makeEventContext,
 } from "./utils/eventBus";
@@ -27,6 +28,7 @@ type StateBase<TMaster> = {
   callStack: number[];
   branchCounter: Map<number, number>;
   uuidStack: string[];
+  funcCounter: Map<string, number>;
 };
 
 type AssertionChain<TState, TArgs, TResult> = {
@@ -64,6 +66,7 @@ type AssertionBlueprint<TState = any, TArgs = any, TResult = any> = {
   postOp?: (state: TState, args: TArgs, result: TResult) => void;
   eventBus?: EventBus;
   eventUUID?: string;
+  funcID: number;
 };
 
 type AssertionBlueprintForFunc<
@@ -241,6 +244,7 @@ export {
   withEventBus,
   withEvents,
   withEventNames,
+  withEventNamesList,
   makeEventContext,
 };
 

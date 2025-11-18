@@ -31,6 +31,7 @@ import {
   withEventBus,
   withEvents,
   withEventNames,
+  withEventNamesList,
   filterEventsByPayload,
   filterEventsByState,
   filterEvents,
@@ -111,6 +112,7 @@ abstract class AssertionMaster<
       branchCounter: new Map(),
       queueIndex: 0,
       uuidStack: [],
+      funcCounter: new Map(),
     };
   };
 
@@ -163,6 +165,7 @@ abstract class AssertionMaster<
             if (master.step) {
               prelog += `, Step:${master.step}`;
             }
+            prelog += `, ${name} #${item.funcID}`;
           }
           if (address) {
             const formattedAddress =
@@ -304,6 +307,10 @@ abstract class AssertionMaster<
       const queueIndex = this.state!.queueIndex;
       this.state!.queueIndex++;
 
+      let funcCounter = this.state!.funcCounter.get(name) || 1;
+      this.state!.funcCounter.set(name, funcCounter + 1);
+      const funcID = funcCounter;
+
       this.state!.callStack.push(funcIndex);
 
       const branchCount = this.state!.branchCounter.get(parentId) || 0;
@@ -357,6 +364,7 @@ abstract class AssertionMaster<
         args: argsClone,
         eventBus,
         eventUUID,
+        funcID,
         postOp: () => {},
       } as AssertionBlueprint;
 
@@ -525,6 +533,7 @@ export {
   withEventBus,
   withEvents,
   withEventNames,
+  withEventNamesList,
   makeEventContext,
   getGlobalConfig,
   setGlobalConfig,

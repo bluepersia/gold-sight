@@ -235,6 +235,7 @@ function stripQueue(map: Map<number, AssertionBlueprint>) {
             branchCounter: undefined,
             queueIndex: undefined,
             uuidStack: undefined,
+            funcCounter: undefined,
           },
         },
       ];

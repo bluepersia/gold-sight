@@ -438,18 +438,15 @@ function withEventNamesList(
 
   const funcData = getFuncData(args);
 
+  const eventsMap: Record<string, IEvent[]> = {};
   const events: IEvent[] = [];
   for (const eventName of eventNames) {
+    eventsMap[eventName] = [];
     events.push(...filterEventsByName(eventBus, eventName, options));
   }
-  // Fetch all events into a record keyed by their name
-  const eventsMap: Record<string, IEvent[]> = {};
   const filteredEvents = filterEventsByUUID(events, eventUUID, funcData);
 
   for (const event of filteredEvents) {
-    if (!eventsMap[event.name]) {
-      eventsMap[event.name] = [];
-    }
     eventsMap[event.name].push(event);
   }
   return func(eventsMap, eventBus, eventUUID);
@@ -513,4 +510,5 @@ export {
   filterEventsByName,
   IFuncData,
   makeEventContext,
+  withEventNamesList,
 };
