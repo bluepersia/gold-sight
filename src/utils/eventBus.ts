@@ -262,20 +262,26 @@ function filterRecursion(events: IEvent[], funcData: FuncData): IEvent[] {
 function filterRecursionForName(events: IEvent[], name: string): IEvent[] {
   events = events.filter((e) => e.funcData.funcName === name);
 
-  const firstIndex = Math.min(...events.map((e) => e.funcData.funcIndex));
-  const nextIndex =
-    Math.min(
-      ...events
-        .filter((e) => e.funcData.funcIndex > firstIndex)
-        .map((e) => e.funcData.funcIndex)
-    ) || Infinity;
+  // Helper function to check if stackB extends stackA (stackA is a prefix of stackB)
+  const isExtension = (stackA: string[], stackB: string[]): boolean => {
+    if (stackA.length >= stackB.length) return false;
+    return stackA.every((uuid, index) => uuid === stackB[index]);
+  };
 
-  const newEvents = events.filter(
-    (e) =>
-      e.funcData.funcIndex >= firstIndex && e.funcData.funcIndex < nextIndex
-  );
+  // Filter out events that are recursive calls (their uuidStack extends another event's stack)
+  const nonRecursiveEvents = events.filter((event) => {
+    // Check if this event is a recursive call of another event
+    const isRecursive = events.some((otherEvent) => {
+      return (
+        otherEvent !== event &&
+        otherEvent.funcData.funcIndex < event.funcData.funcIndex &&
+        isExtension(otherEvent.uuidStack, event.uuidStack)
+      );
+    });
+    return !isRecursive;
+  });
 
-  return newEvents;
+  return nonRecursiveEvents;
 }
 
 function filterEventsByState(

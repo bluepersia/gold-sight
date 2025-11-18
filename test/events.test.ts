@@ -12,6 +12,7 @@ import {
   getFuncData,
   filterEventsByName,
   getEventByUUID,
+  withEventNamesList,
 } from "../src/utils/eventBus";
 
 let eventBus: EventBus;
@@ -187,7 +188,7 @@ describe("eventHelpers", () => {
       getFuncData(bArgs)
     );
 
-    expect(events.length).toBe(3);
+    expect(events.length).toBe(4);
   });
 
   test("getAllEvents", () => {
@@ -197,7 +198,7 @@ describe("eventHelpers", () => {
       getEventUUID(aArgs)!,
       getFuncData(aArgs)
     );
-    expect(events.length).toBe(4);
+    expect(events.length).toBe(5);
   });
 
   test("filterEventsByState", () => {
@@ -249,6 +250,14 @@ describe("eventHelpers", () => {
 
       expect(events.d).toBeDefined();
       expect(events.d).not.toBeNull();
+    });
+  });
+  test("withEventNamesList", () => {
+    return withEventNamesList(aArgs, ["a", "b", "c", "d"], (events) => {
+      expect(events.a.length).toBe(1);
+      expect(events.b.length).toBe(1);
+      expect(events.c.length).toBe(1);
+      expect(events.d.length).toBe(2);
     });
   });
 });
