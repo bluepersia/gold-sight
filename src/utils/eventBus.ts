@@ -20,36 +20,9 @@ type IFuncData = {
   funcIndex: number;
 };
 
-type IEventBus = {
-  events: {
-    [name: string]: IEvent[];
-  };
-
-  isEventBus: boolean;
-  emit(name: string, payload: any): IEvent;
-  emitOne(
-    name: string,
-    uuid: { eventUUIDs?: string[] },
-    key: any,
-    payload?: any
-  ): IEvent;
-  emitOnce(
-    name: string,
-    ctx: { eventUUID?: string; eventUUIDs?: string[]; funcData?: IFuncData },
-    payload?: any
-  ): IEvent | null;
-
-  getAllEventsForUUID(uuid: string): IEvent[];
-};
-
-class EventBus implements IEventBus {
+class EventBus {
   public isEventBus: boolean = true;
-  private queueIndex: number = 0;
-  constructor(
-    queueIndex: number = 0,
-    events: { [name: string]: IEvent[] } = {}
-  ) {
-    this.queueIndex = queueIndex;
+  constructor(events: { [name: string]: IEvent[] } = {}) {
     this.events = events;
   }
   events: {
@@ -60,18 +33,10 @@ class EventBus implements IEventBus {
     [name: string]: IEvent[];
   } = {};
 
-  uninitialized: IEvent[] = [];
-
   private emitOnceEvents: {
     [name: string]: IEvent[];
   } = {};
 
-  setQueueIndex(queueIndex: number) {
-    this.queueIndex = queueIndex;
-  }
-  getQueueIndex(): number {
-    return this.queueIndex;
-  }
   emit(
     name: string,
     ctx: { eventUUID?: string; eventUUIDs?: string[]; funcData?: IFuncData },
@@ -91,7 +56,6 @@ class EventBus implements IEventBus {
       events = this.events[name] = [];
     }
     events.push(newEvent);
-    this.uninitialized.push(newEvent);
     return newEvent;
   }
 
@@ -151,6 +115,60 @@ class EventBus implements IEventBus {
       includeOverwritten: true,
       includeRecursive: true,
     });
+  }
+
+  getEventByState(
+    name: string,
+    state: any,
+    options?: FilterOptions
+  ): IEvent | null {
+    return getEventByState(this, name, state, options);
+  }
+
+  getEventByPayload(
+    name: string,
+    payload: any,
+    options?: FilterOptions
+  ): IEvent | null {
+    return getEventByPayload(this, name, payload, options);
+  }
+  getEvent(
+    name: string,
+    payload: any,
+    state: any,
+    options?: FilterOptions
+  ): IEvent | null {
+    return getEvent(this, name, payload, state, options);
+  }
+  getEventByUUID(
+    name: string,
+    uuid: string,
+    funcData?: FuncData,
+    options?: FilterOptions
+  ): IEvent | null {
+    return getEventByUUID(this, name, uuid, funcData, options);
+  }
+  filterEventsByState(
+    name: string,
+    state: any,
+    options?: FilterOptions
+  ): IEvent[] {
+    return filterEventsByState(this, name, state, options);
+  }
+  filterEventsByPayload(
+    name: string,
+    payload: any,
+    options?: FilterOptions
+  ): IEvent[] {
+    return filterEventsByPayload(this, name, payload, options);
+  }
+  filterEvents(
+    name: string,
+    payload: any,
+    state: any,
+    options?: FilterOptions
+  ): IEvent[] {
+    return filterEvents(this, name, payload, state, options);
   }
 }
 
@@ -529,7 +547,6 @@ export {
   getEventBus,
   EventBus,
   IEvent,
-  IEventBus,
   getEventByState,
   getEventByPayload,
   getEvent,

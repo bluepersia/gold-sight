@@ -418,20 +418,24 @@ function calculateTax(amount: number, ctx: EventContext) {
 const events = eventBus.events["tax_calculated"];
 
 // Filter by state
-const matchingEvents = filterEventsByState(eventBus, "tax_calculated", {
-  itemIndex: 5,
-});
+const matchingEvents = eventBus.filterEventsByState(
+  eventBus,
+  "tax_calculated",
+  {
+    itemIndex: 5,
+  }
+);
 
 // Filter by payload
-const taxEvents = filterEventsByPayload(eventBus, "tax_calculated", {
+const taxEvents = eventBus.filterEventsByPayload("tax_calculated", {
   rate: 0.0825,
 });
 
 // Get single event by state
-const event = getEventByState(eventBus, "tax_calculated", { itemIndex: 5 });
+const event = eventBus.getEventByState("tax_calculated", { itemIndex: 5 });
 
 // Get event by payload
-const event = getEventByPayload(eventBus, "tax_calculated", { rate: 0.0825 });
+const event = eventBus.getEventByPayload("tax_calculated", { rate: 0.0825 });
 
 // Filter by UUID (for specific execution path)
 const scopedEvents = filterEventsByUUID(
@@ -441,8 +445,7 @@ const scopedEvents = filterEventsByUUID(
 );
 
 // Get event for specific UUID
-const event = getEventByUUID(
-  eventBus,
+const event = eventBus.getEventByUUID(
   "tax_calculated",
   uuid,
   funcData /*See funcData in next section*/

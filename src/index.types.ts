@@ -2,7 +2,6 @@ import { deepClone } from "./utils/deepClone";
 import {
   EventBus,
   IEvent,
-  IEventBus,
   getEventByState,
   getEventByPayload,
   getEvent,
@@ -230,7 +229,6 @@ export {
   deepClone,
   EventBus,
   IEvent,
-  IEventBus,
   getEventByState,
   getEventByPayload,
   filterEventsByState,
