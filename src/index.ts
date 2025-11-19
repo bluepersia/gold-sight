@@ -275,7 +275,30 @@ abstract class AssertionMaster<
     }
   ): T {
     return ((...args: Parameters<T>) => {
+      const parentId =
+        this.state!.callStack[this.state!.callStack.length - 1] ?? -1;
+
+      let funcIndex = parentId + 1;
+
       const eventBus = getEventBus(args);
+
+      let eventUUID: string | undefined;
+      if (eventBus) {
+        eventUUID = crypto.randomUUID().toString();
+        this.state!.uuidStack.push(eventUUID);
+        for (let i = 0; i < args.length; i++) {
+          const arg = args[i];
+          if (typeof arg === "object" && "eventUUID" in arg) {
+            args[i] = {
+              ...arg,
+              eventUUID,
+              eventUUIDs: [...this.state!.uuidStack],
+              funcData: { funcName: name, funcIndex: funcIndex },
+            };
+            break;
+          }
+        }
+      }
 
       const convertedArgs = processors?.argsConverter
         ? processors.argsConverter(args)
@@ -299,10 +322,6 @@ abstract class AssertionMaster<
           "State is not initialized. The top function wrapper may not be executing"
         );
 
-      const parentId =
-        this.state!.callStack[this.state!.callStack.length - 1] ?? -1;
-
-      let funcIndex = parentId + 1;
       const queueIndex = this.state!.queueIndex;
       this.state!.queueIndex++;
 
@@ -314,24 +333,6 @@ abstract class AssertionMaster<
 
       const branchCount = this.state!.branchCounter.get(parentId) || 0;
       this.state!.branchCounter.set(parentId, branchCount + 1);
-
-      let eventUUID: string | undefined;
-      if (eventBus) {
-        eventUUID = crypto.randomUUID().toString();
-        this.state!.uuidStack.push(eventUUID);
-        for (let i = 0; i < args.length; i++) {
-          const arg = args[i];
-          if (typeof arg === "object" && "eventUUID" in arg) {
-            args[i] = argsClone[i] = {
-              ...arg,
-              eventUUID,
-              eventUUIDs: [...this.state!.uuidStack],
-              funcData: { funcName: name, funcIndex: funcIndex },
-            };
-            break;
-          }
-        }
-      }
 
       const result = fn(...args);
 

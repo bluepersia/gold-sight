@@ -172,7 +172,8 @@ class Math1Assertions extends AssertionMaster<MathState, Master> {
 
   c = this.wrapFn(c, "c", {
     argsConverter(args) {
-      return [args[0].map((r) => r * 2, args[1])];
+      const result = [args[0].map((r) => r * 2), args[1]];
+      return result;
     },
     post: (state) => {
       state.absIndex++;
