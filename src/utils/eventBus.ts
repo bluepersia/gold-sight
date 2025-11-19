@@ -204,6 +204,14 @@ function getEventUUID(args: any[]): string | undefined {
   return undefined;
 }
 
+function getFuncData(args: any[]): IFuncData | undefined {
+  for (const arg of args) {
+    if (typeof arg === "object" && "funcData" in arg) {
+      return arg.funcData;
+    }
+  }
+}
+
 function getEventByState(
   eventBus: EventBus,
   name: string,
@@ -506,13 +514,6 @@ function withEventNamesList(
     eventsMap[event.name].push(event);
   }
   return func(eventsMap, eventBus, eventUUID);
-}
-function getFuncData(args: any[]): IFuncData | undefined {
-  for (const arg of args) {
-    if (typeof arg === "object" && "funcData" in arg) {
-      return arg.funcData;
-    }
-  }
 }
 
 function filterEventsByName(
