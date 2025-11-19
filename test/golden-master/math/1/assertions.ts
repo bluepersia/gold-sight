@@ -110,7 +110,17 @@ const eDefaultAssertions: AssertionChain<
   e: (state, args, result) => {
     const eventBus = getEventBus(args);
     if (eventBus) {
-      const event = getEventByState(eventBus, "e", {});
+      console.log("ABS INDEX", state.absIndex);
+      const event = getEventByState(
+        eventBus,
+        "e",
+        {
+          absIndex: state.absIndex,
+        },
+        {
+          includeOverwritten: true,
+        }
+      );
       expect(event).toBeDefined();
       expect(event).not.toBeNull();
 

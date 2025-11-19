@@ -130,10 +130,21 @@ class EventBus implements IEventBus {
     return this.emit(name, ctx, payload);
   }
 
-  getEventsForUUID(uuid: string): IEvent[] {
-    return Object.values(this.events)
+  getEventsForUUID(
+    uuid: string,
+    includeOverwritten: boolean = false
+  ): IEvent[] {
+    let events = Object.values(this.events)
       .flat()
       .filter((event: IEvent) => event.uuidStack.includes(uuid));
+    if (includeOverwritten) {
+      events = events.concat(
+        Object.values(this.overwrittenEvents)
+          .flat()
+          .filter((event: IEvent) => event.uuidStack.includes(uuid))
+      );
+    }
+    return events;
   }
 }
 

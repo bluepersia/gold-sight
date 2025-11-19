@@ -15,6 +15,7 @@ let b = (results: number[], ctx: LogicContext) => {
   ctx.eventBus?.emit("b", ctx, { b: true });
   let newResults = [...results, math.add(1, 2)]; //3
   newResults = c(newResults, ctx);
+  newResults = e(newResults, ctx);
   return newResults;
 };
 

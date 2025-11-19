@@ -2,10 +2,10 @@ import { EventBus } from "../../../../src/utils/eventBus";
 import { Master } from "../index.types";
 
 const master: Master = {
-  finalResults: [3, 0, 4, 12],
+  finalResults: [3, 0, 4, 12, 12],
   addResults: [3, 4],
   subResults: [0],
-  multResults: [12],
+  multResults: [12, 12],
   divResults: [],
   index: 0,
   finalQueue: new Map(),
@@ -26,7 +26,7 @@ master.finalQueue.set(0, {
   funcIndex: 0,
   branchCount: 0,
   snapshot: undefined,
-  result: [3, 0, 4, 12],
+  result: [3, 0, 4, 12, 12],
   args: [{}],
   funcID: 1,
   state: {
@@ -44,7 +44,7 @@ master.finalQueue.set(1, {
   funcIndex: 1,
   branchCount: 0,
   snapshot: undefined,
-  result: [6, 0, 8, 24],
+  result: [6, 0, 8, 24, 24],
   args: [[], {}],
   funcID: 1,
   state: {
@@ -105,6 +105,24 @@ master.finalQueue.set(4, {
     absIndex: 3,
     addAbsIndex: 2,
     multAbsIndex: 0,
+    subAbsIndex: 1,
+    divAbsIndex: 0,
+    master,
+  },
+});
+
+master.finalQueue.set(5, {
+  name: "e",
+  funcIndex: 2,
+  branchCount: 1,
+  snapshot: undefined,
+  result: [3, 0, 4, 12, 12],
+  args: [[3, 0, 4, 12], {}],
+  funcID: 2,
+  state: {
+    absIndex: 4,
+    addAbsIndex: 2,
+    multAbsIndex: 1,
     subAbsIndex: 1,
     divAbsIndex: 0,
     master,
