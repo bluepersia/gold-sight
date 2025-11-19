@@ -265,6 +265,19 @@ describe("eventHelpers", () => {
     expect(event?.payload.test2).toBeDefined();
   });
 
+  test("filterEvents", () => {
+    const events = eventBus.filterEvents(
+      "b",
+      { test2: "test2" },
+      { absIndex: 1 }
+    );
+    expect(events).toBeDefined();
+    expect(events?.length).toBe(1);
+    expect(events?.[0].name).toBe("b");
+    expect(events?.[0].state.absIndex).toBe(1);
+    expect(events?.[0].payload.test2).toBeDefined();
+  });
+
   test("getEventByUUID", () => {
     const event = eventBus.getEventByUUID("c", "456", {
       funcName: "a",
