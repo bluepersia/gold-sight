@@ -232,6 +232,13 @@ describe("eventHelpers", () => {
     expect(events[0].state.absIndex).toBe(1);
     expect(events[0].payload.test2).toBeDefined();
   });
+  test("getEventByState", () => {
+    const event = eventBus.getEventByState("b", { absIndex: 1 });
+    expect(event).toBeDefined();
+    expect(event?.name).toBe("b");
+    expect(event?.state.absIndex).toBe(1);
+    expect(event?.payload.test2).toBeDefined();
+  });
   test("filterEventsByPayload", () => {
     const events = eventBus.filterEventsByPayload("b", { test2: "test2" });
     expect(events.length).toBe(1);
@@ -240,6 +247,34 @@ describe("eventHelpers", () => {
     expect(events[0].payload.test2).toBeDefined();
   });
 
+  test("getEventByPayload", () => {
+    const event = eventBus.getEventByPayload("b", { test2: "test2" });
+    expect(event).toBeDefined();
+    expect(event?.name).toBe("b");
+    expect(event?.state.absIndex).toBe(1);
+    expect(event?.payload.test2).toBeDefined();
+  });
+
+  test("getEvent", () => {
+    const event = eventBus.getEvent("b", { test2: "test2" }, { absIndex: 1 });
+    expect(event).toBeDefined();
+    expect(event?.name).toBe("b");
+    expect(event?.state.absIndex).toBe(1);
+    expect(event?.payload.test2).toBeDefined();
+  });
+
+  test("filterEvents", () => {
+    const events = eventBus.filterEvents(
+      "b",
+      { test2: "test2" },
+      { absIndex: 1 }
+    );
+    expect(events).toBeDefined();
+    expect(events?.length).toBe(1);
+    expect(events?.[0].name).toBe("b");
+    expect(events?.[0].state.absIndex).toBe(1);
+    expect(events?.[0].payload.test2).toBeDefined();
+  });
   test("filterEventsByName", () => {
     const events = eventBus.filterEventsByName("b");
     expect(events.length).toBe(2);
