@@ -74,7 +74,7 @@ describe("eventHelpers", () => {
         },
         {
           name: "d",
-          payload: { test4: "test4" },
+          payload: { test4b: "test4b" },
           uuidStack: ["123", "456", "789", "101112", "131415"],
           funcData: { funcName: "d", funcIndex: 4 },
           eventUUID: "131415",
@@ -188,6 +188,8 @@ describe("eventHelpers", () => {
       getFuncData(cArgs)
     );
     expect(events.length).toBe(1);
+    expect(events[0].name).toBe("d");
+    expect(events[0].payload.test4b).toBeDefined();
   });
 
   test("getParallelEventByUUID", () => {
@@ -200,6 +202,7 @@ describe("eventHelpers", () => {
     expect(event).toBeDefined();
     expect(event).not.toBeNull();
     expect(event?.name).toBe("d");
+    expect(event?.payload.test4b).toBeDefined();
   });
 
   test("getAllEvents", () => {
