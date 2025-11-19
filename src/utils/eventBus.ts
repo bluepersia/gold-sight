@@ -112,7 +112,6 @@ class EventBus {
     events = events.concat(Object.values(this.overwrittenEvents).flat());
 
     return filterEventsByUUID(events, uuid, undefined, {
-      includeOverwritten: true,
       includeRecursive: true,
     });
   }
@@ -216,7 +215,7 @@ function getEventByState(
   eventBus: EventBus,
   name: string,
   state: any,
-  options?: FilterOptions
+  options?: Pick<FilterOptions, "includeOverwritten">
 ): IEvent | null {
   const events = filterEventsByName(eventBus, name, options);
   const event = events.find((e) => {
@@ -234,7 +233,7 @@ function getEventByPayload(
   eventBus: EventBus,
   name: string,
   payload: any,
-  options?: FilterOptions
+  options?: Pick<FilterOptions, "includeOverwritten">
 ): IEvent | null {
   const events = filterEventsByName(eventBus, name, options);
   const event = events.find((e) => {
@@ -253,7 +252,7 @@ function getEvent(
   name: string,
   payload: any,
   state: any,
-  options?: FilterOptions
+  options?: Pick<FilterOptions, "includeOverwritten">
 ): IEvent | null {
   const events = filterEventsByName(eventBus, name, options);
   const event = events.find((e) => {
@@ -334,7 +333,7 @@ function filterEventsByState(
   eventBus: EventBus,
   name: string,
   state: any,
-  options?: FilterOptions
+  options?: Pick<FilterOptions, "includeOverwritten">
 ): IEvent[] {
   const events = filterEventsByName(eventBus, name, options);
 
@@ -352,7 +351,7 @@ function filterEventsByPayload(
   eventBus: EventBus,
   name: string,
   payload: any,
-  options?: FilterOptions
+  options?: Pick<FilterOptions, "includeOverwritten">
 ): IEvent[] {
   const events = filterEventsByName(eventBus, name, options);
   return events.filter((event: IEvent) => {
@@ -369,7 +368,7 @@ function filterEventsByUUID(
   events: IEvent[],
   uuid: string,
   funcData?: FuncData,
-  options?: FilterOptions
+  options?: Pick<FilterOptions, "includeRecursive">
 ): IEvent[] {
   events = events.filter((event: IEvent) => event.uuidStack.includes(uuid));
 
@@ -383,7 +382,7 @@ function filterEvents(
   name: string,
   payload: any,
   state: any,
-  options?: FilterOptions
+  options?: Pick<FilterOptions, "includeOverwritten">
 ): IEvent[] {
   let events = filterEventsByName(eventBus, name, options);
   events = events.filter((event: IEvent) => {
@@ -519,7 +518,7 @@ function withEventNamesList(
 function filterEventsByName(
   eventBus: EventBus,
   name: string,
-  options?: FilterOptions
+  options?: Pick<FilterOptions, "includeOverwritten">
 ) {
   let events =
     name === "*"
