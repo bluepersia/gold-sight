@@ -420,7 +420,7 @@ abstract class AssertionMaster<
       value.state = { ...value.state };
 
       if (value.eventBus && value.eventUUID) {
-        const events = value.eventBus.getEventsForUUID(value.eventUUID, true);
+        const events = value.eventBus.getEventsForUUID(value.eventUUID);
         for (const event of events) {
           event.state = value.state;
         }
