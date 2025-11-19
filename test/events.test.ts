@@ -145,7 +145,7 @@ describe("eventHelpers", () => {
     expect(funcData?.funcIndex).toBe(2);
   });
   test("getEventsForUUID", () => {
-    const eventsByName = filterEventsByName(eventBus, "b");
+    const eventsByName = eventBus.filterEventsByName("b");
     const events = filterEventsByUUID(
       eventsByName,
       getEventUUID(aArgs)!,
@@ -158,7 +158,7 @@ describe("eventHelpers", () => {
   });
 
   test("getEventsForUUID", () => {
-    const eventsByName = filterEventsByName(eventBus, "c");
+    const eventsByName = eventBus.filterEventsByName("c");
     const events = filterEventsByUUID(
       eventsByName,
       getEventUUID(aArgs)!,
@@ -171,7 +171,7 @@ describe("eventHelpers", () => {
   });
 
   test("getEventsForUUID", () => {
-    const eventsByName = filterEventsByName(eventBus, "a");
+    const eventsByName = eventBus.filterEventsByName("a");
     const events = filterEventsByUUID(
       eventsByName,
       getEventUUID(cArgs)!,
@@ -181,7 +181,7 @@ describe("eventHelpers", () => {
   });
 
   test("getParallelEventsByUUID", () => {
-    const eventsByName = filterEventsByName(eventBus, "d");
+    const eventsByName = eventBus.filterEventsByName("d");
     const events = filterEventsByUUID(
       eventsByName,
       getEventUUID(cArgs)!,
@@ -193,8 +193,7 @@ describe("eventHelpers", () => {
   });
 
   test("getParallelEventByUUID", () => {
-    const event = getEventByUUID(
-      eventBus,
+    const event = eventBus.getEventByUUID(
       "d",
       getEventUUID(cArgs)!,
       getFuncData(cArgs)
@@ -206,7 +205,7 @@ describe("eventHelpers", () => {
   });
 
   test("getAllEvents", () => {
-    const eventsByName = filterEventsByName(eventBus, "*");
+    const eventsByName = eventBus.filterEventsByName("*");
     const events = filterEventsByUUID(
       eventsByName,
       getEventUUID(bArgs)!,
@@ -217,7 +216,7 @@ describe("eventHelpers", () => {
   });
 
   test("getAllEvents", () => {
-    const eventsByName = filterEventsByName(eventBus, "*");
+    const eventsByName = eventBus.filterEventsByName("*");
     const events = filterEventsByUUID(
       eventsByName,
       getEventUUID(aArgs)!,
@@ -227,14 +226,14 @@ describe("eventHelpers", () => {
   });
 
   test("filterEventsByState", () => {
-    const events = filterEventsByState(eventBus, "b", { absIndex: 1 });
+    const events = eventBus.filterEventsByState("b", { absIndex: 1 });
     expect(events.length).toBe(1);
     expect(events[0].name).toBe("b");
     expect(events[0].state.absIndex).toBe(1);
     expect(events[0].payload.test2).toBeDefined();
   });
   test("filterEventsByPayload", () => {
-    const events = filterEventsByPayload(eventBus, "b", { test2: "test2" });
+    const events = eventBus.filterEventsByPayload("b", { test2: "test2" });
     expect(events.length).toBe(1);
     expect(events[0].name).toBe("b");
     expect(events[0].state.absIndex).toBe(1);
@@ -242,11 +241,11 @@ describe("eventHelpers", () => {
   });
 
   test("filterEventsByName", () => {
-    const events = filterEventsByName(eventBus, "b");
+    const events = eventBus.filterEventsByName("b");
     expect(events.length).toBe(2);
   });
   test("filterEventsByName *", () => {
-    const events = filterEventsByName(eventBus, "*");
+    const events = eventBus.filterEventsByName("*");
     expect(events.length).toBe(6);
   });
   test("withEventBus", () => {

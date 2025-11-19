@@ -116,7 +116,9 @@ class EventBus {
       includeRecursive: true,
     });
   }
-
+  filterEventsByName(name: string, options?: FilterOptions): IEvent[] {
+    return filterEventsByName(this, name, options);
+  }
   getEventByState(
     name: string,
     state: any,
