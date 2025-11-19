@@ -110,7 +110,6 @@ const eDefaultAssertions: AssertionChain<
   e: (state, args, result) => {
     const eventBus = getEventBus(args);
     if (eventBus) {
-      console.log("ABS INDEX", state.absIndex);
       const event = getEventByState(
         eventBus,
         "e",
