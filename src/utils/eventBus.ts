@@ -27,7 +27,19 @@ type IEventBus = {
 
   isEventBus: boolean;
   emit(name: string, payload: any): IEvent;
-  getEventsForUUID(uuid: string): IEvent[];
+  emitOne(
+    name: string,
+    uuid: { eventUUIDs?: string[] },
+    key: any,
+    payload?: any
+  ): IEvent;
+  emitOnce(
+    name: string,
+    ctx: { eventUUID?: string; eventUUIDs?: string[]; funcData?: IFuncData },
+    payload?: any
+  ): IEvent | null;
+
+  getAllEventsForUUID(uuid: string): IEvent[];
 };
 
 class EventBus implements IEventBus {
@@ -130,7 +142,7 @@ class EventBus implements IEventBus {
     return this.emit(name, ctx, payload);
   }
 
-  getEventsForUUID(uuid: string): IEvent[] {
+  getAllEventsForUUID(uuid: string): IEvent[] {
     let events = Object.values(this.events).flat();
 
     events = events.concat(Object.values(this.overwrittenEvents).flat());
