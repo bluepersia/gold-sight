@@ -82,6 +82,28 @@ describe("eventHelpers", () => {
         },
       ],
     };
+    eventBus.overwrittenEvents = {
+      b: [
+        {
+          name: "bOverwritten",
+          payload: { test2: "test2" },
+          uuidStack: ["123", "456", "789"],
+          funcData: { funcName: "b", funcIndex: 2 },
+          eventUUID: "789",
+          state: { absIndex: 1 },
+        },
+      ],
+      c: [
+        {
+          name: "cOverwritten",
+          payload: { test3: "test3" },
+          uuidStack: ["123", "456", "789", "101112"],
+          funcData: { funcName: "c", funcIndex: 3 },
+          eventUUID: "101112",
+          state: { absIndex: 2 },
+        },
+      ],
+    };
     bArgs = [
       0,
       {
@@ -273,6 +295,14 @@ describe("eventHelpers", () => {
       },
       { includeRecursive: true }
     );
+  });
+  test("getAllEventsForUUID", () => {
+    const events = eventBus.getAllEventsForUUID("789");
+    expect(events.length).toBe(7);
+  });
+  test("getAllEventsForUUID", () => {
+    const events = eventBus.getAllEventsForUUID("101112");
+    expect(events.length).toBe(4);
   });
 });
 let ctx;
