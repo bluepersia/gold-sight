@@ -13,6 +13,8 @@ import {
   filterEventsByName,
   getEventByUUID,
   withEventNamesList,
+  filterRecursion,
+  filterRecursionForName,
 } from "../src/utils/eventBus";
 
 let eventBus: EventBus;
@@ -272,6 +274,19 @@ describe("eventHelpers", () => {
     expect(event?.name).toBe("c");
     expect(event?.state.absIndex).toBe(2);
     expect(event?.payload.test3).toBeDefined();
+  });
+
+  test("filterRecursion", () => {
+    const events = eventBus.events["b"];
+    const filteredEvents = filterRecursion(events, {
+      funcName: "a",
+      funcIndex: 1,
+    });
+    expect(events.length).toBe(2);
+    expect(filteredEvents.length).toBe(1);
+    expect(filteredEvents[0].name).toBe("b");
+    expect(filteredEvents[0].state.absIndex).toBe(1);
+    expect(filteredEvents[0].payload.test2).toBeDefined();
   });
 
   test("filterEvents", () => {

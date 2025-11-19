@@ -567,4 +567,6 @@ export {
   IFuncData,
   makeEventContext,
   withEventNamesList,
+  filterRecursion,
+  filterRecursionForName,
 };
