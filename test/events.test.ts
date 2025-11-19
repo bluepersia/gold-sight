@@ -15,6 +15,7 @@ import {
   withEventNamesList,
   filterRecursion,
   filterRecursionForName,
+  makeEventContext,
 } from "../src/utils/eventBus";
 
 let eventBus: EventBus;
@@ -462,4 +463,14 @@ describe("event bus errors", () => {
       withEvents([{ event: new EventBus(), eventUUID: "test" }], () => {})
     ).toThrow("Function data not found");
   });
+});
+
+test("makeEventContext", () => {
+  const ctx = makeEventContext();
+  expect(ctx).toBeDefined();
+  expect(ctx.event).toBeDefined();
+  expect(ctx.event!.isEventBus).toBe(true);
+  expect(ctx.eventUUID).toBe("");
+  expect(ctx.eventUUIDs).toEqual([]);
+  expect(ctx.funcData).toBeUndefined();
 });

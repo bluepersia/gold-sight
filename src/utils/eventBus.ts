@@ -543,6 +543,7 @@ function makeEventContext() {
     event: new EventBus(),
     eventUUID: "",
     eventUUIDs: [],
+    funcData: undefined,
   } as EventContext;
 }
 
