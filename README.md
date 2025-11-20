@@ -283,6 +283,10 @@ calculateTax = this.wrapFn(calculateTax, "calculateTax", {
 - `getAddress` - Provide context for errors (string or object)
 - `getSnapshot` - Capture state snapshot
 
+⚠️ Important Note on `getAddress`
+
+I recommend supplying as rich of a context message as possible, as this will make life significantly easier when an error is thrown.
+
 ##### `assertQueue(options?)`
 
 Runs all queued assertions.
