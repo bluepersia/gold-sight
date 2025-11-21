@@ -216,6 +216,7 @@ type AssertionError = {
   name: string;
   funcIndex: number;
   branchCount: number;
+  funcID: number;
 };
 
 type EventContext = {

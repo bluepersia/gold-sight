@@ -221,14 +221,13 @@ abstract class AssertionMaster<
       }
     }
 
-    outer: for (const { name } of nameWithHighestIndex) {
-      const items = groupedByName[name].sort((a, b) => {
-        if (a.funcIndex === b.funcIndex) {
-          return a.branchCount - b.branchCount;
-        }
-        if (options?.errorAlgorithm === "firstOfDeepest")
-          return a.funcIndex - b.funcIndex;
-        else return b.funcIndex - a.funcIndex;
+    outer: for (const { name, highestIndex } of nameWithHighestIndex) {
+      let items = groupedByName[name];
+      if (options.errorAlgorithm === "deepest")
+        items = items.filter((item) => item.funcIndex === highestIndex);
+
+      items.sort((a, b) => {
+        return a.funcID - b.funcID;
       });
       if (!options.showAllErrors) {
         for (const err of items) {
