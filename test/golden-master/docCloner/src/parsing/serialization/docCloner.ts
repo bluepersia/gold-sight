@@ -45,6 +45,9 @@ let cloneStyleSheet = (
   if (dev) subCtx.rulesParent = `sheetIndex:${ctx.sheetIndex}`;
 
   sheetClone.rules = cloneRules(sheet.cssRules, subCtx);
+
+  if (ctx.breakStyleRules || ctx.breakMedia) sheetClone.rules = [];
+
   return sheetClone;
 };
 
@@ -121,7 +124,10 @@ let cloneStyleRule = (
 
   if (ctx.breakStyleRules) {
     for (const breakStr of ctx.breakStyleRules) {
-      if (styleRuleClone.selector.includes(breakStr)) return null;
+      if (styleRuleClone.selector === breakStr) {
+        console.log("breaking on", breakStr);
+        return null;
+      }
     }
   }
   return styleRuleClone;

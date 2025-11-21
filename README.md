@@ -285,7 +285,7 @@ calculateTax = this.wrapFn(calculateTax, "calculateTax", {
 
 ⚠️ Important Note on `getAddress`
 
-I recommend supplying as rich of a context message as possible, as this will make life significantly easier when an error is thrown.
+For best debugging clarity, provide a detailed and context-rich address object. This ensures error messages include precise execution context, significantly improving traceability when failures occur.
 
 ##### `assertQueue(options?)`
 
