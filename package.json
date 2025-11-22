@@ -1,12 +1,26 @@
 {
   "name": "gold-sight",
-  "version": "0.0.216-alpha",
+  "version": "0.0.217-alpha",
   "description": "Test your code on realistic content, precisely",
   "main": "dist/index.js",
   "types": "dist/index.types.d.ts",
   "files": [
     "dist",
     "README.md"
+  ],
+  "keywords": [
+    "testing",
+    "test-framework",
+    "unit-testing",
+    "integration-testing",
+    "golden-master",
+    "nested-functions",
+    "function-chains",
+    "deep-assertions",
+    "state-tracking",
+    "event-bus",
+    "jest",
+    "vitest"
   ],
   "scripts": {
     "test": "vitest --run --reporter verbose"
